@@ -62,5 +62,4 @@ fn get_commit_title() {
 
     // Print the commit title
     println!("Latest commit title: {}", commit_title);
-    //
 }
