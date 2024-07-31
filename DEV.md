@@ -1,8 +1,1 @@
-
-
-Senar
-
-- when doing a merge commit
-    We should just use the merge commit and ignore other
-
-    
+https://keepachangelog.com/en/1.1.0/
