@@ -1,3 +1,6 @@
+use core::str;
+use std::process::Command;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -40,4 +43,21 @@ fn main() {
             // Add your release logic here
         }
     }
+}
+
+fn get_commit_title() {
+    // git log -1 --pretty=%s
+    
+    let output = Command::new("git")
+        .args(&["log", "-1", "--pretty=%s"])
+        .output()
+        .expect("Failed to execute git command");
+
+    // Convert the output from bytes to a string
+    let commit_title = str::from_utf8(&output.stdout)
+        .expect("Failed to convert output to string")
+        .trim(); // Trim any trailing newline characters
+
+    // Print the commit title
+    println!("Latest commit title: {}", commit_title);
 }
