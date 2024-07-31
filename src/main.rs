@@ -47,7 +47,9 @@ fn main() {
 
 fn get_commit_title() {
     // git log -1 --pretty=%s
-    
+    // or
+    // git log -1 --pretty=%b
+
     let output = Command::new("git")
         .args(&["log", "-1", "--pretty=%s"])
         .output()
