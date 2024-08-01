@@ -4,4 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.86"
 clap = { version = "4.5", features = ["derive"] }
+indexmap = "2.3.0"
+light_enum = "0.2.2"
+log = "0.4.22"
+memchr = "2.7.4"
+pulldown-cmark = "0.11.0"
+regex = "1.10.5"
+
+
+
+
+# [dependencies.parse-changelog]
+# path = "../parse-changelog"
+# version = "0.6.8"
