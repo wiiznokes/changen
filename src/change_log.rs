@@ -1,7 +1,18 @@
-use std::sync::LazyLock;
+use std::{fs::File, io::Read, os::linux::raw::stat, sync::LazyLock};
 
 use indexmap::IndexMap;
 use regex::Regex;
+
+#[test]
+fn test_changelog3() {
+    let mut file = File::open("tests/changelogs/CHANGELOG3.md").unwrap();
+
+    let mut changelog = String::new();
+
+    file.read_to_string(&mut changelog).unwrap();
+
+    parse_change_log(&changelog);
+}
 
 pub fn parse_change_log(changelog: &str) -> Changelog<'_> {
     let (header, changelog) = changelog
@@ -13,7 +24,7 @@ pub fn parse_change_log(changelog: &str) -> Changelog<'_> {
 
     let mut foot_links = IndexMap::new();
 
-    for line in changelog.lines().rev() {
+    for line in changelog.split_inclusive('\n').rev() {
         if FOOTER_REGEX.is_match(line) {
             let title = {
                 let start = memchr::memchr(b'[', line.as_bytes()).unwrap();
@@ -85,7 +96,9 @@ pub struct Release<'a> {
 
 impl<'a> Release<'a> {
     fn new(text: &'a str) -> Option<(Self, usize)> {
-        let lines = text.lines();
+        dbg!(&text);
+
+        let lines = text.split_inclusive('\n');
 
         #[derive(Clone, Debug, PartialEq, Eq)]
         enum State<'a> {
@@ -110,32 +123,37 @@ impl<'a> Release<'a> {
 
         for line in lines {
             if RELEASE_TITLE_REGEX.is_match(line) {
-                if state != State::Init {
-                    break;
-                } else {
-                    version = {
-                        let start = memchr::memchr(b'[', line.as_bytes()).unwrap();
-                        let end = memchr::memchr(b']', line.as_bytes()).unwrap();
+                match state {
+                    State::Init => {
+                        version = {
+                            let start = memchr::memchr(b'[', line.as_bytes()).unwrap();
+                            let end = memchr::memchr(b']', line.as_bytes()).unwrap();
 
-                        Some(line[start + 1..end].trim())
-                    };
-                    title = Some(line);
+                            Some(line[start + 1..end].trim())
+                        };
+                        title = Some(line.trim());
 
-                    state = State::Title;
+                        state = State::Title;
+                    }
+                    State::Title => break,
+                    State::Section { title, start, end } => {
+                        notes.insert(title, text[start..end].trim());
+                        break;
+                    }
                 }
             } else if RELEASE_SECTION_TITLE_REGEX.is_match(line) {
-                if state == State::Init {
-                    panic!("release section {} found before a release title", line);
-                }
-
-                if let State::Section { title, start, end } = state {
-                    notes.insert(title, &text[start..end]);
+                match state {
+                    State::Init => panic!("release section {} found before a release title", line),
+                    State::Title => {}
+                    State::Section { title, start, end } => {
+                        notes.insert(title, text[start..end].trim());
+                    }
                 }
 
                 let title = { line["### ".len()..].trim() };
                 state = State::Section {
                     title,
-                    start: pos,
+                    start: pos + line.len(),
                     end: pos + line.len(),
                 }
             } else if let State::Section {
@@ -150,7 +168,7 @@ impl<'a> Release<'a> {
                 // todo: find out what to do in this situation
             }
 
-            pos += line.len() + 1;
+            pos += line.len();
         }
 
         if state == State::Init {
