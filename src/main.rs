@@ -4,6 +4,8 @@ use std::process::Command;
 use clap::{Parser, Subcommand};
 
 mod commit_parser;
+mod change_log;
+
 
 #[derive(Parser)]
 #[command(name = "changelog")]

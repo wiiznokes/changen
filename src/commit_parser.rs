@@ -5,7 +5,6 @@ pub enum CommitKind {
     Fix,
     Improve,
     Feat,
-    HotFix,
 }
 
 impl CommitKind {
@@ -14,7 +13,6 @@ impl CommitKind {
             CommitKind::Fix => "fix",
             CommitKind::Improve => "improve",
             CommitKind::Feat => "feat",
-            CommitKind::HotFix => "hotfix",
         }
     }
 }

@@ -8,3 +8,10 @@ anyhow = "1.0.86"
 clap = { version = "4.5", features = ["derive"] }
 light_enum = "0.2.2"
 log = "0.4.22"
+
+
+
+
+[dependencies.parse-changelog]
+path = "../parse-changelog"
+# version = "0.6.8"
