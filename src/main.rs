@@ -3,9 +3,8 @@ use std::process::Command;
 
 use clap::{Parser, Subcommand};
 
-mod commit_parser;
 mod change_log;
-
+mod commit_parser;
 
 #[derive(Parser)]
 #[command(name = "changelog")]
@@ -31,17 +30,14 @@ fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Generate { output_file } => {
-            
-        }
-        Commands::Release { version } => {
-        }
+        Commands::Generate { output_file } => {}
+        Commands::Release { version } => {}
     }
 }
 
 fn last_commit_title() -> String {
     let output = Command::new("git")
-        .args(&["log", "-1", "--pretty=%s"])
+        .args(["log", "-1", "--pretty=%s"])
         .output()
         .expect("Failed to execute git command");
 
@@ -52,6 +48,5 @@ fn last_commit_title() -> String {
 mod test {
 
     #[test]
-    fn a() {
-    }
+    fn a() {}
 }

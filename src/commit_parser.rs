@@ -57,7 +57,7 @@ pub fn parse_commit_message(message: &str) -> Option<Commit> {
                     commit.scope = Some(scope.to_string());
                 }
 
-                sub = &sub[pos + 1..].trim();
+                sub = sub[pos + 1..].trim();
             }
             None => {
                 log::error!("'(' found but no ')'");
@@ -71,7 +71,7 @@ pub fn parse_commit_message(message: &str) -> Option<Commit> {
         return None;
     }
 
-    sub = &sub[1..].trim();
+    sub = sub[1..].trim();
 
     commit.message = sub.to_owned();
 
