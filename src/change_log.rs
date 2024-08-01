@@ -1,18 +1,7 @@
-use std::{fs::File, io::Read, os::linux::raw::stat, sync::LazyLock};
+use std::sync::LazyLock;
 
 use indexmap::IndexMap;
 use regex::Regex;
-
-#[test]
-fn test_changelog3() {
-    let mut file = File::open("tests/changelogs/CHANGELOG3.md").unwrap();
-
-    let mut changelog = String::new();
-
-    file.read_to_string(&mut changelog).unwrap();
-
-    parse_change_log(&changelog);
-}
 
 pub fn parse_change_log(changelog: &str) -> Changelog<'_> {
     let (header, changelog) = changelog
@@ -171,8 +160,12 @@ impl<'a> Release<'a> {
             pos += line.len();
         }
 
-        if state == State::Init {
-            return None;
+        match state {
+            State::Init => return None,
+            State::Title => {}
+            State::Section { title, start, end } => {
+                notes.insert(title, text[start..end].trim());
+            }
         }
 
         let release = Release {
@@ -207,6 +200,17 @@ mod test {
     #[test]
     fn test_changelog2() {
         let mut file = File::open("tests/changelogs/CHANGELOG2.md").unwrap();
+
+        let mut changelog = String::new();
+
+        file.read_to_string(&mut changelog).unwrap();
+
+        parse_change_log(&changelog);
+    }
+
+    #[test]
+    fn test_changelog3() {
+        let mut file = File::open("tests/changelogs/CHANGELOG3.md").unwrap();
 
         let mut changelog = String::new();
 
