@@ -11,24 +11,24 @@ pub fn parse_change_log(changelog: &str) -> Changelog<'_> {
 
     let mut offset = 0;
 
-    let mut foot_links = IndexMap::new();
+    let mut foot_links = Vec::new();
 
     for line in changelog.split_inclusive('\n').rev() {
         if FOOTER_REGEX.is_match(line) {
-            let title = {
+            let text = {
                 let start = memchr::memchr(b'[', line.as_bytes()).unwrap();
                 let end = memchr::memchr(b']', line.as_bytes()).unwrap();
 
                 line[start + 1..end].trim()
             };
 
-            let content = {
+            let link = {
                 let colon = memchr::memchr(b':', line.as_bytes()).unwrap();
 
                 line[colon + 1..].trim()
             };
 
-            foot_links.insert(title, content);
+            foot_links.push(FootLink { text, link });
 
             offset += line.len();
         } else {
@@ -61,26 +61,37 @@ pub fn parse_change_log(changelog: &str) -> Changelog<'_> {
     res
 }
 
+// todo: capture
 static FOOTER_REGEX: LazyLock<Regex> = LazyLock::new(|| regex::Regex::new(r"\[.*\]:").unwrap());
 
 static RELEASE_TITLE_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| regex::Regex::new(r"## \[.*\]").unwrap());
+    LazyLock::new(|| regex::Regex::new(r"## \[(.*)\](?: - (.*))?").unwrap());
 
+// todo: capture
 static RELEASE_SECTION_TITLE_REGEX: LazyLock<Regex> =
     LazyLock::new(|| regex::Regex::new(r"### .*").unwrap());
+
+static RELEASE_NOTE_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| regex::Regex::new(r" - (.*)").unwrap());
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Changelog<'a> {
     pub header: &'a str,
     pub releases: IndexMap<&'a str, Release<'a>>,
-    pub foot_links: IndexMap<&'a str, &'a str>,
+    pub foot_links: Vec<FootLink<'a>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FootLink<'a> {
+    pub text: &'a str,
+    pub link: &'a str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Release<'a> {
     pub version: &'a str,
-    pub title: &'a str,
-    pub notes: IndexMap<&'a str, &'a str>,
+    pub title: Option<&'a str>,
+    pub notes: IndexMap<&'a str, Vec<&'a str>>,
 }
 
 impl<'a> Release<'a> {
@@ -114,13 +125,10 @@ impl<'a> Release<'a> {
             if RELEASE_TITLE_REGEX.is_match(line) {
                 match state {
                     State::Init => {
-                        version = {
-                            let start = memchr::memchr(b'[', line.as_bytes()).unwrap();
-                            let end = memchr::memchr(b']', line.as_bytes()).unwrap();
+                        let res = RELEASE_TITLE_REGEX.captures(line).unwrap();
 
-                            Some(line[start + 1..end].trim())
-                        };
-                        title = Some(line.trim());
+                        version = res.get(1).map(|s| s.as_str());
+                        title = res.get(2).map(|s| s.as_str());
 
                         state = State::Title;
                     }
@@ -170,7 +178,7 @@ impl<'a> Release<'a> {
 
         let release = Release {
             version: version.unwrap(),
-            title: title.unwrap(),
+            title,
             notes,
         };
 
@@ -182,7 +190,7 @@ impl<'a> Release<'a> {
 mod test {
     use std::{fs::File, io::Read};
 
-    use crate::change_log::{FOOTER_REGEX, RELEASE_SECTION_TITLE_REGEX, RELEASE_TITLE_REGEX};
+    use crate::change_log::{FOOTER_REGEX, RELEASE_NOTE_REGEX, RELEASE_SECTION_TITLE_REGEX, RELEASE_TITLE_REGEX};
 
     use super::parse_change_log;
 
@@ -235,11 +243,32 @@ mod test {
         assert!(RELEASE_TITLE_REGEX.is_match("## [2024.7] - 2024-07-24"));
         assert!(!RELEASE_TITLE_REGEX.is_match("##[2024.7] - 2024-07-24"));
         assert!(!RELEASE_TITLE_REGEX.is_match("# [2024.7] - 2024-07-24"));
+        assert!(RELEASE_TITLE_REGEX.is_match("## [2024.7] - a"));
+
+        let res = RELEASE_TITLE_REGEX
+            .captures("## [2024.7] - 2024-07-24")
+            .unwrap();
+
+        assert_eq!(res.get(1).unwrap().as_str(), "2024.7");
+        assert_eq!(res.get(2).unwrap().as_str(), "2024-07-24");
+
+        // should be false
+        assert!(RELEASE_TITLE_REGEX.is_match("## [2024.7] -2024-07-24"));
+        assert!(RELEASE_TITLE_REGEX.is_match("## [2024.7] -  "));
     }
 
     #[test]
     fn test_regex_release_section() {
         assert!(RELEASE_SECTION_TITLE_REGEX.is_match("### Added"));
+        assert!(!RELEASE_SECTION_TITLE_REGEX.is_match("## Added"));
+        assert!(!RELEASE_SECTION_TITLE_REGEX.is_match("###Added"));
+        assert!(RELEASE_SECTION_TITLE_REGEX.is_match("### [Added]"));
+    }
+
+
+    #[test]
+    fn release_note_regex() {
+        assert!(RELEASE_NOTE_REGEX.is_match("- fix: hello"));
         assert!(!RELEASE_SECTION_TITLE_REGEX.is_match("## Added"));
         assert!(!RELEASE_SECTION_TITLE_REGEX.is_match("###Added"));
         assert!(RELEASE_SECTION_TITLE_REGEX.is_match("### [Added]"));
