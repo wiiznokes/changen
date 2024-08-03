@@ -1,7 +1,9 @@
 use core::str;
-use std::process::Command;
+use std::{collections::HashSet, process::Command};
 
 use clap::{Parser, Subcommand};
+
+use serde::{Deserialize, Serialize};
 
 mod commit_parser;
 
@@ -43,3 +45,7 @@ fn last_commit_title() -> String {
     String::from_utf8(output.stdout).unwrap()
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct MapMessageToSection {
+    pub map: Vec<(String, HashSet<String>)>,
+}
