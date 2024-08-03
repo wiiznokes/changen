@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-pom = { version = "3", features = ["trace"] }
+pom.workspace = true
 indexmap = "2"

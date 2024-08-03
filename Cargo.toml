@@ -18,6 +18,8 @@ pulldown-cmark = "0.11.0"
 regex = "1.10.5"
 
 
+[workspace.dependencies]
+pom = { version = "3", features = ["trace"] }
 # [dependencies.parse-changelog]
 # path = "../parse-changelog"
 # version = "0.6.8"

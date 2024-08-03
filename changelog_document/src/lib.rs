@@ -8,6 +8,9 @@ use utils::*;
 mod parser;
 mod serializer;
 
+#[cfg(test)]
+mod test;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReleaseTitle {
     pub version: String,
