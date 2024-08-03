@@ -1,15 +1,14 @@
 use std::{collections::HashMap, fs::File, io::Read};
 
 use pom::parser::*;
-use utils::into_string;
+use utils::{into_string, space};
 
 fn main() {
-    let mut file = File::open("tests/changelogs/CHANGELOG4.md").unwrap();
+    let mut file = File::open("./tests/changelogs/CHANGELOG1.md").unwrap();
 
     let mut input = String::new();
 
     file.read_to_string(&mut input).unwrap();
-
 
     let input = input.chars().collect::<Vec<_>>();
 
@@ -18,7 +17,6 @@ fn main() {
     let res = res.parse(&input).unwrap();
 
     dbg!(&res);
-
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -77,9 +75,9 @@ fn changelog<'a>() -> Parser<'a, char, ChangeLog> {
         }
     });
 
-    let parser = header + release().repeat(0..);
+    let parser = header + release().repeat(0..) + footer_links();
 
-    parser.convert(|(header, releases_vec)| {
+    parser.convert(|((header, releases_vec), footer_links)| {
         let mut releases = HashMap::new();
 
         for release in releases_vec.into_iter() {
@@ -89,7 +87,7 @@ fn changelog<'a>() -> Parser<'a, char, ChangeLog> {
         let res = ChangeLog {
             header,
             releases,
-            footer_links: FooterLinks { links: Vec::new() },
+            footer_links,
         };
 
         Ok::<ChangeLog, ()>(res)
@@ -129,7 +127,7 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
 }
 
 fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
-    let title = sym('#').repeat(3) * sym(' ') * none_of("\n").repeat(1..) - sym('\n');
+    let title = space() * sym('#').repeat(3) * sym(' ') * none_of("\n").repeat(1..) - sym('\n');
 
     let parser = title - sym('\n') + release_section_note().repeat(1..);
 
@@ -144,6 +142,7 @@ fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
 }
 
 fn release<'a>() -> Parser<'a, char, Release> {
+    // todo: add release and footer links
     let header = (!call(release_section) * any())
         .repeat(0..)
         .convert(|header| {
@@ -157,15 +156,17 @@ fn release<'a>() -> Parser<'a, char, Release> {
         });
 
     // todo: add footer_links here
-    let footer = ((!call(release) + !call(release_section)) * any()).repeat(0..).convert(|footer| {
-        let footer = into_string(footer);
+    let footer = ((!call(release) + !call(release_section)) * any())
+        .repeat(0..)
+        .convert(|footer| {
+            let footer = into_string(footer);
 
-        if footer.is_empty() {
-            Ok::<_, ()>(None)
-        } else {
-            Ok(Some(footer))
-        }
-    });
+            if footer.is_empty() {
+                Ok::<_, ()>(None)
+            } else {
+                Ok(Some(footer))
+            }
+        });
 
     let parser = release_title() + header + release_section().repeat(0..) + footer;
 
@@ -184,6 +185,31 @@ fn release<'a>() -> Parser<'a, char, Release> {
         };
 
         Ok::<Release, ()>(res)
+    })
+}
+
+fn footer_link<'a>() -> Parser<'a, char, FooterLink> {
+    let parser = sym('[') * none_of("\n]").repeat(1..) - sym(']') * sym(':') * sym(' ')
+        + none_of("\n").repeat(1..)
+        - sym('\n');
+
+    parser.convert(|(text, link)| {
+        let res = FooterLink {
+            text: into_string(text),
+            link: into_string(link),
+        };
+
+        Ok::<FooterLink, ()>(res)
+    })
+}
+
+fn footer_links<'a>() -> Parser<'a, char, FooterLinks> {
+    let parser = space() * footer_link().repeat(0..) - space() - end();
+
+    parser.convert(|links| {
+        let res = FooterLinks { links };
+
+        Ok::<FooterLinks, ()>(res)
     })
 }
 
@@ -221,5 +247,3 @@ la miff
 
     dbg!(&res);
 }
-
-

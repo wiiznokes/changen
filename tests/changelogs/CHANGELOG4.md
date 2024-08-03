@@ -12,8 +12,6 @@ header héhé
 
 ### Fixed
 
-- bonjour
-- v1.1 German Translation
-- v1.1 Spanish translation.
+- bonjour 
 
-footer hihi
+
