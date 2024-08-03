@@ -43,9 +43,3 @@ fn last_commit_title() -> String {
     String::from_utf8(output.stdout).unwrap()
 }
 
-#[cfg(test)]
-mod test {
-
-    #[test]
-    fn a() {}
-}

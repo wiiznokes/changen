@@ -1,7 +1,7 @@
 https://keepachangelog.com/en/1.1.0/
 
-
 ## CHANGELOG syntax
+
 ```txt
 header: multiline_text | _
 
@@ -24,13 +24,25 @@ footer_link: [text]: text
 changelog: header release* footer_link*
 ```
 
+section {
+"Fixed": ["fix", "patch"]
+}
 
+senar:
 
-can you modify this regex to match: ## [*] | ## [*] - *
+- generate
 
-This is the regex:
-## \[.*\]
-## \[.*\](?: - .*)?
+  - map commit message to section
+  - don't use standard commit message, use a best effort output
+  - include non standard commit
+  - link pr
+  - thanks/mention contributor
 
-## \[.*\](?: - .*)?
+- release
 
+  - include the diff message
+
+- validate
+
+- show
+  - n as 0 being unreleased, 1 is the last release. Default to 1
