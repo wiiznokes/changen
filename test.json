@@ -1,0 +1,16 @@
+{
+  "map": {
+    "Fixed": ["fix"],
+    "Added": ["feat"],
+    "Changed": [
+      "improve",
+      "impr",
+      "hello",
+      "test",
+      "test2",
+      "test3",
+      "testé",
+      "testétestétestétestétestétestétestétestétestétestétestétesté"
+    ]
+  }
+}

@@ -10,7 +10,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5", features = ["derive"] }
-indexmap = "2.3.0"
+indexmap = { version = "2", features = ["serde"] }
 light_enum = "0.2.2"
 log = "0.4.22"
 memchr = "2.7.4"

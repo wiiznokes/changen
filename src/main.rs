@@ -3,9 +3,10 @@ use std::{collections::HashSet, process::Command};
 
 use clap::{Parser, Subcommand};
 
-use serde::{Deserialize, Serialize};
 
 mod commit_parser;
+mod note_generator;
+mod config;
 
 #[derive(Parser)]
 #[command(name = "changelog")]
@@ -36,16 +37,5 @@ fn main() {
     }
 }
 
-fn last_commit_title() -> String {
-    let output = Command::new("git")
-        .args(["log", "-1", "--pretty=%s"])
-        .output()
-        .expect("Failed to execute git command");
 
-    String::from_utf8(output.stdout).unwrap()
-}
 
-#[derive(Serialize, Deserialize)]
-pub struct MapMessageToSection {
-    pub map: Vec<(String, HashSet<String>)>,
-}
