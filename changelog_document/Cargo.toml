@@ -1,9 +1,8 @@
 [package]
-name = "parser_test"
+name = "changelog_document"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1"
 pom = { version = "3", features = ["trace"] }
 indexmap = "2"
