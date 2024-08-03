@@ -157,8 +157,8 @@ fn release<'a>() -> Parser<'a, char, Release> {
         });
 
     // todo: add footer_links here
-    let footer = (!call(release) * any()).repeat(0..).convert(|header| {
-        let footer = into_string(header);
+    let footer = ((!call(release) + !call(release_section)) * any()).repeat(0..).convert(|footer| {
+        let footer = into_string(footer);
 
         if footer.is_empty() {
             Ok::<_, ()>(None)
@@ -215,45 +215,11 @@ la miff
 
     let input = input.collect::<Vec<_>>();
 
-    let res = header();
+    let res = changelog();
 
     let res = res.parse(&input).unwrap();
 
     dbg!(&res);
 }
 
-#[test]
-fn t2() {
-    let input = r#"
-hello
-la miff
 
-
-## [2024.7] - 2024-07-24
-
-"#;
-
-    let input = input.chars();
-
-    let input = input.collect::<Vec<_>>();
-
-    let res = header() + release_title();
-
-    let res = res.parse(&input).unwrap();
-
-    dbg!(&res);
-}
-
-fn header<'a>() -> Parser<'a, char, Option<String>> {
-    (!call(release_title) * any())
-        .repeat(0..)
-        .convert(|header| {
-            let header = into_string(header);
-
-            if header.is_empty() {
-                Ok::<_, ()>(None)
-            } else {
-                Ok(Some(header))
-            }
-        })
-}
