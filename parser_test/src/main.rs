@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use pom::parser::*;
 use utils::into_string;
 
@@ -7,6 +9,45 @@ fn main() {}
 struct ReleaseTitle {
     pub version: String,
     pub title: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ReleaseSection {
+    pub title: String,
+    // todo: hashmap multi using component
+    pub notes: Vec<ReleaseSectionNote>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ReleaseSectionNote {
+    pub component: Option<String>,
+    pub note: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Release {
+    pub title: ReleaseTitle,
+    pub header: Option<String>,
+    pub notes: HashMap<String, ReleaseSection>,
+    pub footer: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct FooterLink {
+    pub text: String,
+    pub link: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct FooterLinks {
+    pub links: Vec<FooterLink>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ChangeLog {
+    pub header: Option<String>,
+    pub releases: HashMap<String, Release>,
+    pub footer_links: FooterLinks,
 }
 
 mod utils {
