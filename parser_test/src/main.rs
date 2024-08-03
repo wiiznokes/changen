@@ -1,10 +1,11 @@
 use std::{collections::HashMap, fs::File, io::Read};
 
+use indexmap::IndexMap;
 use pom::parser::*;
-use utils::{into_string, space};
+use utils::{into_string, space, spaceline};
 
 fn main() {
-    let mut file = File::open("./tests/changelogs/CHANGELOG1.md").unwrap();
+    let mut file = File::open("./tests/changelogs/CHANGELOG2.md").unwrap();
 
     let mut input = String::new();
 
@@ -60,7 +61,7 @@ struct FooterLinks {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ChangeLog {
     pub header: Option<String>,
-    pub releases: HashMap<String, Release>,
+    pub releases: IndexMap<String, Release>,
     pub footer_links: FooterLinks,
 }
 
@@ -78,7 +79,7 @@ fn changelog<'a>() -> Parser<'a, char, ChangeLog> {
     let parser = header + release().repeat(0..) + footer_links();
 
     parser.convert(|((header, releases_vec), footer_links)| {
-        let mut releases = HashMap::new();
+        let mut releases = IndexMap::new();
 
         for release in releases_vec.into_iter() {
             releases.insert(release.title.version.clone(), release);
@@ -114,7 +115,7 @@ fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
 fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     let component = none_of(":\n").repeat(1..) - sym(':');
 
-    let parser = sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..) - sym('\n');
+    let parser = spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..) - sym('\n');
 
     parser.convert(|(component, note)| {
         let res = ReleaseSectionNote {
@@ -224,6 +225,9 @@ mod utils {
 
     pub fn space<'a>() -> Parser<'a, char, ()> {
         one_of(" \t\r\n").repeat(0..).discard()
+    }
+    pub fn spaceline<'a>() -> Parser<'a, char, ()> {
+        one_of(" \n").repeat(0..).discard()
     }
 }
 
