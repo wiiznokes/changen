@@ -190,7 +190,9 @@ impl<'a> Release<'a> {
 mod test {
     use std::{fs::File, io::Read};
 
-    use crate::change_log::{FOOTER_REGEX, RELEASE_NOTE_REGEX, RELEASE_SECTION_TITLE_REGEX, RELEASE_TITLE_REGEX};
+    use crate::change_log::{
+        FOOTER_REGEX, RELEASE_NOTE_REGEX, RELEASE_SECTION_TITLE_REGEX, RELEASE_TITLE_REGEX,
+    };
 
     use super::parse_change_log;
 
@@ -264,7 +266,6 @@ mod test {
         assert!(!RELEASE_SECTION_TITLE_REGEX.is_match("###Added"));
         assert!(RELEASE_SECTION_TITLE_REGEX.is_match("### [Added]"));
     }
-
 
     #[test]
     fn release_note_regex() {
