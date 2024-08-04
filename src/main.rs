@@ -1,12 +1,10 @@
 use core::str;
-use std::{collections::HashSet, process::Command};
 
 use clap::{Parser, Subcommand};
 
-
 mod commit_parser;
-mod note_generator;
 mod config;
+mod note_generator;
 
 #[derive(Parser)]
 #[command(name = "changelog")]
@@ -36,6 +34,3 @@ fn main() {
         Commands::Release { version } => {}
     }
 }
-
-
-

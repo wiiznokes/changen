@@ -11,7 +11,7 @@ pub struct Config {
     pub repo: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Provider {
     #[default]
     Github,
@@ -36,7 +36,7 @@ impl Default for MapMessageToSection {
             map("Changed", vec!["improve", "impr"]),
         ];
 
-        Self(IndexMap::from_iter(map.into_iter()))
+        Self(IndexMap::from_iter(map))
     }
 }
 

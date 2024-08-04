@@ -1,7 +1,6 @@
-
+use super::*;
 use pom::parser::*;
 use utils::*;
-use super::*;
 
 pub fn changelog<'a>() -> Parser<'a, char, ChangeLog> {
     let header = (!call(release) * any()).repeat(0..).convert(|header| {
