@@ -9,11 +9,10 @@ pub struct Commit {
 }
 
 pub fn commit<'a>() -> Parser<'a, char, Commit> {
-    let scope = sym('(') * none_of("()").repeat(1..) - sym(')');
+    let scope = space() * sym('(') * none_of("()").repeat(1..) - sym(')');
 
-    // let section = (!scope + none_of(" :")) * any().repeat(1..) + scope.opt();
-
-    let parser = none_of(" :(").repeat(1..) + scope.opt() - sym(':') * space() + any().repeat(1..);
+    let parser = none_of(" :()").repeat(1..) + scope.opt() - space() * sym(':') * space()
+        + any().repeat(1..);
 
     parser.convert(|((section, scope), message)| {
         let res = Commit {
@@ -45,16 +44,36 @@ mod test {
 
     use super::*;
 
+    fn map(input: &str) -> Vec<char> {
+        input.chars().collect::<Vec<_>>()
+    }
+
     #[test]
     fn test() {
-        let message = "fix(hello): hihi";
+        let m = map("fix(hello): hihi");
+        assert_eq!(
+            commit().parse(&m),
+            Ok(Commit {
+                section: String::from("fix"),
+                scope: Some(String::from("hello")),
+                message: String::from("hihi")
+            })
+        );
 
-        let input = message.chars().collect::<Vec<_>>();
+        let m = map("fix(hello: hihi");
+        commit().parse(&m).unwrap_err();
 
-        let parser = commit();
+        let m = map("feat");
+        commit().parse(&m).unwrap_err();
 
-        let res = parser.parse(&input).unwrap();
-
-        dbg!(&res);
+        let m = map("improve (ignore) : hihi");
+        assert_eq!(
+            commit().parse(&m),
+            Ok(Commit {
+                section: String::from("improve"),
+                scope: Some(String::from("ignore")),
+                message: String::from("hihi")
+            })
+        );
     }
 }

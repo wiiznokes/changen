@@ -2,7 +2,6 @@ use core::str;
 
 use clap::{Parser, Subcommand};
 
-mod commit_parser;
 mod config;
 mod note_generator;
 
