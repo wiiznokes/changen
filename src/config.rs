@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -6,16 +6,38 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
     pub map: MapMessageToSection,
-    pub provider: Provider,
-    pub owner: Option<String>,
-    pub repo: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub enum Provider {
+#[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub enum GitProvider {
     #[default]
     Github,
     Other,
+}
+
+impl Display for GitProvider {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GitProvider::Github => write!(f, "github"),
+            GitProvider::Other => write!(f, "other "),
+        }
+    }
+}
+
+#[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub enum CommitMessageParsing {
+    #[default]
+    Smart,
+    Strict,
+}
+
+impl Display for CommitMessageParsing {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CommitMessageParsing::Smart => write!(f, "smart"),
+            CommitMessageParsing::Strict => write!(f, "strict"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,6 +52,7 @@ impl Default for MapMessageToSection {
             )
         }
 
+        // todo:
         let map = vec![
             map("Fixed", vec!["fix"]),
             map("Added", vec!["feat"]),
