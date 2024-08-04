@@ -4,7 +4,6 @@ use anyhow::{anyhow, bail, Ok};
 use reqwest::{blocking::Client, header::USER_AGENT};
 use serde_json::Value;
 
-
 fn last_commit_title() -> String {
     let output = Command::new("git")
         .args(["log", "-1", "--pretty=%s"])
@@ -32,7 +31,13 @@ fn last_commit_sha() -> String {
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<String> {
+#[derive(Debug, Clone)]
+struct RelatedPr {
+    pub url: String,
+    pub author: String,
+}
+
+fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
     let api = format!("https://api.github.com/repos/{owner}/{repo}/commits/{sha}/pulls");
 
     let client = Client::new();
@@ -48,18 +53,25 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Stri
 
         let json = serde_json::from_str::<Value>(&body)?;
 
-        let url = json
-            .as_array()
-            .unwrap_or(&vec![])
-            .iter()
-            .find_map(|pr| {
-                pr.get("html_url")
-                    .and_then(|url| url.as_str())
-                    .map(String::from)
-            })
-            .ok_or(anyhow!("no html_url field found"))?;
+        let obj = json.get(0).ok_or(anyhow!("no index 0"))?;
 
-        Ok(url)
+        let url = obj
+            .get("html_url")
+            .ok_or(anyhow!("no html_url found"))?
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        let author = obj
+            .get("user")
+            .ok_or(anyhow!("no user found"))?
+            .get("login")
+            .ok_or(anyhow!("no login found"))?
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        Ok(RelatedPr { url, author })
     } else {
         bail!(format!("GitHub API returned status: {}", response.status()))
     }
