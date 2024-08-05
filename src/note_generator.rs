@@ -8,6 +8,7 @@ use serde_json::Value;
 
 use crate::config::{CommitMessageParsing, GitProvider, MapMessageToSection};
 
+#[derive(Clone, Debug)]
 struct RawCommit {
     message: String,
     desc: String,
@@ -145,6 +146,9 @@ pub fn get_release_note(
 }
 
 fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
+    dbg!(&raw);
+
+    dbg!(&changelog_path);
     if raw.list_files.iter().any(|path| path == changelog_path) {
         return true;
     }
