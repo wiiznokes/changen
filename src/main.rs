@@ -2,9 +2,13 @@
 #![allow(dead_code)]
 
 use core::str;
-use std::{fs::File, io::Read, path::PathBuf};
+use std::{
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+};
 
-use changelog::parse_changelog;
+use changelog::{parse_changelog, serialize_changelog};
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, GitProvider};
 
@@ -74,7 +78,9 @@ enum Commands {
             value_hint = ValueHint::FilePath,
         )]
         file: Option<String>,
-        #[arg(long, help = "Show the Abstract Syntax Tree.")]
+        #[arg(long, alias = "fmt", help = "Format the changelog.")]
+        format: bool,
+        #[arg(long, hide = true, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
     },
     /// Show a specific release on stdout
@@ -134,16 +140,26 @@ fn main() -> anyhow::Result<()> {
             version,
             omit_diff,
         } => todo!(),
-        Commands::Validate { file, ast } => {
+        Commands::Validate { file, ast, format } => {
             let path = get_changelog_path(file);
-            let mut file = File::open(path)?;
-            let mut input = String::new();
-            file.read_to_string(&mut input)?;
+
+            let input = {
+                let mut file = File::open(&path)?;
+                let mut input = String::new();
+                file.read_to_string(&mut input)?;
+                input
+            };
 
             let changelog = parse_changelog(&input)?;
 
             if ast {
                 dbg!(&changelog);
+            }
+
+            if format {
+                let output = serialize_changelog(&changelog);
+                let mut file = File::options().truncate(true).write(true).open(&path)?;
+                file.write_all(output.as_bytes())?;
             }
 
             println!("Changelog parser with success!");
