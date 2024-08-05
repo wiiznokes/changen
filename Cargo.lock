@@ -157,7 +157,7 @@ name = "changelog-gen"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "changelog_document",
+ "changelog_document 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap",
  "indexmap",
  "pom",
@@ -169,6 +169,18 @@ dependencies = [
 [[package]]
 name = "changelog_document"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "indexmap",
+ "pom",
+ "serde",
+]
+
+[[package]]
+name = "changelog_document"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "667633942561e3832890e6074b435dcd6afec1f9084e490f346a2f47fbeaf4c3"
 dependencies = [
  "anyhow",
  "indexmap",
