@@ -5,6 +5,11 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag"
+        required: true
+        type: string
   push:
     tags:
       - v[0-9]+.*
@@ -14,8 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          git tag ${{ github.event.inputs.tag }}
+          git push origin --tags
       - uses: taiki-e/create-gh-release-action@v1
         with:
+          ref: refs/tags/${{ github.event.inputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
   upload-assets:
