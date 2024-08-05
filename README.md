@@ -13,7 +13,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 - [The changelog file](./CHANGELOG.md) - see what the syntax have to offer
 - [Its commits history](https://github.com/wiiznokes/changelog-generator/commits/master/CHANGELOG.md)
-- [The Github workflow](./.github/workflows/changelog.yml)
+- [The Github workflow](./example/changelog.yml)
 
 ## Getting started
 

@@ -103,7 +103,6 @@ pub fn get_release_note(
     } else {
         match provider {
             GitProvider::Github => {
-
                 // todo: use GITHUB_REPOSITORY env variable
 
                 if let (Some(owner), Some(repo)) = (owner, repo) {
