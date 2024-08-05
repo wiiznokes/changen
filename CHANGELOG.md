@@ -9,4 +9,5 @@
 
 - Merge branch 'master' of https://github.com/wiiznokes/changelog
 - Merge branch 'master' of https://github.com/wiiznokes/changelog
+- Merge branch 'master' of https://github.com/wiiznokes/changelog
 
