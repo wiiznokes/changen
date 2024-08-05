@@ -151,6 +151,8 @@ fn get_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
 }
 
 fn main() -> anyhow::Result<()> {
+    env_logger::init();
+
     let cli = Cli::parse();
 
     match cli.command {

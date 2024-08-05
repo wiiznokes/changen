@@ -3,6 +3,7 @@ use std::{io::Read, process::Command};
 use crate::commit_parser::{parse_commit, Commit};
 use anyhow::{anyhow, bail, Result};
 use changelog::ReleaseSectionNote;
+use log::debug;
 use reqwest::{blocking::Client, header::USER_AGENT};
 use serde_json::Value;
 
@@ -146,9 +147,9 @@ pub fn get_release_note(
 }
 
 fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
-    dbg!(&raw);
+    debug!("{:?}", raw);
+    debug!("{:?}", changelog_path);
 
-    dbg!(&changelog_path);
     if raw.list_files.iter().any(|path| path == changelog_path) {
         return true;
     }
