@@ -28,5 +28,6 @@ jobs:
       - run: |
           cargo run -- generate --owner wiiznokes --repo changelog
           cat CHANGELOG.md
+          env
 
    
