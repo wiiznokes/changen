@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - dev
     paths-ignore:
       - "CHANGELOG.md"
 
@@ -28,8 +28,8 @@ jobs:
         with:
           tool: changelog-gen
           
-      - run: changelog-gen generate --owner wiiznokes --repo changelog
+      - run: |
+          changelog-gen generate --owner wiiznokes --repo changelog
+          cat CHANGELOG.md
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(changelog): automatic changelog generation (skip changelog)"
+   
