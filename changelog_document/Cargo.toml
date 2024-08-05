@@ -1,7 +1,14 @@
 [package]
 name = "changelog_document"
 version = "0.1.0"
-edition = "2021"
+categories = ["parsing"]
+keywords = ["changelog", "parser", "serializer", "pom based", "release-note"]
+description = "Feature-rich changelog format. Include a parser and serializer."
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
 
 [dependencies]
 pom.workspace = true

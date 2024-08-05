@@ -15,6 +15,7 @@ use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, GitProvider, MapMessageToSection};
 use note_generator::get_release_note;
 
+mod commit_parser;
 mod config;
 mod note_generator;
 

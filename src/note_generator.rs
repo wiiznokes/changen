@@ -1,8 +1,8 @@
 use std::{io::Read, process::Command};
 
+use crate::commit_parser::{parse_commit, Commit};
 use anyhow::{anyhow, bail, Result};
 use changelog::ReleaseSectionNote;
-use commit_parser::{parse_commit, Commit};
 use reqwest::{blocking::Client, header::USER_AGENT};
 use serde_json::Value;
 
