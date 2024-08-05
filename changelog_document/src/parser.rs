@@ -61,13 +61,19 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     // todo: maybe drop this ?
     let component = none_of(" \t\r`:\n").repeat(1..) - sym(':');
 
-    let parser =
-        spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..) - sym('\n');
+    let context_line = one_of(" \t") * none_of("\n").repeat(1..) - sym('\n');
 
-    parser.convert(|(component, note)| {
+    let context = context_line.repeat(0..);
+
+    let parser = spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..)
+        - sym('\n')
+        + context;
+
+    parser.convert(|((component, note), context)| {
         let res = ReleaseSectionNote {
             component: component.map(into_string),
             message: into_string(note),
+            context: context.into_iter().map(into_string).collect(),
         };
 
         Ok::<ReleaseSectionNote, ()>(res)
@@ -117,7 +123,7 @@ fn release<'a>() -> Parser<'a, char, Release> {
     let parser = release_title() + header + release_section().repeat(0..) + footer;
 
     parser.convert(|(((title, header), sections), footer)| {
-        let mut notes = HashMap::new();
+        let mut notes = IndexMap::new();
 
         for section in sections.into_iter() {
             notes.insert(section.title.clone(), section);
