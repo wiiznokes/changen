@@ -2,9 +2,10 @@
 #![allow(dead_code)]
 
 use core::str;
-use std::path::PathBuf;
+use std::{fs::File, io::Read, path::PathBuf};
 
-use clap::{Parser, Subcommand};
+use changelog::parse_changelog;
+use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, GitProvider};
 
 mod config;
@@ -25,10 +26,13 @@ enum Commands {
             short,
             long,
             help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md"
+            default_value = "CHANGELOG.md",
+            value_hint = ValueHint::FilePath,
+            short_alias = 'o',
+            alias = "output",
         )]
         file: Option<String>,
-        #[arg(long, help = "Path to the commit type to changelog section map.")]
+        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
         map: Option<PathBuf>,
         #[arg(long, help = "Parsing of the commit message.", default_value_t = CommitMessageParsing::Smart)]
         parsing: CommitMessageParsing,
@@ -51,7 +55,8 @@ enum Commands {
             short,
             long,
             help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md"
+            default_value = "CHANGELOG.md",
+            value_hint = ValueHint::FilePath,
         )]
         file: Option<String>,
         #[arg(short, long, help = "Version number for the release")]
@@ -65,9 +70,12 @@ enum Commands {
             short,
             long,
             help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md"
+            default_value = "CHANGELOG.md",
+            value_hint = ValueHint::FilePath,
         )]
         file: Option<String>,
+        #[arg(long, help = "Show the Abstract Syntax Tree.")]
+        ast: bool,
     },
     /// Show a specific release on stdout
     Show {
@@ -75,7 +83,8 @@ enum Commands {
             short,
             long,
             help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md"
+            default_value = "CHANGELOG.md",
+            value_hint = ValueHint::FilePath,
         )]
         file: Option<String>,
         #[arg(
@@ -91,17 +100,57 @@ enum Commands {
             short,
             long,
             help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md"
+            default_value = "CHANGELOG.md",
+            value_hint = ValueHint::FilePath,
         )]
         file: Option<String>,
     },
 }
 
-fn main() {
+fn get_changelog_path(path: Option<String>) -> PathBuf {
+    match path {
+        Some(path) => PathBuf::from(path),
+        None => PathBuf::from("CHANGELOG.md"),
+    }
+}
+
+fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    // match &cli.command {
-    //     Commands::Generate { output_file } => {}
-    //     Commands::Release { version } => {}
-    // }
+    match cli.command {
+        Commands::Generate {
+            file,
+            map,
+            parsing,
+            exclude_unidentified,
+            provider,
+            owner,
+            repo,
+            omit_pr_link,
+            omit_thanks,
+        } => todo!(),
+        Commands::Release {
+            file,
+            version,
+            omit_diff,
+        } => todo!(),
+        Commands::Validate { file, ast } => {
+            let path = get_changelog_path(file);
+            let mut file = File::open(path)?;
+            let mut input = String::new();
+            file.read_to_string(&mut input)?;
+
+            let changelog = parse_changelog(&input)?;
+
+            if ast {
+                dbg!(&changelog);
+            }
+
+            println!("Changelog parser with success!");
+        }
+        Commands::Show { file, n } => todo!(),
+        Commands::New { file } => todo!(),
+    }
+
+    Ok(())
 }
