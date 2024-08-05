@@ -4,6 +4,7 @@
 ### Added
 
 - handle map param
+- add raw (#7) in [#7](https://github.com/wiiznokes/changelog/pull/7) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Unidentified
 
