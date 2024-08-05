@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 
 use indexmap::IndexMap;
 
@@ -34,7 +33,7 @@ pub struct ReleaseSectionNote {
 pub struct Release {
     pub title: ReleaseTitle,
     pub header: Option<String>,
-    pub note_sections: HashMap<String, ReleaseSection>,
+    pub note_sections: IndexMap<String, ReleaseSection>,
     pub footer: Option<String>,
 }
 
@@ -75,7 +74,7 @@ impl ChangeLog {
                     title: None,
                 },
                 header: None,
-                note_sections: HashMap::new(),
+                note_sections: IndexMap::new(),
                 footer: None,
             },
         );

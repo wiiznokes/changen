@@ -38,7 +38,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                 },
                 header: Some("header".into()),
                 note_sections: {
-                    let mut notes = HashMap::new();
+                    let mut notes = IndexMap::new();
 
                     let section = String::from("Fixed");
                     notes.insert(
@@ -74,7 +74,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                     title: None,
                 },
                 header: None,
-                note_sections: HashMap::new(),
+                note_sections: IndexMap::new(),
                 footer: None,
             },
         );

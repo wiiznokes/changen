@@ -123,7 +123,7 @@ fn release<'a>() -> Parser<'a, char, Release> {
     let parser = release_title() + header + release_section().repeat(0..) + footer;
 
     parser.convert(|(((title, header), sections), footer)| {
-        let mut notes = HashMap::new();
+        let mut notes = IndexMap::new();
 
         for section in sections.into_iter() {
             notes.insert(section.title.clone(), section);
