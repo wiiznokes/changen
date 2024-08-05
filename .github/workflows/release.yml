@@ -1,0 +1,39 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag in the format vX.Y.Z"
+        required: true
+        type: string
+  push:
+    tags:
+      - v[0-9]+.*
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git tag ${{ github.event.inputs.tag }} || true
+          git push origin --tags || true
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: changelog
+          ref: refs/tags/${{ github.event.inputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,31 @@
+name: Changelog Generation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          cargo install --git https://github.com/wiiznokes/changelog-generator.git --branch master --locked changelog-generator
+          changelog-gen generate --owner wiiznokes --repo changelog
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(changelog): automatic changelog generation (skip changelog)"
