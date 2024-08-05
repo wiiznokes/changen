@@ -33,6 +33,10 @@ fix(project_a): Fix a nasty bug <=> commit-type(scope): commit-message
 
 ## Advanced use
 
+#### Ignore commit
+
+Currently, you can write `(skip changelog)` anyhere in the commit message or desciption.
+
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
 The default map can be seen [here](./config_example/config.json). Note than the order will define in witch order the section will appears in the log file.
