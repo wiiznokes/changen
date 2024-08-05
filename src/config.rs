@@ -8,6 +8,13 @@ pub struct Config {
     pub map: MapMessageToSection,
 }
 
+impl Config {
+    #[inline]
+    pub fn into_changelog_ser_options(self) -> changelog::ser::Options {
+        self.map.into_changelog_ser_options()
+    }
+}
+
 #[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum GitProvider {
     #[default]
@@ -53,6 +60,7 @@ impl Default for MapMessageToSection {
         }
 
         // todo: add more
+        // note: you should run `cargo test -p changelog write_config`
         let map = vec![
             map("Fixed", vec!["fix"]),
             map("Added", vec!["feat"]),
@@ -111,14 +119,22 @@ impl MapMessageToSection {
 #[cfg(test)]
 mod test {
 
+    use std::{fs::OpenOptions, io::Write};
+
     use super::Config;
 
     #[test]
-    fn a() {
-        let e = Config::default();
+    fn write_config() {
+        let path = "./config_example/config.json";
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(path)
+            .unwrap();
 
+        let e = Config::default();
         let json = serde_json::ser::to_string_pretty(&e).unwrap();
 
-        println!("{}", json);
+        file.write_all(json.as_bytes()).unwrap();
     }
 }

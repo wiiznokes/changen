@@ -1,0 +1,15 @@
+{
+  "map": {
+    "Fixed": [
+      "fix"
+    ],
+    "Added": [
+      "feat"
+    ],
+    "Changed": [
+      "improve",
+      "chore ",
+      "impr"
+    ]
+  }
+}

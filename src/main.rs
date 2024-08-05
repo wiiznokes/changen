@@ -12,7 +12,7 @@ use changelog::{
     ChangeLog, ReleaseSection,
 };
 use clap::{Parser, Subcommand, ValueHint};
-use config::{CommitMessageParsing, GitProvider, MapMessageToSection};
+use config::{CommitMessageParsing, Config, GitProvider};
 use note_generator::get_release_note;
 
 mod commit_parser;
@@ -134,7 +134,7 @@ fn read_file(path: &Path) -> anyhow::Result<String> {
     Ok(input)
 }
 
-fn get_map(path: Option<PathBuf>) -> anyhow::Result<MapMessageToSection> {
+fn get_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
     match path {
         Some(path) => {
             let mut file = File::open(&path)?;
@@ -146,7 +146,7 @@ fn get_map(path: Option<PathBuf>) -> anyhow::Result<MapMessageToSection> {
             let map = serde_json::de::from_slice(&content)?;
             Ok(map)
         }
-        None => Ok(MapMessageToSection::default()),
+        None => Ok(Config::default()),
     }
 }
 
@@ -171,7 +171,7 @@ fn main() -> anyhow::Result<()> {
 
             let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
 
-            let map = get_map(map)?;
+            let config = get_config(map)?;
 
             let (section, release_note) = get_release_note(
                 &parsing,
@@ -181,7 +181,7 @@ fn main() -> anyhow::Result<()> {
                 &repo,
                 omit_pr_link,
                 omit_thanks,
-                &map,
+                &config.map,
             )?;
 
             let section = if let Some(section) = unreleased.note_sections.get_mut(&section) {
@@ -200,7 +200,7 @@ fn main() -> anyhow::Result<()> {
 
             section.notes.push(release_note);
 
-            let output = serialize_changelog(&changelog, &map.into_changelog_ser_options());
+            let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
             let mut file = File::options().truncate(true).write(true).open(&path)?;
             file.write_all(output.as_bytes())?;
         }
@@ -225,7 +225,7 @@ fn main() -> anyhow::Result<()> {
             }
 
             if format {
-                let options = get_map(map)?.into_changelog_ser_options();
+                let options = get_config(map)?.into_changelog_ser_options();
 
                 let output = serialize_changelog(&changelog, &options);
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
