@@ -21,7 +21,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           cargo install --git https://github.com/wiiznokes/changelog-generator.git --branch master --locked changelog-generator
           changelog-gen generate --owner wiiznokes --repo changelog
