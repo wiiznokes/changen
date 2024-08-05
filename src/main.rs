@@ -48,9 +48,10 @@ enum Commands {
         exclude_unidentified: bool,
         #[arg(long, help = "We use the Github api to map commit sha to PRs.", default_value_t = GitProvider::Github)]
         provider: GitProvider,
-        #[arg(long, help = "Owner of the repo. Needed for Github integration.")]
-        owner: Option<String>,
-        #[arg(long, help = "Repo name. Needed for Github integration.")]
+        #[arg(
+            long,
+            help = "Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
+        )]
         repo: Option<String>,
         #[arg(long, help = "Omit the PR link from the output.")]
         omit_pr_link: bool,
@@ -162,7 +163,6 @@ fn main() -> anyhow::Result<()> {
             parsing,
             exclude_unidentified,
             provider,
-            owner,
             repo,
             omit_pr_link,
             omit_thanks,
@@ -180,7 +180,6 @@ fn main() -> anyhow::Result<()> {
                 &parsing,
                 exclude_unidentified,
                 &provider,
-                &owner,
                 &repo,
                 omit_pr_link,
                 omit_thanks,

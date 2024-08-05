@@ -36,7 +36,6 @@ pub fn get_release_note(
     parsing: &CommitMessageParsing,
     exclude_unidentified: bool,
     provider: &GitProvider,
-    owner: &Option<String>,
     repo: &Option<String>,
     omit_pr_link: bool,
     omit_thanks: bool,
@@ -103,10 +102,13 @@ pub fn get_release_note(
     } else {
         match provider {
             GitProvider::Github => {
-                // todo: use GITHUB_REPOSITORY env variable
+                let repo = match repo {
+                    Some(repo) => Some(repo.to_owned()),
+                    None => std::env::var("GITHUB_REPOSITORY").ok(),
+                };
 
-                if let (Some(owner), Some(repo)) = (owner, repo) {
-                    match request_related_pr(owner, repo, &raw_commit.sha) {
+                if let Some(repo) = &repo {
+                    match request_related_pr(repo, &raw_commit.sha) {
                         Ok(related_pr) => Some(related_pr),
                         Err(e) => {
                             eprintln!("error while requesting pr link: {}", e);
@@ -115,7 +117,7 @@ pub fn get_release_note(
                     }
                 } else {
                     eprintln!("Can't get information on the PR without the owner and repo name.");
-                    eprintln!("This api is used to get information: https://api.github.com/repos/{{owner}}/{{repo}}/commits/{{sha}}/pulls");
+                    eprintln!("This api is used to get information: https://api.github.com/repos/{{repo}}/commits/{{sha}}/pulls");
                     None
                 }
             }
@@ -226,8 +228,8 @@ struct RelatedPr {
     pub author_link: String,
 }
 
-fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
-    let api = format!("https://api.github.com/repos/{owner}/{repo}/commits/{sha}/pulls");
+fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
+    let api = format!("https://api.github.com/repos/{repo}/commits/{sha}/pulls");
 
     let client = Client::new();
 
@@ -305,7 +307,7 @@ mod test {
 
     #[test]
     fn pr() {
-        let res = request_related_pr("wiiznokes", "fan-control", "74c8a3c").unwrap();
+        let res = request_related_pr("wiiznokes/fan-control", "74c8a3c").unwrap();
 
         dbg!(&res);
     }
