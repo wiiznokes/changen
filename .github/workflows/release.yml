@@ -35,4 +35,5 @@ jobs:
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: changelog
+          ref: refs/tags/${{ github.event.inputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
