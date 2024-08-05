@@ -22,7 +22,7 @@ jobs:
     steps:
       - run: |
           cargo install --git https://github.com/wiiznokes/changelog.git
-          changelog
+          changelog generate --owner wiiznokes --repo changelog
 
 
       - uses: stefanzweifel/git-auto-commit-action@v5

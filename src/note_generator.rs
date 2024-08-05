@@ -86,10 +86,8 @@ pub fn get_release_note(
                         }
                     }
                 } else {
-                    eprintln!(
-                        "We can't get information on the PR without the owner and repo name."
-                    );
-                    eprintln!("We use this api to get information: https://api.github.com/repos/{{owner}}/{{repo}}/commits/{{sha}}/pulls");
+                    eprintln!("Can't get information on the PR without the owner and repo name.");
+                    eprintln!("This api is used to get information: https://api.github.com/repos/{{owner}}/{{repo}}/commits/{{sha}}/pulls");
                     None
                 }
             }

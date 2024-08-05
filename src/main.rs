@@ -199,6 +199,10 @@ fn main() -> anyhow::Result<()> {
             };
 
             section.notes.push(release_note);
+
+            let output = serialize_changelog(&changelog, &map.into_changelog_ser_options());
+            let mut file = File::options().truncate(true).write(true).open(&path)?;
+            file.write_all(output.as_bytes())?;
         }
         #[allow(unused_variables)]
         Commands::Release {
