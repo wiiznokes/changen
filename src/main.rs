@@ -86,7 +86,7 @@ enum Commands {
         format: bool,
         #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
         map: Option<PathBuf>,
-        #[arg(long, hide = true, help = "Show the Abstract Syntax Tree.")]
+        #[arg(long, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
     },
     /// Show a specific release on stdout

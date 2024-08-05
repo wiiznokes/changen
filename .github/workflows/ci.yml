@@ -50,13 +50,13 @@ jobs:
       fail-fast: false
       matrix:
         # os: [ubuntu-latest, windows-latest]
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - run: rustup update stable
       - uses: taiki-e/install-action@just
       - uses: Swatinem/rust-cache@v2
-    
+
       - name: Run clippy
         run: cargo clippy --workspace --all-features

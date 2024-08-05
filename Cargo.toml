@@ -9,7 +9,7 @@ homepage = "https://github.com/wiiznokes/changelog/"
 repository = "https://github.com/wiiznokes/changelog.git"
 
 [package]
-name = "changelog"
+name = "changelog-gen"
 version = "0.1.0"
 keywords = ["changelog", "release", "tool", "release-note"]
 description = "Helper program to manage a changelog"
