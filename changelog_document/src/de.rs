@@ -59,19 +59,19 @@ fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
 
 fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     // todo: maybe drop this ?
-    let component = none_of(" \t\r`:\n").repeat(1..) - sym(':');
+    let scope = none_of(" \t\r`:\n").repeat(1..) - sym(':');
 
     let context_line = one_of(" \t") * none_of("\n").repeat(1..) - sym('\n');
 
     let context = context_line.repeat(0..);
 
-    let parser = spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..)
+    let parser = spaceline() * sym('-') * sym(' ') * scope.opt() + none_of("\n").repeat(1..)
         - sym('\n')
         + context;
 
-    parser.convert(|((component, note), context)| {
+    parser.convert(|((scope, note), context)| {
         let res = ReleaseSectionNote {
-            component: component.map(into_string),
+            scope: scope.map(into_string),
             message: into_string(note),
             context: context.into_iter().map(into_string).collect(),
         };

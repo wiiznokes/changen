@@ -41,7 +41,7 @@ impl Display for CommitMessageParsing {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MapMessageToSection(IndexMap<String, HashSet<String>>);
+pub struct MapMessageToSection(pub IndexMap<String, HashSet<String>>);
 
 impl Default for MapMessageToSection {
     fn default() -> Self {
@@ -52,11 +52,11 @@ impl Default for MapMessageToSection {
             )
         }
 
-        // todo:
+        // todo: add more
         let map = vec![
             map("Fixed", vec!["fix"]),
             map("Added", vec!["feat"]),
-            map("Changed", vec!["improve", "impr"]),
+            map("Changed", vec!["improve", "impr", "chore "]),
         ];
 
         Self(IndexMap::from_iter(map))
@@ -68,6 +68,43 @@ impl MapMessageToSection {
         changelog::ser::Options {
             section_order: self.0.into_iter().map(|(section, _)| section).collect(),
         }
+    }
+
+    pub fn map_section(&self, section: &str) -> Option<String> {
+        let section_normalized = section.to_lowercase();
+
+        for (section, needles) in &self.0 {
+            for needle in needles {
+                let needle_normalized = needle.to_lowercase();
+
+                if section_normalized == needle_normalized {
+                    return Some(section.to_owned());
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Best effort recognition
+    pub fn try_find_section(&self, (message, desc): (&str, &str)) -> Option<String> {
+        let message_normalized = message.to_lowercase();
+        let desc_normalized = desc.to_lowercase();
+
+        for (section, needles) in &self.0 {
+            for needle in needles {
+                let needle_normalized = needle.to_lowercase();
+
+                if message_normalized.contains(&needle_normalized) {
+                    return Some(section.to_owned());
+                }
+                if desc_normalized.contains(&needle_normalized) {
+                    return Some(section.to_owned());
+                }
+            }
+        }
+
+        None
     }
 }
 

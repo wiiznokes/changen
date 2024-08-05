@@ -1,10 +1,127 @@
 use std::{io::Read, process::Command};
 
-use anyhow::{anyhow, bail, Ok};
+use anyhow::{anyhow, bail, Result};
+use changelog::ReleaseSectionNote;
+use commit_parser::{parse_commit, Commit};
 use reqwest::{blocking::Client, header::USER_AGENT};
 use serde_json::Value;
 
-fn last_commit_title() -> String {
+use crate::config::{CommitMessageParsing, GitProvider, MapMessageToSection};
+
+#[allow(clippy::too_many_arguments)]
+pub fn get_release_note(
+    parsing: &CommitMessageParsing,
+    exclude_unidentified: bool,
+    provider: &GitProvider,
+    owner: &Option<String>,
+    repo: &Option<String>,
+    omit_pr_link: bool,
+    omit_thanks: bool,
+    map: &MapMessageToSection,
+) -> Result<(String, ReleaseSectionNote)> {
+    let raw_commit_message = last_commit_message();
+    let raw_commit_description = last_commit_description();
+    let sha = last_commit_sha();
+
+    let mut commit = match parse_commit(&raw_commit_message) {
+        Ok(mut commit) => {
+            let section = match map.map_section(&commit.section) {
+                Some(section) => section,
+                None => {
+                    if *parsing == CommitMessageParsing::Strict {
+                        bail!("No commit type found for this: {}", commit.section);
+                    }
+
+                    if let Some(section) =
+                        map.try_find_section((&raw_commit_message, &raw_commit_description))
+                    {
+                        section
+                    } else {
+                        if exclude_unidentified {
+                            bail!("Unidentified commit type");
+                        }
+                        "Unidentified".into()
+                    }
+                }
+            };
+
+            commit.section = section;
+            commit
+        }
+        Err(e) => {
+            if *parsing == CommitMessageParsing::Strict {
+                bail!("invalid commit syntax: {}", e);
+            }
+
+            let section = if let Some(section) =
+                map.try_find_section((&raw_commit_message, &raw_commit_description))
+            {
+                section
+            } else {
+                if exclude_unidentified {
+                    bail!("Unidentified commit type");
+                }
+                "Unidentified".into()
+            };
+
+            Commit {
+                section,
+                scope: None,
+                message: raw_commit_message,
+            }
+        }
+    };
+
+    let related_pr = if omit_pr_link && omit_thanks {
+        None
+    } else {
+        match provider {
+            GitProvider::Github => {
+                if let (Some(owner), Some(repo)) = (owner, repo) {
+                    match request_related_pr(owner, repo, &sha) {
+                        Ok(related_pr) => Some(related_pr),
+                        Err(e) => {
+                            eprintln!("error while requesting pr link: {}", e);
+                            None
+                        }
+                    }
+                } else {
+                    eprintln!(
+                        "We can't get information on the PR without the owner and repo name."
+                    );
+                    eprintln!("We use this api to get information: https://api.github.com/repos/{{owner}}/{{repo}}/commits/{{sha}}/pulls");
+                    None
+                }
+            }
+            GitProvider::Other => None,
+        }
+    };
+
+    if let Some(related_pr) = &related_pr {
+        if !omit_pr_link {
+            commit
+                .message
+                .push_str(&format!(" in [{}]({})", related_pr.pr_id, related_pr.url));
+        }
+
+        if !omit_thanks {
+            commit
+                .message
+                .push_str(&format!(" by @{}", related_pr.author));
+        }
+    };
+
+    Ok((
+        commit.section,
+        ReleaseSectionNote {
+            scope: commit.scope,
+            message: commit.message,
+            context: vec![],
+        },
+    ))
+}
+
+fn last_commit_message() -> String {
     let output = Command::new("git")
         .args(["log", "-1", "--pretty=%s"])
         .output()
@@ -13,7 +130,7 @@ fn last_commit_title() -> String {
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-fn last_commit_message() -> String {
+fn last_commit_description() -> String {
     let output = Command::new("git")
         .args(["log", "-1", "--pretty=%b"])
         .output()
@@ -34,6 +151,7 @@ fn last_commit_sha() -> String {
 #[derive(Debug, Clone)]
 struct RelatedPr {
     pub url: String,
+    pub pr_id: String,
     pub author: String,
 }
 
@@ -62,6 +180,13 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
             .unwrap()
             .to_string();
 
+        let pr_id = obj
+            .get("number")
+            .ok_or(anyhow!("no number found"))?
+            .as_u64()
+            .unwrap()
+            .to_string();
+
         let author = obj
             .get("user")
             .ok_or(anyhow!("no user found"))?
@@ -71,7 +196,7 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
             .unwrap()
             .to_string();
 
-        Ok(RelatedPr { url, author })
+        Ok(RelatedPr { url, author, pr_id })
     } else {
         bail!(format!("GitHub API returned status: {}", response.status()))
     }
@@ -80,17 +205,17 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
 #[cfg(test)]
 mod test {
 
-    use crate::note_generator::{last_commit_message, last_commit_sha};
+    use crate::note_generator::{last_commit_description, last_commit_sha};
 
-    use super::{last_commit_title, request_related_pr};
+    use super::{last_commit_message, request_related_pr};
 
     #[test]
     fn test() {
-        let res = last_commit_title();
+        let res = last_commit_message();
 
         dbg!(&res);
 
-        let res = last_commit_message();
+        let res = last_commit_description();
 
         dbg!(&res);
 

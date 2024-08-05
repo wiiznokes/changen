@@ -47,12 +47,12 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                             title: section,
                             notes: vec![
                                 ReleaseSectionNote {
-                                    component: Some("data".into()),
+                                    scope: Some("data".into()),
                                     message: "the program".into(),
                                     context: vec!["- fix la base".into(), "49-3 hihi".into()],
                                 },
                                 ReleaseSectionNote {
-                                    component: Some("ui".into()),
+                                    scope: Some("ui".into()),
                                     message: "the widget".into(),
                                     context: vec![],
                                 },

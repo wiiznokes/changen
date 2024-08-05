@@ -1,6 +1,3 @@
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use core::str;
 use std::{
     fs::{File, OpenOptions},
@@ -12,10 +9,11 @@ use anyhow::{bail, Ok};
 use changelog::{
     de::parse_changelog,
     ser::{serialize_changelog, Options},
-    ChangeLog,
+    ChangeLog, ReleaseSection,
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, GitProvider, MapMessageToSection};
+use note_generator::get_release_note;
 
 mod config;
 mod note_generator;
@@ -108,8 +106,6 @@ enum Commands {
         n: usize,
         #[arg(short, long, help = "Specific version.")]
         version: Option<String>,
-        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
-        map: Option<PathBuf>,
     },
     /// Create a new changelog file with an accepted syntax
     New {
@@ -167,7 +163,43 @@ fn main() -> anyhow::Result<()> {
             repo,
             omit_pr_link,
             omit_thanks,
-        } => todo!(),
+        } => {
+            let path = get_changelog_path(file);
+            let input = read_file(&path)?;
+            let mut changelog = parse_changelog(&input)?;
+
+            let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
+
+            let map = get_map(map)?;
+
+            let (section, release_note) = get_release_note(
+                &parsing,
+                exclude_unidentified,
+                &provider,
+                &owner,
+                &repo,
+                omit_pr_link,
+                omit_thanks,
+                &map,
+            )?;
+
+            let section = if let Some(section) = unreleased.note_sections.get_mut(&section) {
+                section
+            } else {
+                let release_section = ReleaseSection {
+                    title: section.clone(),
+                    notes: vec![],
+                };
+
+                unreleased
+                    .note_sections
+                    .insert(section.clone(), release_section);
+                unreleased.note_sections.get_mut(&section).unwrap()
+            };
+
+            section.notes.push(release_note);
+        }
+        #[allow(unused_variables)]
         Commands::Release {
             file,
             version,
@@ -197,12 +229,7 @@ fn main() -> anyhow::Result<()> {
 
             println!("Changelog parser with success!");
         }
-        Commands::Show {
-            file,
-            n,
-            version,
-            map,
-        } => {
+        Commands::Show { file, n, version } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
@@ -215,10 +242,8 @@ fn main() -> anyhow::Result<()> {
 
             match release {
                 Some(release) => {
-                    let options = get_map(map)?.into_changelog_ser_options();
-
                     let mut output = String::new();
-                    changelog::ser::serialize_release(&mut output, release, &options);
+                    changelog::ser::serialize_release(&mut output, release, &Options::default());
                     println!("{}", output);
                 }
                 None => {

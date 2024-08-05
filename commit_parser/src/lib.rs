@@ -8,7 +8,15 @@ pub struct Commit {
     pub message: String,
 }
 
-pub fn commit<'a>() -> Parser<'a, char, Commit> {
+pub fn parse_commit(input: &str) -> anyhow::Result<Commit> {
+    let input = input.chars().collect::<Vec<_>>();
+    let parser = commit_parser();
+    let commit = parser.parse(&input)?;
+
+    Ok(commit)
+}
+
+fn commit_parser<'a>() -> Parser<'a, char, Commit> {
     let scope = space() * sym('(') * none_of("()").repeat(1..) - sym(')');
 
     let parser = none_of(" :()").repeat(1..) + scope.opt() - space() * sym(':') * space()
@@ -52,7 +60,7 @@ mod test {
     fn test() {
         let m = map("fix(hello): hihi");
         assert_eq!(
-            commit().parse(&m),
+            commit_parser().parse(&m),
             Ok(Commit {
                 section: String::from("fix"),
                 scope: Some(String::from("hello")),
@@ -61,14 +69,14 @@ mod test {
         );
 
         let m = map("fix(hello: hihi");
-        commit().parse(&m).unwrap_err();
+        commit_parser().parse(&m).unwrap_err();
 
         let m = map("feat");
-        commit().parse(&m).unwrap_err();
+        commit_parser().parse(&m).unwrap_err();
 
         let m = map("improve (ignore) : hihi");
         assert_eq!(
-            commit().parse(&m),
+            commit_parser().parse(&m),
             Ok(Commit {
                 section: String::from("improve"),
                 scope: Some(String::from("ignore")),

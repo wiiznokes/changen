@@ -9,4 +9,4 @@ For its well maintained changelog https://github.com/iced-rs/iced/blob/master/CH
 
 # gitoxide
 
-For its already existing https://github.com/Byron/cargo-smart-release
+For its already existing https://github.com/Byron/cargo-smart-release (https://github.com/Byron/gitoxide/blob/main/CHANGELOG.md)

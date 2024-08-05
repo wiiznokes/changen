@@ -65,8 +65,8 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &Options) {
         s.push_str(&format!("\n### {}\n\n", sections.title));
 
         for note in &sections.notes {
-            let note_title = if let Some(component) = &note.component {
-                format!("- {}: {}\n", component, note.message)
+            let note_title = if let Some(scope) = &note.scope {
+                format!("- {}: {}\n", scope, note.message)
             } else {
                 format!("- {}\n", note.message)
             };
