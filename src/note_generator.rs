@@ -103,6 +103,9 @@ pub fn get_release_note(
     } else {
         match provider {
             GitProvider::Github => {
+
+                // todo: use GITHUB_REPOSITORY env variable
+
                 if let (Some(owner), Some(repo)) = (owner, repo) {
                     match request_related_pr(owner, repo, &raw_commit.sha) {
                         Ok(related_pr) => Some(related_pr),

@@ -25,6 +25,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - run: |
           cargo run -- generate --owner wiiznokes --repo changelog
           cat CHANGELOG.md
