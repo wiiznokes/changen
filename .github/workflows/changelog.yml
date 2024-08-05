@@ -21,8 +21,9 @@ jobs:
 
     steps:
       - run: |
-          cargo install --git https://github.com/wiiznokes/changelog.git
+          cargo install --git https://github.com/wiiznokes/changelog.git --branch dev changelog
           changelog generate --owner wiiznokes --repo changelog
 
-
       - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(changelog): automatic changelog generation (skip changelog)"
