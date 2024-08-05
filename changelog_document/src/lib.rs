@@ -3,9 +3,10 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 
 mod parser;
-pub use parser::changelog;
+pub use parser::parse_changelog;
 
 mod serializer;
+pub use serializer::serialize_changelog;
 
 #[cfg(test)]
 mod test;
@@ -25,14 +26,14 @@ pub struct ReleaseSection {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReleaseSectionNote {
     pub component: Option<String>,
-    pub note: String,
+    pub message: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Release {
     pub title: ReleaseTitle,
     pub header: Option<String>,
-    pub notes: HashMap<String, ReleaseSection>,
+    pub note_sections: HashMap<String, ReleaseSection>,
     pub footer: Option<String>,
 }
 
@@ -52,4 +53,36 @@ pub struct ChangeLog {
     pub header: Option<String>,
     pub releases: IndexMap<String, Release>,
     pub footer_links: FooterLinks,
+}
+
+impl Default for ChangeLog {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ChangeLog {
+    pub fn new() -> Self {
+        let mut releases = IndexMap::new();
+
+        let version = String::from("Unreleased");
+        releases.insert(
+            version.clone(),
+            Release {
+                title: ReleaseTitle {
+                    version,
+                    title: None,
+                },
+                header: None,
+                note_sections: HashMap::new(),
+                footer: None,
+            },
+        );
+
+        ChangeLog {
+            header: None,
+            releases,
+            footer_links: FooterLinks { links: Vec::new() },
+        }
+    }
 }

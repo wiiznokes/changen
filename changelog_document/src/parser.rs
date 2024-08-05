@@ -2,7 +2,15 @@ use super::*;
 use pom::parser::*;
 use utils::*;
 
-pub fn changelog<'a>() -> Parser<'a, char, ChangeLog> {
+pub fn parse_changelog(input: &str) -> anyhow::Result<ChangeLog> {
+    let input = input.chars().collect::<Vec<_>>();
+    let parser = changelog_parser();
+    let changelog = parser.parse(&input)?;
+
+    Ok(changelog)
+}
+
+fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
     let header = (!call(release) * any()).repeat(0..).convert(|header| {
         let header = into_string(header);
 
@@ -59,7 +67,7 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     parser.convert(|(component, note)| {
         let res = ReleaseSectionNote {
             component: component.map(into_string),
-            note: into_string(note),
+            message: into_string(note),
         };
 
         Ok::<ReleaseSectionNote, ()>(res)
@@ -118,7 +126,7 @@ fn release<'a>() -> Parser<'a, char, Release> {
         let res = Release {
             title,
             header,
-            notes,
+            note_sections: notes,
             footer,
         };
 
