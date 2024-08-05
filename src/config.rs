@@ -63,6 +63,14 @@ impl Default for MapMessageToSection {
     }
 }
 
+impl MapMessageToSection {
+    pub fn into_changelog_ser_options(self) -> changelog::ser::Options {
+        changelog::ser::Options {
+            section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
 

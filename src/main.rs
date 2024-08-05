@@ -9,9 +9,13 @@ use std::{
 };
 
 use anyhow::{bail, Ok};
-use changelog::{de::parse_changelog, ser::serialize_changelog, ChangeLog};
+use changelog::{
+    de::parse_changelog,
+    ser::{serialize_changelog, Options},
+    ChangeLog,
+};
 use clap::{Parser, Subcommand, ValueHint};
-use config::{CommitMessageParsing, GitProvider};
+use config::{CommitMessageParsing, GitProvider, MapMessageToSection};
 
 mod config;
 mod note_generator;
@@ -36,7 +40,7 @@ enum Commands {
             short_alias = 'o',
             alias = "output",
         )]
-        file: Option<String>,
+        file: Option<PathBuf>,
         #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
         map: Option<PathBuf>,
         #[arg(long, help = "Parsing of the commit message.", default_value_t = CommitMessageParsing::Smart)]
@@ -63,7 +67,7 @@ enum Commands {
             default_value = "CHANGELOG.md",
             value_hint = ValueHint::FilePath,
         )]
-        file: Option<String>,
+        file: Option<PathBuf>,
         #[arg(short, long, help = "Version number for the release")]
         version: String,
         #[arg(long, help = "Ommit the commit history between releases.")]
@@ -78,9 +82,11 @@ enum Commands {
             default_value = "CHANGELOG.md",
             value_hint = ValueHint::FilePath,
         )]
-        file: Option<String>,
+        file: Option<PathBuf>,
         #[arg(long, alias = "fmt", help = "Format the changelog.")]
         format: bool,
+        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
+        map: Option<PathBuf>,
         #[arg(long, hide = true, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
     },
@@ -93,7 +99,7 @@ enum Commands {
             default_value = "CHANGELOG.md",
             value_hint = ValueHint::FilePath,
         )]
-        file: Option<String>,
+        file: Option<PathBuf>,
         #[arg(
             short,
             help = "0 being unreleased, 1 is the last release",
@@ -102,6 +108,8 @@ enum Commands {
         n: usize,
         #[arg(short, long, help = "Specific version.")]
         version: Option<String>,
+        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
+        map: Option<PathBuf>,
     },
     /// Create a new changelog file with an accepted syntax
     New {
@@ -112,17 +120,14 @@ enum Commands {
             default_value = "CHANGELOG.md",
             value_hint = ValueHint::FilePath,
         )]
-        path: Option<String>,
+        path: Option<PathBuf>,
         #[arg(short, long, help = "Override of existing file.")]
         force: bool,
     },
 }
 
-fn get_changelog_path(path: Option<String>) -> PathBuf {
-    match path {
-        Some(path) => PathBuf::from(path),
-        None => PathBuf::from("CHANGELOG.md"),
-    }
+fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
+    path.unwrap_or(PathBuf::from("CHANGELOG.md"))
 }
 
 fn read_file(path: &Path) -> anyhow::Result<String> {
@@ -130,6 +135,22 @@ fn read_file(path: &Path) -> anyhow::Result<String> {
     let mut input = String::new();
     file.read_to_string(&mut input)?;
     Ok(input)
+}
+
+fn get_map(path: Option<PathBuf>) -> anyhow::Result<MapMessageToSection> {
+    match path {
+        Some(path) => {
+            let mut file = File::open(&path)?;
+
+            let mut content = Vec::new();
+
+            file.read_to_end(&mut content)?;
+
+            let map = serde_json::de::from_slice(&content)?;
+            Ok(map)
+        }
+        None => Ok(MapMessageToSection::default()),
+    }
 }
 
 fn main() -> anyhow::Result<()> {
@@ -152,7 +173,12 @@ fn main() -> anyhow::Result<()> {
             version,
             omit_diff,
         } => todo!(),
-        Commands::Validate { file, ast, format } => {
+        Commands::Validate {
+            file,
+            ast,
+            format,
+            map,
+        } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
@@ -162,14 +188,21 @@ fn main() -> anyhow::Result<()> {
             }
 
             if format {
-                let output = serialize_changelog(&changelog);
+                let options = get_map(map)?.into_changelog_ser_options();
+
+                let output = serialize_changelog(&changelog, &options);
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
                 file.write_all(output.as_bytes())?;
             }
 
             println!("Changelog parser with success!");
         }
-        Commands::Show { file, n, version } => {
+        Commands::Show {
+            file,
+            n,
+            version,
+            map,
+        } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
@@ -182,8 +215,10 @@ fn main() -> anyhow::Result<()> {
 
             match release {
                 Some(release) => {
+                    let options = get_map(map)?.into_changelog_ser_options();
+
                     let mut output = String::new();
-                    changelog::ser::serialize_release(&mut output, release);
+                    changelog::ser::serialize_release(&mut output, release, &options);
                     println!("{}", output);
                 }
                 None => {
@@ -200,7 +235,7 @@ fn main() -> anyhow::Result<()> {
 
             let changelog = ChangeLog::new();
 
-            let output = serialize_changelog(&changelog);
+            let output = serialize_changelog(&changelog, &Options::default());
 
             let mut file = OpenOptions::new()
                 .create(true)
