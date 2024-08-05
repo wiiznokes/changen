@@ -42,13 +42,17 @@ fn ser_release(s: &mut String, release: &Release) {
         s.push_str(&format!("\n### {}\n\n", sections.title));
 
         for note in &sections.notes {
-            let note = if let Some(component) = &note.component {
+            let note_title = if let Some(component) = &note.component {
                 format!("- {}: {}\n", component, note.message)
             } else {
                 format!("- {}\n", note.message)
             };
 
-            s.push_str(&note);
+            s.push_str(&note_title);
+
+            for context in &note.context {
+                s.push_str(&format!("  {}\n", context));
+            }
         }
     }
 

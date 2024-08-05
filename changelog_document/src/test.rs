@@ -5,20 +5,22 @@ use parser::parse_changelog;
 use crate::*;
 
 #[test]
-fn changelog2() {
-    let mut file = File::open("../tests/changelogs/CHANGELOG2.md").unwrap();
-
+fn test_file() {
+    let mut file = File::open("../tests/changelogs/CHANGELOG3.md").unwrap();
     let mut input = String::new();
-
     file.read_to_string(&mut input).unwrap();
+    let changelog = parse_changelog(&input).unwrap();
+    dbg!(&changelog);
+}
 
+#[test]
+fn perf() {
+    let mut file = File::open("../tests/changelogs/CHANGELOG2.md").unwrap();
+    let mut input = String::new();
+    file.read_to_string(&mut input).unwrap();
     let now = std::time::Instant::now();
-
-    let _res = parse_changelog(&input).unwrap();
-
-    println!("{:?}", now.elapsed())
-
-    // dbg!(&res);
+    let _ = parse_changelog(&input).unwrap();
+    println!("{:?}", now.elapsed());
 }
 
 pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
@@ -47,10 +49,12 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                                 ReleaseSectionNote {
                                     component: Some("data".into()),
                                     message: "the program".into(),
+                                    context: vec!["- fix la base".into(), "49-3 hihi".into()],
                                 },
                                 ReleaseSectionNote {
                                     component: Some("ui".into()),
                                     message: "the widget".into(),
+                                    context: vec![],
                                 },
                             ],
                         },

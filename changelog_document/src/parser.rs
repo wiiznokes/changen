@@ -61,13 +61,22 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     // todo: maybe drop this ?
     let component = none_of(" \t\r`:\n").repeat(1..) - sym(':');
 
-    let parser =
-        spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..) - sym('\n');
+    let context_line = one_of(" \t") * none_of("\n").repeat(1..) - sym('\n');
 
-    parser.convert(|(component, note)| {
+    let context = context_line.repeat(0..);
+
+    // non \n and != ' '
+    // let context = (!(sym('\n') * none_of(" \t")) * any()).repeat(0..);
+
+    let parser = spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..)
+        - sym('\n')
+        + context;
+
+    parser.convert(|((component, note), context)| {
         let res = ReleaseSectionNote {
             component: component.map(into_string),
             message: into_string(note),
+            context: context.into_iter().map(into_string).collect(),
         };
 
         Ok::<ReleaseSectionNote, ()>(res)

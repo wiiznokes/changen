@@ -10,5 +10,7 @@ All notable changes
 ### Added
 
 - First release! :tada:
+	hello
+	bisous
 - Windows + Linux support
 - UI

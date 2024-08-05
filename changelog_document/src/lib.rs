@@ -27,6 +27,7 @@ pub struct ReleaseSection {
 pub struct ReleaseSectionNote {
     pub component: Option<String>,
     pub message: String,
+    pub context: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
