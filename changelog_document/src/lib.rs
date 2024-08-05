@@ -1,11 +1,8 @@
-
 use indexmap::IndexMap;
 
-mod parser;
-pub use parser::parse_changelog;
+pub mod de;
 
-mod serializer;
-pub use serializer::serialize_changelog;
+pub mod ser;
 
 #[cfg(test)]
 mod test;

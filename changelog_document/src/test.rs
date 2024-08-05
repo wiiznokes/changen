@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read, sync::LazyLock};
 
-use parser::parse_changelog;
+use de::parse_changelog;
 
 use crate::*;
 

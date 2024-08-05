@@ -3,12 +3,13 @@
 
 use core::str;
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
     io::{Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
-use changelog::{parse_changelog, serialize_changelog};
+use anyhow::{bail, Ok};
+use changelog::{de::parse_changelog, ser::serialize_changelog, ChangeLog};
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, GitProvider};
 
@@ -98,7 +99,9 @@ enum Commands {
             help = "0 being unreleased, 1 is the last release",
             default_value_t = 1
         )]
-        n: u32,
+        n: usize,
+        #[arg(short, long, help = "Specific version.")]
+        version: Option<String>,
     },
     /// Create a new changelog file with an accepted syntax
     New {
@@ -109,7 +112,9 @@ enum Commands {
             default_value = "CHANGELOG.md",
             value_hint = ValueHint::FilePath,
         )]
-        file: Option<String>,
+        path: Option<String>,
+        #[arg(short, long, help = "Override of existing file.")]
+        force: bool,
     },
 }
 
@@ -118,6 +123,13 @@ fn get_changelog_path(path: Option<String>) -> PathBuf {
         Some(path) => PathBuf::from(path),
         None => PathBuf::from("CHANGELOG.md"),
     }
+}
+
+fn read_file(path: &Path) -> anyhow::Result<String> {
+    let mut file = File::open(path)?;
+    let mut input = String::new();
+    file.read_to_string(&mut input)?;
+    Ok(input)
 }
 
 fn main() -> anyhow::Result<()> {
@@ -142,14 +154,7 @@ fn main() -> anyhow::Result<()> {
         } => todo!(),
         Commands::Validate { file, ast, format } => {
             let path = get_changelog_path(file);
-
-            let input = {
-                let mut file = File::open(&path)?;
-                let mut input = String::new();
-                file.read_to_string(&mut input)?;
-                input
-            };
-
+            let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
 
             if ast {
@@ -164,8 +169,49 @@ fn main() -> anyhow::Result<()> {
 
             println!("Changelog parser with success!");
         }
-        Commands::Show { file, n } => todo!(),
-        Commands::New { file } => todo!(),
+        Commands::Show { file, n, version } => {
+            let path = get_changelog_path(file);
+            let input = read_file(&path)?;
+            let changelog = parse_changelog(&input)?;
+
+            let release = if let Some(ref version) = version {
+                changelog.releases.get(version)
+            } else {
+                changelog.releases.get_index(n).map(|(_, r)| r)
+            };
+
+            match release {
+                Some(release) => {
+                    let mut output = String::new();
+                    changelog::ser::serialize_release(&mut output, release);
+                    println!("{}", output);
+                }
+                None => {
+                    bail!("No release found");
+                }
+            };
+        }
+        Commands::New { path, force } => {
+            let path = get_changelog_path(path);
+
+            if path.exists() && !force {
+                bail!("Path already exist. Delete it or use the --force option");
+            }
+
+            let changelog = ChangeLog::new();
+
+            let output = serialize_changelog(&changelog);
+
+            let mut file = OpenOptions::new()
+                .create(true)
+                .truncate(true)
+                .write(true)
+                .open(path)?;
+
+            file.write_all(output.as_bytes())?;
+
+            println!("Changelog successfully created!");
+        }
     }
 
     Ok(())

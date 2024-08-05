@@ -1,5 +1,7 @@
 use crate::{ChangeLog, Release};
 
+// todo: use io::Write
+
 pub fn serialize_changelog(changelog: &ChangeLog) -> String {
     let mut s = String::new();
 
@@ -9,7 +11,7 @@ pub fn serialize_changelog(changelog: &ChangeLog) -> String {
     }
 
     for release in changelog.releases.values() {
-        ser_release(&mut s, release);
+        serialize_release(&mut s, release);
     }
 
     if !changelog.footer_links.links.is_empty() {
@@ -25,7 +27,8 @@ pub fn serialize_changelog(changelog: &ChangeLog) -> String {
     s
 }
 
-fn ser_release(s: &mut String, release: &Release) {
+// todo: handle footer links
+pub fn serialize_release(s: &mut String, release: &Release) {
     let title = if let Some(title) = &release.title.title {
         format!("\n## [{}] - {}\n", release.title.version, title)
     } else {
