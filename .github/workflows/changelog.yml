@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          cargo install --git https://github.com/wiiznokes/changelog.git
+          changelog
+
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
