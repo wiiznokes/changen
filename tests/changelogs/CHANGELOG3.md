@@ -4,9 +4,6 @@ All notable changes
 
 ## [Unreleased]
 
-
-## [0.1.0] - 2024-01-06
-
 ### Added
 
 - First release! :tada:
@@ -14,3 +11,7 @@ All notable changes
 	bisous
 - Windows + Linux support
 - UI
+
+### Changed
+
+### Fixed

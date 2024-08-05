@@ -65,9 +65,6 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
 
     let context = context_line.repeat(0..);
 
-    // non \n and != ' '
-    // let context = (!(sym('\n') * none_of(" \t")) * any()).repeat(0..);
-
     let parser = spaceline() * sym('-') * sym(' ') * component.opt() + none_of("\n").repeat(1..)
         - sym('\n')
         + context;
