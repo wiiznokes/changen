@@ -15,11 +15,13 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
   generate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
+      - uses: actions/checkout@v3
       - run: |
           cargo install --git https://github.com/wiiznokes/changelog.git --branch dev --locked changelog
           changelog generate --owner wiiznokes --repo changelog

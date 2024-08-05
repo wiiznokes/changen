@@ -11,6 +11,7 @@ use crate::config::{CommitMessageParsing, GitProvider, MapMessageToSection};
 struct RawCommit {
     message: String,
     desc: String,
+    sha: String,
 }
 
 impl RawCommit {
@@ -18,12 +19,14 @@ impl RawCommit {
         Self {
             message: last_commit_message(),
             desc: last_commit_description(),
+            sha: last_commit_sha(),
         }
     }
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn get_release_note(
+    changelog_path: String,
     parsing: &CommitMessageParsing,
     exclude_unidentified: bool,
     provider: &GitProvider,
@@ -35,12 +38,10 @@ pub fn get_release_note(
 ) -> Result<Option<(String, ReleaseSectionNote)>> {
     let raw_commit = RawCommit::new();
 
-    if commit_should_be_ignored(&raw_commit) {
+    if commit_should_be_ignored(&raw_commit, &changelog_path) {
         println!("Ignoring this commit.");
         return Ok(None);
     }
-
-    let sha = last_commit_sha();
 
     let mut commit = match parse_commit(&raw_commit.message) {
         Ok(mut commit) => {
@@ -97,7 +98,7 @@ pub fn get_release_note(
         match provider {
             GitProvider::Github => {
                 if let (Some(owner), Some(repo)) = (owner, repo) {
-                    match request_related_pr(owner, repo, &sha) {
+                    match request_related_pr(owner, repo, &raw_commit.sha) {
                         Ok(related_pr) => Some(related_pr),
                         Err(e) => {
                             eprintln!("error while requesting pr link: {}", e);
@@ -140,9 +141,11 @@ pub fn get_release_note(
 }
 
 // todo: find a better way
-fn commit_should_be_ignored(raw: &RawCommit) -> bool {
+fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &String) -> bool {
     let pat = "(skip changelog)";
-    raw.message.contains(pat) || raw.desc.contains(pat)
+    commit_files_list(&raw.sha).contains(changelog_path)
+        || raw.message.contains(pat)
+        || raw.desc.contains(pat)
 }
 
 fn last_commit_message() -> String {
@@ -170,6 +173,20 @@ fn last_commit_sha() -> String {
         .expect("Failed to execute git command");
 
     String::from_utf8(output.stdout).unwrap().trim().into()
+}
+
+fn commit_files_list(sha: &str) -> Vec<String> {
+    let output = Command::new("git")
+        .args(["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout)
+        .unwrap()
+        .trim()
+        .lines()
+        .map(ToString::to_string)
+        .collect()
 }
 
 #[derive(Debug, Clone)]

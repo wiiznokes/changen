@@ -174,6 +174,7 @@ fn main() -> anyhow::Result<()> {
             let config = get_config(map)?;
 
             let Some((section, release_note)) = get_release_note(
+                path.to_string_lossy().to_string(),
                 &parsing,
                 exclude_unidentified,
                 &provider,
