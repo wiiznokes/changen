@@ -12,14 +12,18 @@ struct RawCommit {
     message: String,
     desc: String,
     sha: String,
+    list_files: Vec<String>,
 }
 
 impl RawCommit {
     fn new() -> Self {
+        let sha = last_commit_sha();
+
         Self {
             message: last_commit_message(),
             desc: last_commit_description(),
-            sha: last_commit_sha(),
+            list_files: commit_files_list(&sha),
+            sha,
         }
     }
 }
@@ -140,12 +144,30 @@ pub fn get_release_note(
     )))
 }
 
-// todo: find a better way
-fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &String) -> bool {
-    let pat = "(skip changelog)";
-    commit_files_list(&raw.sha).contains(changelog_path)
-        || raw.message.contains(pat)
-        || raw.desc.contains(pat)
+fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
+    if raw.list_files.iter().any(|path| path == changelog_path) {
+        return true;
+    }
+
+    let names = ["changelog", "log", "chglog", "notes"];
+
+    let match_pat = |pat: &str| raw.message.contains(pat) || raw.desc.contains(pat);
+
+    for n in names {
+        let patterns = [
+            format!("(skip {n})"),
+            format!("(ignore {n})"),
+            format!("!{n}"),
+        ];
+
+        for pattern in &patterns {
+            if match_pat(pattern) {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 fn last_commit_message() -> String {
@@ -255,9 +277,9 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
 #[cfg(test)]
 mod test {
 
-    use crate::note_generator::{last_commit_description, last_commit_sha};
+    use crate::note_generator::{last_commit_description, last_commit_sha, RawCommit};
 
-    use super::{last_commit_message, request_related_pr};
+    use super::{commit_should_be_ignored, last_commit_message, request_related_pr};
 
     #[test]
     fn test() {
@@ -279,5 +301,21 @@ mod test {
         let res = request_related_pr("wiiznokes", "fan-control", "74c8a3c").unwrap();
 
         dbg!(&res);
+    }
+
+    #[test]
+    fn ignore_commit() {
+        let mut raw = RawCommit {
+            message: "fix: something !log".into(),
+            desc: "".into(),
+            sha: "".into(),
+            list_files: vec![],
+        };
+
+        assert!(commit_should_be_ignored(&raw, ""));
+
+        raw.message = "fix: something log".into();
+
+        assert!(!commit_should_be_ignored(&raw, ""));
     }
 }

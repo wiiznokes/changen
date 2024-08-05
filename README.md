@@ -35,7 +35,12 @@ fix(project_a): Fix a nasty bug <=> commit-type(scope): commit-message
 
 #### Ignore commit
 
-Currently, you can write `(skip changelog)` anyhere in the commit message or desciption.
+Currently, you can write theses patterns anyhere in the commit message or desciption:
+
+- `(skip changelog)`
+- `(ignore changelog)`
+- `!changelog`
+- `!log`
 
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
@@ -44,7 +49,7 @@ Use with `changelog-gen generate --map path/to/map.json`
 
 #### Changelog custom path
 
-`changelog-gen generate --map `
+`changelog-gen generate --file path/to/CHANGELOG.md`
 
 #### Other
 

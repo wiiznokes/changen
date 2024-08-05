@@ -5,12 +5,12 @@ members = [".", "changelog_document"]
 authors = ["wiiznokes <wiiznokes2@gmail.com>"]
 edition = "2021"
 license = "GPL-3.0"
-homepage = "https://github.com/wiiznokes/changelog/"
-repository = "https://github.com/wiiznokes/changelog.git"
+homepage = "https://github.com/wiiznokes/changelog-generator"
+repository = "https://github.com/wiiznokes/changelog-generator.git"
 
 [package]
 name = "changelog-gen"
-version = "0.1.0"
+version = "0.1.1"
 keywords = ["changelog", "release", "tool", "release-note"]
 description = "Helper program to manage a changelog"
 categories = ["development-tools"]
