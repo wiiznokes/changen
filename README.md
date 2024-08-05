@@ -13,7 +13,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 - [The changelog file](./CHANGELOG.md) - see what the syntax have to offer
 - [Its commits history](https://github.com/wiiznokes/changelog-generator/commits/master/CHANGELOG.md)
-- [The Github workflow](./example/changelog.yml)
+- [The Github workflow](./res/changelog.yml)
 
 ## Getting started
 
@@ -44,7 +44,7 @@ Currently, you can write theses patterns anyhere in the commit message or descip
 
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
-The default map can be seen [here](./config_example/config.json). Note than the order will define in witch order the section will appears in the log file.
+The default map can be seen [here](./res/map_commit_type_to_section.json). Note than the order will define in witch order the section will appears in the log file.
 Use with `changelog-gen generate --map path/to/map.json`
 
 #### Changelog custom path

@@ -3,9 +3,16 @@ use std::{collections::HashSet, fmt::Display};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub map: MapMessageToSection,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        let map = include_str!("../res/map_commit_type_to_section.json");
+        serde_json::de::from_str(map).unwrap()
+    }
 }
 
 impl Config {
@@ -49,33 +56,6 @@ impl Display for CommitMessageParsing {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MapMessageToSection(pub IndexMap<String, HashSet<String>>);
-
-impl Default for MapMessageToSection {
-    fn default() -> Self {
-        fn map(section: &'static str, message: Vec<&'static str>) -> (String, HashSet<String>) {
-            (
-                section.to_string(),
-                HashSet::from_iter(message.into_iter().map(ToString::to_string)),
-            )
-        }
-
-        // note: you should run `cargo test -p changelog write_config` when modifying something here
-        let map = vec![
-            map("Fixed", vec!["fix", "bug", "issue"]),
-            map("Added", vec!["feat", "feature", "new", "add"]),
-            map(
-                "Changed",
-                vec!["improve", "impr", "chore", "refactor", "build"],
-            ),
-            map("Deprecated", vec!["deprecate", "obsolete"]),
-            map("Removed", vec!["remove", "delete", "rm"]),
-            map("Security", vec!["security", "vulnerability", "sec"]),
-            map("Documentation", vec!["docs", "doc", "documentation"]),
-        ];
-
-        Self(IndexMap::from_iter(map))
-    }
-}
 
 impl MapMessageToSection {
     pub fn into_changelog_ser_options(self) -> changelog::ser::Options {

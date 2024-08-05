@@ -9,7 +9,7 @@ use anyhow::{bail, Ok};
 use changelog::{
     de::parse_changelog,
     ser::{serialize_changelog, Options},
-    ChangeLog, ReleaseSection,
+    ReleaseSection,
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config, GitProvider};
@@ -18,6 +18,9 @@ use note_generator::get_release_note;
 mod commit_parser;
 mod config;
 mod note_generator;
+
+#[cfg(test)]
+mod test;
 
 #[derive(Parser)]
 #[command(name = "changelog", about = "Changelog generator", long_about = None)]
@@ -268,9 +271,7 @@ fn main() -> anyhow::Result<()> {
                 bail!("Path already exist. Delete it or use the --force option");
             }
 
-            let changelog = ChangeLog::new();
-
-            let output = serialize_changelog(&changelog, &Options::default());
+            let changelog = include_str!("../res/CHANGELOG_DEFAULT.md");
 
             let mut file = OpenOptions::new()
                 .create(true)
@@ -278,7 +279,7 @@ fn main() -> anyhow::Result<()> {
                 .write(true)
                 .open(path)?;
 
-            file.write_all(output.as_bytes())?;
+            file.write_all(changelog.as_bytes())?;
 
             println!("Changelog successfully created!");
         }
