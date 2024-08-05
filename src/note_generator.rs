@@ -8,6 +8,20 @@ use serde_json::Value;
 
 use crate::config::{CommitMessageParsing, GitProvider, MapMessageToSection};
 
+struct RawCommit {
+    message: String,
+    desc: String,
+}
+
+impl RawCommit {
+    fn new() -> Self {
+        Self {
+            message: last_commit_message(),
+            desc: last_commit_description(),
+        }
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn get_release_note(
     parsing: &CommitMessageParsing,
@@ -18,12 +32,17 @@ pub fn get_release_note(
     omit_pr_link: bool,
     omit_thanks: bool,
     map: &MapMessageToSection,
-) -> Result<(String, ReleaseSectionNote)> {
-    let raw_commit_message = last_commit_message();
-    let raw_commit_description = last_commit_description();
+) -> Result<Option<(String, ReleaseSectionNote)>> {
+    let raw_commit = RawCommit::new();
+
+    if commit_should_be_ignored(&raw_commit) {
+        println!("Ignoring this commit.");
+        return Ok(None);
+    }
+
     let sha = last_commit_sha();
 
-    let mut commit = match parse_commit(&raw_commit_message) {
+    let mut commit = match parse_commit(&raw_commit.message) {
         Ok(mut commit) => {
             let section = match map.map_section(&commit.section) {
                 Some(section) => section,
@@ -33,7 +52,7 @@ pub fn get_release_note(
                     }
 
                     if let Some(section) =
-                        map.try_find_section((&raw_commit_message, &raw_commit_description))
+                        map.try_find_section((&raw_commit.message, &raw_commit.desc))
                     {
                         section
                     } else {
@@ -54,7 +73,7 @@ pub fn get_release_note(
             }
 
             let section = if let Some(section) =
-                map.try_find_section((&raw_commit_message, &raw_commit_description))
+                map.try_find_section((&raw_commit.message, &raw_commit.desc))
             {
                 section
             } else {
@@ -67,7 +86,7 @@ pub fn get_release_note(
             Commit {
                 section,
                 scope: None,
-                message: raw_commit_message,
+                message: raw_commit.message,
             }
         }
     };
@@ -103,20 +122,27 @@ pub fn get_release_note(
         }
 
         if !omit_thanks {
-            commit
-                .message
-                .push_str(&format!(" by @{}", related_pr.author));
+            commit.message.push_str(&format!(
+                " by [@{}]({})",
+                related_pr.author, related_pr.author_link
+            ));
         }
     };
 
-    Ok((
+    Ok(Some((
         commit.section,
         ReleaseSectionNote {
             scope: commit.scope,
             message: commit.message,
             context: vec![],
         },
-    ))
+    )))
+}
+
+// todo: find a better way
+fn commit_should_be_ignored(raw: &RawCommit) -> bool {
+    let pat = "(skip changelog)";
+    raw.message.contains(pat) || raw.desc.contains(pat)
 }
 
 fn last_commit_message() -> String {
@@ -151,6 +177,7 @@ struct RelatedPr {
     pub url: String,
     pub pr_id: String,
     pub author: String,
+    pub author_link: String,
 }
 
 fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
@@ -182,8 +209,9 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
             .get("number")
             .ok_or(anyhow!("no number found"))?
             .as_u64()
-            .unwrap()
-            .to_string();
+            .unwrap();
+
+        let pr_id = format!("#{}", pr_id);
 
         let author = obj
             .get("user")
@@ -194,7 +222,14 @@ fn request_related_pr(owner: &str, repo: &str, sha: &str) -> anyhow::Result<Rela
             .unwrap()
             .to_string();
 
-        Ok(RelatedPr { url, author, pr_id })
+        let author_link = format!("https://github.com/{}", author);
+
+        Ok(RelatedPr {
+            url,
+            author,
+            pr_id,
+            author_link,
+        })
     } else {
         bail!(format!("GitHub API returned status: {}", response.status()))
     }

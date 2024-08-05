@@ -173,7 +173,7 @@ fn main() -> anyhow::Result<()> {
 
             let config = get_config(map)?;
 
-            let (section, release_note) = get_release_note(
+            let Some((section, release_note)) = get_release_note(
                 &parsing,
                 exclude_unidentified,
                 &provider,
@@ -182,7 +182,10 @@ fn main() -> anyhow::Result<()> {
                 omit_pr_link,
                 omit_thanks,
                 &config.map,
-            )?;
+            )?
+            else {
+                return Ok(());
+            };
 
             let section = if let Some(section) = unreleased.note_sections.get_mut(&section) {
                 section
