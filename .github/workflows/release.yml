@@ -20,8 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          git tag ${{ github.event.inputs.tag }}
-          git push origin --tags
+          git tag ${{ github.event.inputs.tag }} || true
+          git push origin --tags || true
       - uses: taiki-e/create-gh-release-action@v1
         with:
           ref: refs/tags/${{ github.event.inputs.tag }}
