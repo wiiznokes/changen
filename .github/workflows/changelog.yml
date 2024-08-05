@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          cargo install --git https://github.com/wiiznokes/changelog-generator.git --branch master --locked changelog-generator
+          cargo install --git https://github.com/wiiznokes/changelog-generator.git --branch master --locked changelog-gen
           changelog-gen generate --owner wiiznokes --repo changelog
 
       - uses: stefanzweifel/git-auto-commit-action@v5

@@ -1,15 +1,41 @@
 {
   "map": {
     "Fixed": [
-      "fix"
+      "fix",
+      "bug",
+      "issue"
     ],
     "Added": [
-      "feat"
+      "new",
+      "feat",
+      "add",
+      "feature"
     ],
     "Changed": [
-      "chore ",
+      "improve",
+      "build",
+      "chore",
       "impr",
-      "improve"
+      "refactor"
+    ],
+    "Deprecated": [
+      "obsolete",
+      "deprecate"
+    ],
+    "Removed": [
+      "delete",
+      "rm",
+      "remove"
+    ],
+    "Security": [
+      "sec",
+      "security",
+      "vulnerability"
+    ],
+    "Documentation": [
+      "documentation",
+      "docs",
+      "doc"
     ]
   }
 }

@@ -59,12 +59,18 @@ impl Default for MapMessageToSection {
             )
         }
 
-        // todo: add more
-        // note: you should run `cargo test -p changelog write_config`
+        // note: you should run `cargo test -p changelog write_config` when modifying something here
         let map = vec![
-            map("Fixed", vec!["fix"]),
-            map("Added", vec!["feat"]),
-            map("Changed", vec!["improve", "impr", "chore "]),
+            map("Fixed", vec!["fix", "bug", "issue"]),
+            map("Added", vec!["feat", "feature", "new", "add"]),
+            map(
+                "Changed",
+                vec!["improve", "impr", "chore", "refactor", "build"],
+            ),
+            map("Deprecated", vec!["deprecate", "obsolete"]),
+            map("Removed", vec!["remove", "delete", "rm"]),
+            map("Security", vec!["security", "vulnerability", "sec"]),
+            map("Documentation", vec!["docs", "doc", "documentation"]),
         ];
 
         Self(IndexMap::from_iter(map))
