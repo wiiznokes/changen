@@ -1,7 +1,6 @@
 name: Changelog Generation
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
@@ -15,7 +14,6 @@ concurrency:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   CARGO_TERM_COLOR: always
-  RUST_LOG: "warn,changelog_gen=debug"
 
 jobs:
   generate:
@@ -28,10 +26,11 @@ jobs:
         with:
           # needed to disable generation when the changelog was modified
           fetch-depth: 2
-      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: changelog-gen
 
-      - run: |
-          cargo run -- generate
+      - run: changelog-gen generate
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:

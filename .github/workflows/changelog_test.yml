@@ -1,10 +1,10 @@
-name: Changelog Generation
+name: Changelog Generation Test
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - dev
     paths-ignore:
       - "CHANGELOG.md"
 
@@ -31,8 +31,5 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - run: |
-          cargo run -- generate
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(changelog): automatic changelog generation (skip changelog)"
+          cargo run -- generate > CHANGELOG2.md
+          diff CHANGELOG.md CHANGELOG2.md

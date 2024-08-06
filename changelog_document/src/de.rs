@@ -58,7 +58,6 @@ fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
 }
 
 fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
-    // todo: maybe drop this ?
     let scope = none_of(" \t\r`:\n").repeat(1..) - sym(':');
 
     let context_line = one_of(" \t") * none_of("\n").repeat(1..) - sym('\n');

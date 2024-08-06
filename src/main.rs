@@ -1,23 +1,33 @@
 use core::str;
 use std::{
     fs::{File, OpenOptions},
-    io::{Read, Write},
+    io::{self, IsTerminal, Read, Write},
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Ok};
+use anyhow::bail;
 use changelog::{
     de::parse_changelog,
-    ser::{serialize_changelog, Options},
-    ChangeLog, ReleaseSection,
+    ser::{serialize_changelog, serialize_release, Options},
+    Release, ReleaseSection, ReleaseTitle,
 };
 use clap::{Parser, Subcommand, ValueHint};
-use config::{CommitMessageParsing, Config, GitProvider};
+use config::{CommitMessageParsing, Config};
+use git_helpers_function::{tags_list, try_get_repo};
+use git_provider::{DiffTags, GitProvider};
+use indexmap::IndexMap;
 use note_generator::get_release_note;
 
 mod commit_parser;
 mod config;
+mod git_helpers_function;
+mod git_provider;
 mod note_generator;
+
+#[cfg(test)]
+mod test;
+
+const UNRELEASED: &str = "Unreleased";
 
 #[derive(Parser)]
 #[command(name = "changelog", about = "Changelog generator", long_about = None)]
@@ -48,14 +58,17 @@ enum Commands {
         exclude_unidentified: bool,
         #[arg(long, help = "We use the Github api to map commit sha to PRs.", default_value_t = GitProvider::Github)]
         provider: GitProvider,
-        #[arg(long, help = "Owner of the repo. Needed for Github integration.")]
-        owner: Option<String>,
-        #[arg(long, help = "Repo name. Needed for Github integration.")]
+        #[arg(
+            long,
+            help = "Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
+        )]
         repo: Option<String>,
         #[arg(long, help = "Omit the PR link from the output.")]
         omit_pr_link: bool,
         #[arg(long, help = "Omit contributors' acknowledgements/mention.")]
         omit_thanks: bool,
+        #[arg(long, help = "Print the result on the standard output.")]
+        stdout: bool,
     },
     /// Generate a new release
     Release {
@@ -67,10 +80,23 @@ enum Commands {
             value_hint = ValueHint::FilePath,
         )]
         file: Option<PathBuf>,
-        #[arg(short, long, help = "Version number for the release")]
-        version: String,
-        #[arg(long, help = "Ommit the commit history between releases.")]
+        #[arg(
+            short,
+            long,
+            help = "Version number for the release. If ommited, use the last tag using \"git\" (ommiting the 'v' perfix)."
+        )]
+        version: Option<String>,
+        #[arg(long, help = "We use the Github link to produce the tags diff", default_value_t = GitProvider::Github)]
+        provider: GitProvider,
+        #[arg(
+            long,
+            help = "Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
+        )]
+        repo: Option<String>,
+        #[arg(long, help = "Omit the commit history between releases.")]
         omit_diff: bool,
+        #[arg(long, help = "Print the result on the standard output.")]
+        stdout: bool,
     },
     /// Validate a changelog syntax
     Validate {
@@ -88,6 +114,8 @@ enum Commands {
         map: Option<PathBuf>,
         #[arg(long, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
+        #[arg(long, help = "Print the result on the standard output.")]
+        stdout: bool,
     },
     /// Show a specific release on stdout
     Show {
@@ -128,10 +156,16 @@ fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
 }
 
 fn read_file(path: &Path) -> anyhow::Result<String> {
-    let mut file = File::open(path)?;
-    let mut input = String::new();
-    file.read_to_string(&mut input)?;
-    Ok(input)
+    let mut buf = String::new();
+
+    if !io::stdin().is_terminal() {
+        io::stdin().read_to_string(&mut buf)?;
+    } else {
+        let mut file = File::open(path)?;
+        file.read_to_string(&mut buf)?;
+    }
+
+    Ok(buf)
 }
 
 fn get_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
@@ -151,6 +185,8 @@ fn get_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
 }
 
 fn main() -> anyhow::Result<()> {
+    env_logger::init();
+
     let cli = Cli::parse();
 
     match cli.command {
@@ -160,10 +196,10 @@ fn main() -> anyhow::Result<()> {
             parsing,
             exclude_unidentified,
             provider,
-            owner,
             repo,
             omit_pr_link,
             omit_thanks,
+            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -178,7 +214,6 @@ fn main() -> anyhow::Result<()> {
                 &parsing,
                 exclude_unidentified,
                 &provider,
-                &owner,
                 &repo,
                 omit_pr_link,
                 omit_thanks,
@@ -205,20 +240,128 @@ fn main() -> anyhow::Result<()> {
             section.notes.push(release_note);
 
             let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
-            let mut file = File::options().truncate(true).write(true).open(&path)?;
-            file.write_all(output.as_bytes())?;
+
+            if stdout {
+                print!("{output}")
+            } else {
+                let mut file = File::options().truncate(true).write(true).open(&path)?;
+                file.write_all(output.as_bytes())?;
+            }
         }
         #[allow(unused_variables)]
         Commands::Release {
             file,
             version,
+            provider,
+            repo,
             omit_diff,
-        } => todo!(),
+            stdout,
+        } => {
+            let path = get_changelog_path(file);
+            let input = read_file(&path)?;
+            let mut changelog = parse_changelog(&input)?;
+
+            let version = match version {
+                Some(version) => {
+                    if version.starts_with('v') {
+                        bail!("Error: You shound't include the v prefix in the version.")
+                    }
+                    version
+                }
+                None => {
+                    if let Some(tag) = tags_list().pop_back() {
+                        match tag.strip_prefix('v') {
+                            Some(version) => version.to_owned(),
+                            None => tag,
+                        }
+                    } else {
+                        bail!("No version provided. Can't fall back to last tag because there is none.");
+                    }
+                }
+            };
+
+            if changelog.releases.get(&version).is_some() {
+                bail!("Version {} already exist", version);
+            };
+
+            let Some(mut prev_unreleased) = changelog.releases.shift_remove(UNRELEASED) else {
+                bail!("No Unreleased section found.")
+            };
+
+            prev_unreleased.title.version = version.clone();
+
+            if !omit_diff {
+                let link = if let Some(repo) = try_get_repo(repo) {
+                    let mut tags = tags_list();
+
+                    match tags.pop_back() {
+                        Some(current) => {
+                            let prev = tags.pop_back();
+
+                            let diff_tags = DiffTags { prev, current };
+
+                            match provider.diff_link(&repo, &diff_tags) {
+                                Ok(link) => Some(link),
+                                Err(e) => {
+                                    eprintln!("{e}");
+                                    None
+                                }
+                            }
+                        }
+                        None => {
+                            eprintln!("No tags defined. Can't produce the diff");
+                            None
+                        }
+                    }
+                } else {
+                    None
+                };
+
+                if let Some(link) = link {
+                    let line = format!("Full Changelog: {link}\n");
+
+                    match &mut prev_unreleased.footer {
+                        Some(footer) => {
+                            footer.push_str("\n\n");
+                            footer.push_str(&line);
+                        }
+                        None => {
+                            prev_unreleased.footer = Some(line);
+                        }
+                    }
+                    let footer = prev_unreleased.footer.clone().unwrap_or_default();
+                }
+            }
+
+            changelog.releases.insert(version, prev_unreleased);
+
+            let new_unreleased = Release {
+                title: ReleaseTitle {
+                    version: UNRELEASED.into(),
+                    title: None,
+                },
+                header: None,
+                note_sections: IndexMap::new(),
+                footer: None,
+            };
+
+            changelog.releases.insert(UNRELEASED.into(), new_unreleased);
+
+            let output = serialize_changelog(&changelog, &Options::default());
+
+            if stdout {
+                print!("{output}")
+            } else {
+                let mut file = File::options().truncate(true).write(true).open(&path)?;
+                file.write_all(output.as_bytes())?;
+            }
+        }
         Commands::Validate {
             file,
             ast,
             format,
             map,
+            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -232,11 +375,16 @@ fn main() -> anyhow::Result<()> {
                 let options = get_config(map)?.into_changelog_ser_options();
 
                 let output = serialize_changelog(&changelog, &options);
-                let mut file = File::options().truncate(true).write(true).open(&path)?;
-                file.write_all(output.as_bytes())?;
+
+                if stdout {
+                    print!("{output}")
+                } else {
+                    let mut file = File::options().truncate(true).write(true).open(&path)?;
+                    file.write_all(output.as_bytes())?;
+                }
             }
 
-            println!("Changelog parser with success!");
+            eprintln!("Changelog parser with success!");
         }
         Commands::Show { file, n, version } => {
             let path = get_changelog_path(file);
@@ -252,7 +400,7 @@ fn main() -> anyhow::Result<()> {
             match release {
                 Some(release) => {
                     let mut output = String::new();
-                    changelog::ser::serialize_release(&mut output, release, &Options::default());
+                    serialize_release(&mut output, release, &Options::default());
                     println!("{}", output);
                 }
                 None => {
@@ -267,9 +415,7 @@ fn main() -> anyhow::Result<()> {
                 bail!("Path already exist. Delete it or use the --force option");
             }
 
-            let changelog = ChangeLog::new();
-
-            let output = serialize_changelog(&changelog, &Options::default());
+            let changelog = include_str!("../res/CHANGELOG_DEFAULT.md");
 
             let mut file = OpenOptions::new()
                 .create(true)
@@ -277,7 +423,7 @@ fn main() -> anyhow::Result<()> {
                 .write(true)
                 .open(path)?;
 
-            file.write_all(output.as_bytes())?;
+            file.write_all(changelog.as_bytes())?;
 
             println!("Changelog successfully created!");
         }

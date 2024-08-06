@@ -2,11 +2,6 @@ set windows-powershell := true
 
 pull: fmt prettier fix test
 
-
-###################  Packaging
-
-# todo: cargo-binstall
-
 ###################  Test
 
 test:
