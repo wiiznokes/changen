@@ -201,6 +201,7 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
 
+            debug!("is terminal: {}", io::stdin().is_terminal());
             debug!("path: {}", path.display());
             debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
