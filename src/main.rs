@@ -67,8 +67,6 @@ enum Commands {
         omit_pr_link: bool,
         #[arg(long, help = "Omit contributors' acknowledgements/mention.")]
         omit_thanks: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Generate a new release
     Release {
@@ -95,8 +93,6 @@ enum Commands {
         repo: Option<String>,
         #[arg(long, help = "Omit the commit history between releases.")]
         omit_diff: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Validate a changelog syntax
     Validate {
@@ -114,8 +110,6 @@ enum Commands {
         map: Option<PathBuf>,
         #[arg(long, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Show a specific release on stdout
     Show {
@@ -199,7 +193,6 @@ fn main() -> anyhow::Result<()> {
             repo,
             omit_pr_link,
             omit_thanks,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -241,7 +234,7 @@ fn main() -> anyhow::Result<()> {
 
             let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
 
-            if stdout {
+            if !io::stdout().is_terminal() {
                 print!("{output}")
             } else {
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
@@ -255,7 +248,6 @@ fn main() -> anyhow::Result<()> {
             provider,
             repo,
             omit_diff,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -349,7 +341,7 @@ fn main() -> anyhow::Result<()> {
 
             let output = serialize_changelog(&changelog, &Options::default());
 
-            if stdout {
+            if !io::stdout().is_terminal() {
                 print!("{output}")
             } else {
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
@@ -361,7 +353,6 @@ fn main() -> anyhow::Result<()> {
             ast,
             format,
             map,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -376,7 +367,7 @@ fn main() -> anyhow::Result<()> {
 
                 let output = serialize_changelog(&changelog, &options);
 
-                if stdout {
+                if !io::stdout().is_terminal() {
                     print!("{output}")
                 } else {
                     let mut file = File::options().truncate(true).write(true).open(&path)?;
