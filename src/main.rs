@@ -155,9 +155,18 @@ fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
 fn read_file(path: &Path) -> anyhow::Result<String> {
     let mut buf = String::new();
 
-    if !io::stdin().is_terminal() {
+    let mut from_stdin = !io::stdin().is_terminal();
+
+    if from_stdin {
         io::stdin().read_to_string(&mut buf)?;
-    } else {
+
+        if buf.is_empty() {
+            info!("Readed stdin because is was not a terminal, but it is empty. Fallback to file.");
+            from_stdin = false;
+        }
+    }
+
+    if !from_stdin {
         let mut file = File::open(path)?;
         file.read_to_string(&mut buf)?;
     }
