@@ -18,6 +18,9 @@ use git_provider::{DiffTags, GitProvider};
 use indexmap::IndexMap;
 use note_generator::get_release_note;
 
+#[macro_use]
+extern crate log;
+
 mod commit_parser;
 mod config;
 mod git_helpers_function;
@@ -198,6 +201,8 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
 
+            debug!("changelog: {:?}", changelog);
+
             let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
 
             let config = get_config(map)?;
@@ -252,6 +257,8 @@ fn main() -> anyhow::Result<()> {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
 
             let version = match version {
                 Some(version) => {
@@ -358,6 +365,8 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
 
+            debug!("changelog: {:?}", changelog);
+
             if ast {
                 dbg!(&changelog);
             }
@@ -381,6 +390,8 @@ fn main() -> anyhow::Result<()> {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
 
             let release = if let Some(ref version) = version {
                 changelog.releases.get(version)
