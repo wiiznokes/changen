@@ -33,6 +33,9 @@ pom.workspace = true
 log = "0.4"
 env_logger = "0.11"
 cached = "0.53"
+
+[dev-dependencies]
+pretty_assertions = "1"
 # regex = "1"
 
 [workspace.dependencies]
@@ -40,3 +43,6 @@ pom = { version = "3", features = ["trace"] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 # thiserror = "1"
+
+[patch.crates-io]
+changelog_document = { path = "./changelog_document" }

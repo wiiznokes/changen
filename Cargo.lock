@@ -218,12 +218,13 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "cached",
- "changelog_document 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "changelog_document",
  "clap",
  "env_logger",
  "indexmap",
  "log",
  "pom",
+ "pretty_assertions",
  "reqwest",
  "serde",
  "serde_json",
@@ -231,19 +232,7 @@ dependencies = [
 
 [[package]]
 name = "changelog_document"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "indexmap",
- "pom",
- "serde",
-]
-
-[[package]]
-name = "changelog_document"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "667633942561e3832890e6074b435dcd6afec1f9084e490f346a2f47fbeaf4c3"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -347,6 +336,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "diff"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
 
 [[package]]
 name = "encoding_rs"
@@ -891,6 +886,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c972d8f86e943ad532d0b04e8965a749ad1d18bb981a9c7b3ae72fe7fd7744b"
 dependencies = [
  "bstr",
+]
+
+[[package]]
+name = "pretty_assertions"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af7cee1a6c8a5b9208b3cb1061f10c0cb689087b3d8ce85fb9d2dd7a29b6ba66"
+dependencies = [
+ "diff",
+ "yansi",
 ]
 
 [[package]]
@@ -1675,6 +1680,12 @@ dependencies = [
  "cfg-if",
  "windows-sys 0.48.0",
 ]
+
+[[package]]
+name = "yansi"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09041cd90cf85f7f8b2df60c646f853b7f535ce68f85244eb6731cf89fa498ec"
 
 [[package]]
 name = "zerocopy"

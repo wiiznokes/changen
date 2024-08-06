@@ -1,41 +1,11 @@
 {
   "map": {
-    "Fixed": [
-      "issue",
-      "bug",
-      "fix"
-    ],
-    "Added": [
-      "feature",
-      "add",
-      "feat",
-      "new"
-    ],
-    "Changed": [
-      "impr",
-      "chore",
-      "refactor",
-      "build",
-      "improve"
-    ],
-    "Deprecated": [
-      "obsolete",
-      "deprecate"
-    ],
-    "Removed": [
-      "rm",
-      "remove",
-      "delete"
-    ],
-    "Security": [
-      "sec",
-      "security",
-      "vulnerability"
-    ],
-    "Documentation": [
-      "doc",
-      "docs",
-      "documentation"
-    ]
+    "Security": ["sec", "vulnerability", "security"],
+    "Added": ["feat", "new", "add", "feature"],
+    "Changed": ["impr", "build", "improve", "refactor", "chore"],
+    "Removed": ["remove", "rm", "delete"],
+    "Fixed": ["issue", "fix", "bug"],
+    "Deprecated": ["obsolete", "deprecate"],
+    "Documentation": ["doc", "documentation", "docs"]
   }
 }

@@ -27,8 +27,6 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
         s.push_str(&format!("[{}]: {}\n", footer_link.text, footer_link.link));
     }
 
-    s.push('\n');
-
     s
 }
 

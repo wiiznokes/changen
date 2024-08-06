@@ -1,3 +1,4 @@
+use pretty_assertions::assert_eq;
 use std::{fs::OpenOptions, io::Write};
 
 use changelog::{

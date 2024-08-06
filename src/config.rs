@@ -85,26 +85,3 @@ impl MapMessageToSection {
         None
     }
 }
-
-#[cfg(test)]
-mod test {
-
-    use std::{fs::OpenOptions, io::Write};
-
-    use super::Config;
-
-    #[test]
-    fn write_config() {
-        let path = "./res/map_commit_type_to_section.json";
-        let mut file = OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .open(path)
-            .unwrap();
-
-        let e = Config::default();
-        let json = serde_json::ser::to_string_pretty(&e).unwrap();
-
-        file.write_all(json.as_bytes()).unwrap();
-    }
-}
