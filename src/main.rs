@@ -201,6 +201,8 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
 
+            debug!("path: {}", path.display());
+            debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
 
             let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
