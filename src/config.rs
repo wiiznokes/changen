@@ -23,22 +23,6 @@ impl Config {
 }
 
 #[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
-pub enum GitProvider {
-    #[default]
-    Github,
-    Other,
-}
-
-impl Display for GitProvider {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GitProvider::Github => write!(f, "github"),
-            GitProvider::Other => write!(f, "other "),
-        }
-    }
-}
-
-#[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum CommitMessageParsing {
     #[default]
     Smart,
@@ -111,7 +95,7 @@ mod test {
 
     #[test]
     fn write_config() {
-        let path = "./config_example/config.json";
+        let path = "./res/map_commit_type_to_section.json";
         let mut file = OpenOptions::new()
             .write(true)
             .truncate(true)

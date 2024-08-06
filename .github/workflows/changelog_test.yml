@@ -31,7 +31,5 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - run: |
-          cargo run -- generate
-          cat CHANGELOG.md
-
-     
+          cargo run -- generate > CHANGELOG2.md
+          diff CHANGELOG.md CHANGELOG2.md
