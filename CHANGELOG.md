@@ -21,4 +21,3 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - release not in order (#14) in [#14](https://github.com/wiiznokes/changelog-generator/pull/14) by [@wiiznokes](https://github.com/wiiznokes)
 
 Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.1...v0.1.2
-

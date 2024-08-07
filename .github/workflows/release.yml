@@ -19,11 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
       - run: |
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
+          cargo run --locked -- release
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(changelog): automatic release generation (skip changelog)"
+
+      - run: |
+          cargo run --locked -- show > RELEASE_CHANGELOG.md
+
       - uses: taiki-e/create-gh-release-action@v1
         with:
+          changelog: RELEASE_CHANGELOG.md
           ref: refs/tags/${{ github.event.inputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
