@@ -18,6 +18,9 @@ use git_provider::{DiffTags, GitProvider};
 use indexmap::IndexMap;
 use note_generator::get_release_note;
 
+#[macro_use]
+extern crate log;
+
 mod commit_parser;
 mod config;
 mod git_helpers_function;
@@ -67,8 +70,6 @@ enum Commands {
         omit_pr_link: bool,
         #[arg(long, help = "Omit contributors' acknowledgements/mention.")]
         omit_thanks: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Generate a new release
     Release {
@@ -95,8 +96,6 @@ enum Commands {
         repo: Option<String>,
         #[arg(long, help = "Omit the commit history between releases.")]
         omit_diff: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Validate a changelog syntax
     Validate {
@@ -114,8 +113,6 @@ enum Commands {
         map: Option<PathBuf>,
         #[arg(long, help = "Show the Abstract Syntax Tree.")]
         ast: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
     },
     /// Show a specific release on stdout
     Show {
@@ -158,9 +155,18 @@ fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
 fn read_file(path: &Path) -> anyhow::Result<String> {
     let mut buf = String::new();
 
-    if !io::stdin().is_terminal() {
+    let mut from_stdin = !io::stdin().is_terminal();
+
+    if from_stdin {
         io::stdin().read_to_string(&mut buf)?;
-    } else {
+
+        if buf.is_empty() {
+            info!("Readed stdin because is was not a terminal, but it is empty. Fallback to file.");
+            from_stdin = false;
+        }
+    }
+
+    if !from_stdin {
         let mut file = File::open(path)?;
         file.read_to_string(&mut buf)?;
     }
@@ -199,11 +205,16 @@ fn main() -> anyhow::Result<()> {
             repo,
             omit_pr_link,
             omit_thanks,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
+
+            debug!("is terminal: {}", io::stdin().is_terminal());
+            debug!("is terminal stdout: {}", io::stdout().is_terminal());
+            debug!("path: {}", path.display());
+            debug!("input: {}", input);
+            debug!("changelog: {:?}", changelog);
 
             let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
 
@@ -241,7 +252,7 @@ fn main() -> anyhow::Result<()> {
 
             let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
 
-            if stdout {
+            if !io::stdout().is_terminal() {
                 print!("{output}")
             } else {
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
@@ -255,11 +266,12 @@ fn main() -> anyhow::Result<()> {
             provider,
             repo,
             omit_diff,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
 
             let version = match version {
                 Some(version) => {
@@ -349,7 +361,7 @@ fn main() -> anyhow::Result<()> {
 
             let output = serialize_changelog(&changelog, &Options::default());
 
-            if stdout {
+            if !io::stdout().is_terminal() {
                 print!("{output}")
             } else {
                 let mut file = File::options().truncate(true).write(true).open(&path)?;
@@ -361,11 +373,12 @@ fn main() -> anyhow::Result<()> {
             ast,
             format,
             map,
-            stdout,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
 
             if ast {
                 dbg!(&changelog);
@@ -376,7 +389,7 @@ fn main() -> anyhow::Result<()> {
 
                 let output = serialize_changelog(&changelog, &options);
 
-                if stdout {
+                if !io::stdout().is_terminal() {
                     print!("{output}")
                 } else {
                     let mut file = File::options().truncate(true).write(true).open(&path)?;
@@ -390,6 +403,8 @@ fn main() -> anyhow::Result<()> {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
 
             let release = if let Some(ref version) = version {
                 changelog.releases.get(version)
