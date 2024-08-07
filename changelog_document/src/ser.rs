@@ -1,4 +1,4 @@
-use crate::{ChangeLog, Release};
+use crate::*;
 
 // todo: use io::Write
 
@@ -28,6 +28,20 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
     }
 
     s
+}
+
+pub fn serialize_release_section_note(s: &mut String, note: &ReleaseSectionNote) {
+    let note_title = if let Some(scope) = &note.scope {
+        format!("- {}: {}\n", scope, note.message)
+    } else {
+        format!("- {}\n", note.message)
+    };
+
+    s.push_str(&note_title);
+
+    for context in &note.context {
+        s.push_str(&format!("  {}\n", context));
+    }
 }
 
 // todo: handle footer links
@@ -63,17 +77,7 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &Options) {
         s.push_str(&format!("\n### {}\n\n", sections.title));
 
         for note in &sections.notes {
-            let note_title = if let Some(scope) = &note.scope {
-                format!("- {}: {}\n", scope, note.message)
-            } else {
-                format!("- {}\n", note.message)
-            };
-
-            s.push_str(&note_title);
-
-            for context in &note.context {
-                s.push_str(&format!("  {}\n", context));
-            }
+            serialize_release_section_note(s, note);
         }
     }
 
