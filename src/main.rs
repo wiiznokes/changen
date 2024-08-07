@@ -276,7 +276,7 @@ fn main() -> anyhow::Result<()> {
 
             let mut added = String::new();
             serialize_release_section_note(&mut added, &release_note);
-            eprintln!("Release note {added} succefully added in {section_title}",)
+            eprintln!("Release note:\n{added}succefully added in the {section_title} section.",)
         }
         #[allow(unused_variables)]
         Commands::Release {
