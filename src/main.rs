@@ -8,7 +8,7 @@ use std::{
 use anyhow::bail;
 use changelog::{
     de::parse_changelog,
-    ser::{serialize_changelog, serialize_release, Options},
+    ser::{serialize_changelog, serialize_release, serialize_release_section_note, Options},
     Release, ReleaseSection, ReleaseTitle,
 };
 use clap::{Parser, Subcommand, ValueHint};
@@ -240,7 +240,7 @@ fn main() -> anyhow::Result<()> {
 
             let config = get_config(map)?;
 
-            let Some((section, release_note)) = get_release_note(
+            let Some((section_title, release_note)) = get_release_note(
                 path.to_string_lossy().to_string(),
                 &parsing,
                 exclude_unidentified,
@@ -254,25 +254,29 @@ fn main() -> anyhow::Result<()> {
                 return Ok(());
             };
 
-            let section = if let Some(section) = unreleased.note_sections.get_mut(&section) {
+            let section = if let Some(section) = unreleased.note_sections.get_mut(&section_title) {
                 section
             } else {
                 let release_section = ReleaseSection {
-                    title: section.clone(),
+                    title: section_title.clone(),
                     notes: vec![],
                 };
 
                 unreleased
                     .note_sections
-                    .insert(section.clone(), release_section);
-                unreleased.note_sections.get_mut(&section).unwrap()
+                    .insert(section_title.clone(), release_section);
+                unreleased.note_sections.get_mut(&section_title).unwrap()
             };
 
-            section.notes.push(release_note);
+            section.notes.push(release_note.clone());
 
             let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
 
             write_output(&output, &path, stdout)?;
+
+            let mut added = String::new();
+            serialize_release_section_note(&mut added, &release_note);
+            eprintln!("Release note {added} succefully added in {section_title}",)
         }
         #[allow(unused_variables)]
         Commands::Release {
@@ -297,14 +301,16 @@ fn main() -> anyhow::Result<()> {
                     version
                 }
                 None => {
-                    if let Some(tag) = tags_list().pop_back() {
+                    let tag = if let Some(tag) = tags_list().pop_back() {
                         match tag.strip_prefix('v') {
                             Some(version) => version.to_owned(),
                             None => tag,
                         }
                     } else {
                         bail!("No version provided. Can't fall back to last tag because there is none.");
-                    }
+                    };
+                    eprintln!("No version provided. Using the existing last tag: {}", tag);
+                    tag
                 }
             };
 
@@ -361,7 +367,7 @@ fn main() -> anyhow::Result<()> {
                 }
             }
 
-            changelog.releases.insert(version, prev_unreleased);
+            changelog.releases.insert(version.clone(), prev_unreleased);
 
             let new_unreleased = Release {
                 title: ReleaseTitle {
@@ -378,6 +384,8 @@ fn main() -> anyhow::Result<()> {
             let output = serialize_changelog(&changelog, &Options::default());
 
             write_output(&output, &path, stdout)?;
+
+            eprintln!("New release {} succefully created.", version);
         }
         Commands::Validate {
             file,
@@ -404,7 +412,7 @@ fn main() -> anyhow::Result<()> {
                 write_output(&output, &path, stdout)?;
             }
 
-            eprintln!("Changelog parser with success!");
+            eprintln!("Changelog parsed with success!");
         }
         Commands::Show { file, n, version } => {
             let path = get_changelog_path(file);
