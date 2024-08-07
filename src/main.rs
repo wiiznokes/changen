@@ -315,12 +315,30 @@ fn main() -> anyhow::Result<()> {
             };
 
             if changelog.releases.get(&version).is_some() {
-                bail!("Version {} already exist", version);
+                bail!(
+                    "Version {} already exist. Create a new tag or use the --version option.",
+                    version
+                );
             };
 
-            let Some(mut prev_unreleased) = changelog.releases.shift_remove(UNRELEASED) else {
+            let empty_unreleased = Release {
+                title: ReleaseTitle {
+                    version: UNRELEASED.into(),
+                    title: None,
+                },
+                header: None,
+                note_sections: IndexMap::new(),
+                footer: None,
+            };
+
+            let (pos, Some(mut prev_unreleased)) = changelog
+                .releases
+                .insert_full(UNRELEASED.into(), empty_unreleased)
+            else {
                 bail!("No Unreleased section found.")
             };
+
+            debug_assert!(pos == 0);
 
             prev_unreleased.title.version = version.clone();
 
@@ -367,19 +385,9 @@ fn main() -> anyhow::Result<()> {
                 }
             }
 
-            changelog.releases.insert(version.clone(), prev_unreleased);
-
-            let new_unreleased = Release {
-                title: ReleaseTitle {
-                    version: UNRELEASED.into(),
-                    title: None,
-                },
-                header: None,
-                note_sections: IndexMap::new(),
-                footer: None,
-            };
-
-            changelog.releases.insert(UNRELEASED.into(), new_unreleased);
+            changelog
+                .releases
+                .shift_insert(1, version.clone(), prev_unreleased);
 
             let output = serialize_changelog(&changelog, &Options::default());
 
