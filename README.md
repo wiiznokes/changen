@@ -21,7 +21,7 @@ _If you don't have a changelog file yet, you can use `changelog-gen new`_
 
 If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`
 
-> Note: You can always use the --help command to see avaiable options! For example, `changelog-gen validate --fmt` will format your changelog.
+> Note: You can always use the --help command to see available options! For example, `changelog-gen validate --fmt` will format your changelog.
 
 When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
 
@@ -35,12 +35,14 @@ fix(project_a): Fix a nasty bug <=> commit-type(scope): commit-message
 
 #### Ignore commit
 
-Currently, you can write theses patterns anyhere in the commit message or desciption:
+Currently, you can write theses patterns anywhere in the commit message or description:
 
 - `(skip changelog)`
 - `(ignore changelog)`
 - `!changelog`
 - `!log`
+
+Note that any commit modifying your changelog will be ignored
 
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
@@ -51,9 +53,13 @@ Use with `changelog-gen generate --map path/to/map.json`
 
 `changelog-gen generate --file path/to/CHANGELOG.md`
 
+#### Avoid useless merge commits when there was a changelog generation committed not present on your branch
+
+This can happen often when you're not used to changes being committed on master that are not yours. Just use rebase onto instead of merge commit: `git config --global pull.rebase true`
+
 #### Other
 
-A lot of options are avaiable. Use `changelog generate --help` to see them.
+A lot of options are available. Use `changelog generate --help` to see them.
 
 ## Acknowledgement
 
