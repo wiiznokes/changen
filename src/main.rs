@@ -293,8 +293,6 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
 
-            debug!("changelog: {:?}", changelog);
-
             let (version, output) =
                 release_generation::release(changelog, version, provider, repo, omit_diff)?;
 

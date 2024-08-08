@@ -114,7 +114,7 @@ pub fn release(
         };
 
         if let Some(link) = link {
-            let line = format!("Full Changelog: {link}\n");
+            let line = format!("Full Changelog: {link}");
 
             match &mut prev_unreleased.footer {
                 Some(footer) => {
@@ -131,6 +131,8 @@ pub fn release(
     changelog
         .releases
         .shift_insert(1, version.clone(), prev_unreleased);
+
+    debug!("release: serialize changelog: {:?}", changelog);
 
     let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
 

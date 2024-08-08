@@ -13,6 +13,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - stdout option
 - stdin pipe
 
+### Fixed
+
+- extra new line on full changelog link
+
 ## [0.1.2]
 
 ### Added

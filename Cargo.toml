@@ -10,7 +10,7 @@ repository = "https://github.com/wiiznokes/changelog-generator.git"
 
 [package]
 name = "changelog-gen"
-version = "0.1.3"
+version = "0.1.4"
 keywords = ["changelog", "release", "tool", "release-note"]
 description = "Helper program to manage a changelog"
 categories = ["development-tools"]
