@@ -5,7 +5,6 @@ use crate::{
 };
 use anyhow::{bail, Result};
 use changelog::ReleaseSectionNote;
-use log::debug;
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
@@ -147,7 +146,9 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
 
 #[cfg(test)]
 mod test {
-    use crate::{git_helpers_function::RawCommit, note_generator::commit_should_be_ignored};
+    use crate::{
+        git_helpers_function::RawCommit, release_note_generation::commit_should_be_ignored,
+    };
 
     #[test]
     fn ignore_commit() {

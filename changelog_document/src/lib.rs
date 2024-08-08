@@ -10,6 +10,7 @@ mod test;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReleaseTitle {
     pub version: String,
+    pub release_link: Option<String>,
     pub title: Option<String>,
 }
 
@@ -69,6 +70,7 @@ impl ChangeLog {
                 title: ReleaseTitle {
                     version,
                     title: None,
+                    release_link: None,
                 },
                 header: None,
                 note_sections: IndexMap::new(),

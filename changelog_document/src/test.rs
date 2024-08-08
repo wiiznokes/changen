@@ -35,6 +35,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                 title: ReleaseTitle {
                     version,
                     title: Some("i'm am the title of the night".into()),
+                    release_link: None,
                 },
                 header: Some("header".into()),
                 note_sections: {
@@ -72,6 +73,9 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                 title: ReleaseTitle {
                     version,
                     title: None,
+                    release_link: Some(
+                        "https://github.com/wiiznokes/fan-control/releases/tag/v2024.7.30".into(),
+                    ),
                 },
                 header: None,
                 note_sections: IndexMap::new(),

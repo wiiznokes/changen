@@ -58,13 +58,19 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
     let mut should_new_line = false;
 
     if options.serialise_title {
-        let title = if let Some(title) = &release.title.title {
-            format!("## [{}] - {}\n", release.title.version, title)
-        } else {
-            format!("## [{}]\n", release.title.version)
-        };
+        let mut full_title = format!("## [{}]", release.title.version);
 
-        s.push_str(&title);
+        if let Some(release_link) = &release.title.release_link {
+            full_title.push_str(&format!("({})", release_link));
+        }
+
+        if let Some(title) = &release.title.title {
+            full_title.push_str(&format!("- {}", title));
+        }
+
+        full_title.push('\n');
+
+        s.push_str(&full_title);
 
         should_new_line = true;
     }

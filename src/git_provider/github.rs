@@ -76,6 +76,10 @@ pub fn diff_link(repo: &str, diff_tags: &DiffTags) -> anyhow::Result<String> {
     Ok(link)
 }
 
+pub fn release_link(repo: &str, tag: &str) -> anyhow::Result<String> {
+    Ok(format!("https://github.com/{repo}/releases/tag/{tag}"))
+}
+
 #[cfg(test)]
 mod test {
     use super::{diff_link, request_related_pr, DiffTags};

@@ -19,7 +19,7 @@ use config::{CommitMessageParsing, Config};
 use git_helpers_function::{tags_list, try_get_repo};
 use git_provider::{DiffTags, GitProvider};
 use indexmap::IndexMap;
-use note_generator::get_release_note;
+use release_note_generation::get_release_note;
 
 #[macro_use]
 extern crate log;
@@ -28,7 +28,7 @@ mod commit_parser;
 mod config;
 mod git_helpers_function;
 mod git_provider;
-mod note_generator;
+mod release_note_generation;
 
 #[cfg(test)]
 mod test;
@@ -328,6 +328,7 @@ fn main() -> anyhow::Result<()> {
                 title: ReleaseTitle {
                     version: UNRELEASED.into(),
                     title: None,
+                    release_link: None,
                 },
                 header: None,
                 note_sections: IndexMap::new(),
@@ -344,6 +345,24 @@ fn main() -> anyhow::Result<()> {
             debug_assert!(pos == 0);
 
             prev_unreleased.title.version = version.clone();
+
+            try_get_repo(repo.clone()).inspect(|repo| {
+                let mut tags = tags_list();
+
+                match tags.pop_back() {
+                    Some(tag) => match provider.release_link(repo, &tag) {
+                        Ok(link) => {
+                            prev_unreleased.title.release_link = Some(link);
+                        }
+                        Err(e) => {
+                            eprintln!("{e}");
+                        }
+                    },
+                    None => {
+                        eprintln!("No tags defined. Can't produce the release link.");
+                    }
+                }
+            });
 
             if !omit_diff {
                 let link = if let Some(repo) = try_get_repo(repo) {
