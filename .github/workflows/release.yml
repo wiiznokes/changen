@@ -36,6 +36,10 @@ jobs:
       - run: |
           cargo run --locked -- show > RELEASE_CHANGELOG.md
 
+          # https://cli.github.com/manual/gh_release_create
+          gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \
+            --notes-file RELEASE_CHANGELOG.md --target $GITHUB_SHA
+
       - uses: taiki-e/create-gh-release-action@v1
         with:
           # currently cause problem because the file is parsed
