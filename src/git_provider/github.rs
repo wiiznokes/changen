@@ -1,18 +1,16 @@
 use std::io::Read;
 
-use anyhow::{anyhow, bail};
+use anyhow::{anyhow, bail, Ok};
 use reqwest::{blocking::Client, header::USER_AGENT};
 use serde_json::Value;
 
 use super::*;
 
-pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
-    let api = format!("https://api.github.com/repos/{repo}/commits/{sha}/pulls");
-
+fn request_github(api: &str) -> anyhow::Result<Value> {
     let client = Client::new();
 
     let mut response = client
-        .get(&api)
+        .get(api)
         .header(USER_AGENT, "my-github-client")
         .send()?;
 
@@ -22,42 +20,88 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
 
         let json = serde_json::from_str::<Value>(&body)?;
 
-        let obj = json.get(0).ok_or(anyhow!("no index 0"))?;
-
-        let url = obj
-            .get("html_url")
-            .ok_or(anyhow!("no html_url found"))?
-            .as_str()
-            .unwrap()
-            .to_string();
-
-        let pr_id = obj
-            .get("number")
-            .ok_or(anyhow!("no number found"))?
-            .as_u64()
-            .unwrap();
-
-        let pr_id = format!("#{}", pr_id);
-
-        let author = obj
-            .get("user")
-            .ok_or(anyhow!("no user found"))?
-            .get("login")
-            .ok_or(anyhow!("no login found"))?
-            .as_str()
-            .unwrap()
-            .to_string();
-
-        let author_link = format!("https://github.com/{}", author);
-
-        Ok(RelatedPr {
-            url,
-            author,
-            pr_id,
-            author_link,
-        })
+        Ok(json)
     } else {
-        bail!(format!("GitHub API returned status: {}", response.status()))
+        bail!(format!(
+            "GitHub API returned status for {}: {}",
+            api,
+            response.status()
+        ))
+    }
+}
+
+pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
+    let json = request_github(&format!(
+        "https://api.github.com/repos/{repo}/commits/{sha}/pulls"
+    ))?;
+
+    match json.get(0) {
+        Some(obj) => {
+            let url = obj
+                .get("html_url")
+                .ok_or(anyhow!("no html_url found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let pr_id = obj
+                .get("number")
+                .ok_or(anyhow!("no number found"))?
+                .as_u64()
+                .unwrap();
+
+            let pr_id = format!("#{}", pr_id);
+
+            let author = obj
+                .get("user")
+                .ok_or(anyhow!("no user found"))?
+                .get("login")
+                .ok_or(anyhow!("no login found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let author_link = format!("https://github.com/{}", author);
+
+            Ok(RelatedPr {
+                url,
+                author,
+                pr_id,
+                author_link,
+                is_pr: true,
+            })
+        }
+        None => {
+            let json = request_github(&format!(
+                "https://api.github.com/repos/{repo}/commits/{sha}"
+            ))?;
+
+            let url = json
+                .get("html_url")
+                .ok_or(anyhow!("no html_url found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let author = json
+                .get("author")
+                .ok_or(anyhow!("no user found"))?
+                .get("login")
+                .ok_or(anyhow!("no login found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let author_link = format!("https://github.com/{}", author);
+
+            Ok(RelatedPr {
+                url,
+                author,
+                pr_id: "commit".into(),
+                author_link,
+                is_pr: false,
+            })
+        }
     }
 }
 
@@ -87,6 +131,10 @@ mod test {
     #[test]
     fn pr() {
         let res = request_related_pr("wiiznokes/fan-control", "74c8a3c").unwrap();
+
+        dbg!(&res);
+
+        let res = request_related_pr("wiiznokes/changelog-generator", "84d7fa4").unwrap();
 
         dbg!(&res);
     }

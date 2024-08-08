@@ -26,6 +26,8 @@ pub struct RelatedPr {
     pub pr_id: String,
     pub author: String,
     pub author_link: String,
+    /// False means this is a simple commit
+    pub is_pr: bool,
 }
 
 #[derive(Debug, Clone)]

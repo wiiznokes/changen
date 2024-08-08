@@ -17,7 +17,7 @@ use changelog::{
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};
 use git_provider::GitProvider;
-use release_note_generation::get_release_note;
+use release_note_generation::{get_release_note, GenerateReleaseNoteOptions};
 
 #[macro_use]
 extern crate log;
@@ -61,6 +61,11 @@ enum Commands {
         parsing: CommitMessageParsing,
         #[arg(long, help = "Don't include unidentified commits.")]
         exclude_unidentified: bool,
+        #[arg(
+            long,
+            help = "Don't include commits which are not attached to a pull request."
+        )]
+        exclude_not_pr: bool,
         #[arg(long, help = "We use the Github api to map commit sha to PRs.", default_value_t = GitProvider::Github)]
         provider: GitProvider,
         #[arg(
@@ -88,7 +93,7 @@ enum Commands {
         #[arg(
             short,
             long,
-            help = "Version number for the release. If ommited, use the last tag using \"git\" (ommiting the 'v' perfix)."
+            help = "Version number for the release. If omitted, use the last tag using \"git\" (omitting the 'v' prefix)."
         )]
         version: Option<String>,
         #[arg(long, help = "We use the Github link to produce the tags diff", default_value_t = GitProvider::Github)]
@@ -169,7 +174,7 @@ fn read_file(path: &Path) -> anyhow::Result<String> {
         io::stdin().read_to_string(&mut buf)?;
 
         if buf.is_empty() {
-            info!("Readed stdin because is was not a terminal, but it is empty. Fallback to file.");
+            info!("Read stdin because is was not a terminal, but it is empty. Fallback to file.");
             from_stdin = false;
         }
     }
@@ -222,6 +227,7 @@ fn main() -> anyhow::Result<()> {
             map,
             parsing,
             exclude_unidentified,
+            exclude_not_pr,
             provider,
             repo,
             omit_pr_link,
@@ -242,16 +248,18 @@ fn main() -> anyhow::Result<()> {
 
             let config = get_config(map)?;
 
-            let Some((section_title, release_note)) = get_release_note(
-                path.to_string_lossy().to_string(),
-                &parsing,
-                exclude_unidentified,
-                &provider,
-                &repo,
-                omit_pr_link,
-                omit_thanks,
-                &config.map,
-            )?
+            let Some((section_title, release_note)) =
+                get_release_note(GenerateReleaseNoteOptions {
+                    changelog_path: path.to_string_lossy().to_string(),
+                    parsing,
+                    exclude_unidentified,
+                    exclude_not_pr,
+                    provider,
+                    repo,
+                    omit_pr_link,
+                    omit_thanks,
+                    map: &config.map,
+                })?
             else {
                 return Ok(());
             };
