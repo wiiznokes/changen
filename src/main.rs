@@ -440,6 +440,8 @@ fn main() -> anyhow::Result<()> {
 
             match release {
                 Some(release) => {
+                    debug!("show release: {:?}", release);
+
                     let mut output = String::new();
                     serialize_release(
                         &mut output,
@@ -449,7 +451,7 @@ fn main() -> anyhow::Result<()> {
                             serialise_title: false,
                         },
                     );
-                    println!("{}", output);
+                    print!("{}", output);
                 }
                 None => {
                     bail!("No release found");

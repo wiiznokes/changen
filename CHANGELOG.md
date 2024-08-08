@@ -5,10 +5,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Unidentified
-
-- change ser options name
-
 ## [0.1.2]
 
 ### Added
