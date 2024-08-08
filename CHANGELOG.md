@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.4)
+
 ### Added
 
 - release subcommand
@@ -16,6 +18,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 
 - extra new line on full changelog link
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/commits/v0.1.4
 
 ## [0.1.2]
 
