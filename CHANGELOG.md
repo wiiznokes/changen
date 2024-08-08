@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- exclude no pr options in [#19](https://github.com/wiiznokes/changelog-generator/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
+
 ### Documentation
 
 - mention git rebase config & fix some typos
