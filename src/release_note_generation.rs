@@ -21,8 +21,8 @@ pub fn get_release_note(
 ) -> Result<Option<(String, ReleaseSectionNote)>> {
     let raw_commit = RawCommit::new();
 
-    if commit_should_be_ignored(&raw_commit, &changelog_path) {
-        eprintln!("Ignoring this commit.");
+    if let Response::Yes { reason } = commit_should_be_ignored(&raw_commit, &changelog_path) {
+        eprintln!("Ignoring this commit. {reason}");
         return Ok(None);
     }
 
@@ -115,12 +115,30 @@ pub fn get_release_note(
     )))
 }
 
-fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
+#[derive(Debug, Clone)]
+enum Response {
+    Yes { reason: String },
+    No,
+}
+
+impl Response {
+    #[allow(dead_code)]
+    fn bool(&self) -> bool {
+        match self {
+            Response::Yes { .. } => true,
+            Response::No => false,
+        }
+    }
+}
+
+fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
     debug!("{:?}", raw);
     debug!("{:?}", changelog_path);
 
     if raw.list_files.iter().any(|path| path == changelog_path) {
-        return true;
+        return Response::Yes {
+            reason: "The changelog was modified in this commit.".into(),
+        };
     }
 
     let names = ["changelog", "log", "chglog", "notes"];
@@ -136,12 +154,16 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> bool {
 
         for pattern in &patterns {
             if match_pat(pattern) {
-                return true;
+                return Response::Yes {
+                    reason: format!(
+                        "The pattern \"{pattern}\" was matched in the commit message or description."
+                    ),
+                };
             }
         }
     }
 
-    false
+    Response::No
 }
 
 #[cfg(test)]
@@ -159,10 +181,10 @@ mod test {
             list_files: vec![],
         };
 
-        assert!(commit_should_be_ignored(&raw, ""));
+        assert!(commit_should_be_ignored(&raw, "").bool());
 
         raw.message = "fix: something log".into();
 
-        assert!(!commit_should_be_ignored(&raw, ""));
+        assert!(!commit_should_be_ignored(&raw, "").bool());
     }
 }

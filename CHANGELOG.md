@@ -19,7 +19,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - extra new line on full changelog link
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/commits/v0.1.4
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.2...v0.1.4
 
 ## [0.1.2]
 
