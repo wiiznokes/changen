@@ -50,10 +50,29 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
                                 ReleaseSectionNote {
                                     scope: Some("data".into()),
                                     message: "the program".into(),
-                                    context: vec!["- fix la base".into(), "49-3 hihi".into()],
+                                    context: vec![
+                                        "- fix la base".into(),
+                                        "49-3 hihi".into(),
+                                        "lol".into(),
+                                    ],
                                 },
                                 ReleaseSectionNote {
                                     scope: Some("ui".into()),
+                                    message: "the widget".into(),
+                                    context: vec![],
+                                },
+                                ReleaseSectionNote {
+                                    scope: None,
+                                    message: "lol".into(),
+                                    context: vec![],
+                                },
+                                ReleaseSectionNote {
+                                    scope: Some("ui".into()),
+                                    message: "the widget".into(),
+                                    context: vec![],
+                                },
+                                ReleaseSectionNote {
+                                    scope: Some("data".into()),
                                     message: "the widget".into(),
                                     context: vec![],
                                 },

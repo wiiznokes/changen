@@ -11,7 +11,8 @@ use changelog::{
     ser::{
         serialize_changelog, serialize_release, serialize_release_section_note,
         ChangeLogSerOptionRelease,
-    }, ReleaseSection,
+    },
+    ReleaseSection,
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};

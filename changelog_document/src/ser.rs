@@ -107,7 +107,30 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
 
             s.push_str(&format!("### {}\n\n", sections.title));
 
-            for note in &sections.notes {
+            let notes_sorted = {
+                let mut sorted = Vec::new();
+
+                let mut scoped: IndexMap<String, Vec<ReleaseSectionNote>> = IndexMap::new();
+
+                for note in sections.notes.clone() {
+                    match &note.scope {
+                        Some(scope) => match scoped.get_mut(scope) {
+                            Some(notes) => {
+                                notes.push(note);
+                            }
+                            None => {
+                                scoped.insert(scope.clone(), vec![note]);
+                            }
+                        },
+                        None => sorted.push(note),
+                    }
+                }
+
+                sorted.extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
+                sorted
+            };
+
+            for note in &notes_sorted {
                 serialize_release_section_note(s, note);
             }
         }

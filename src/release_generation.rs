@@ -7,7 +7,8 @@ use indexmap::IndexMap;
 
 use crate::{
     git_helpers_function::{tags_list, try_get_repo},
-    git_provider::{DiffTags, GitProvider}, UNRELEASED,
+    git_provider::{DiffTags, GitProvider},
+    UNRELEASED,
 };
 
 pub fn release(
