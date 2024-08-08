@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Unidentified
 
 - change ser options name
+- Merge branch 'master' of https://github.com/wiiznokes/changelog-generator
 
 ## [0.1.2]
 
