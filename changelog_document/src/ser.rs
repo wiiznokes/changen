@@ -58,13 +58,19 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
     let mut should_new_line = false;
 
     if options.serialise_title {
-        let title = if let Some(title) = &release.title.title {
-            format!("## [{}] - {}\n", release.title.version, title)
-        } else {
-            format!("## [{}]\n", release.title.version)
-        };
+        let mut full_title = format!("## [{}]", release.title.version);
 
-        s.push_str(&title);
+        if let Some(release_link) = &release.title.release_link {
+            full_title.push_str(&format!("({})", release_link));
+        }
+
+        if let Some(title) = &release.title.title {
+            full_title.push_str(&format!("- {}", title));
+        }
+
+        full_title.push('\n');
+
+        s.push_str(&full_title);
 
         should_new_line = true;
     }
@@ -101,7 +107,30 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
 
             s.push_str(&format!("### {}\n\n", sections.title));
 
-            for note in &sections.notes {
+            let notes_sorted = {
+                let mut sorted = Vec::new();
+
+                let mut scoped: IndexMap<String, Vec<ReleaseSectionNote>> = IndexMap::new();
+
+                for note in sections.notes.clone() {
+                    match &note.scope {
+                        Some(scope) => match scoped.get_mut(scope) {
+                            Some(notes) => {
+                                notes.push(note);
+                            }
+                            None => {
+                                scoped.insert(scope.clone(), vec![note]);
+                            }
+                        },
+                        None => sorted.push(note),
+                    }
+                }
+
+                sorted.extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
+                sorted
+            };
+
+            for note in &notes_sorted {
                 serialize_release_section_note(s, note);
             }
         }

@@ -48,4 +48,11 @@ impl GitProvider {
             GitProvider::Other => bail!("No git provider was selected"),
         }
     }
+
+    pub fn release_link(&self, repo: &str, tag: &str) -> anyhow::Result<String> {
+        match self {
+            GitProvider::Github => github::release_link(repo, tag),
+            GitProvider::Other => bail!("No git provider was selected"),
+        }
+    }
 }

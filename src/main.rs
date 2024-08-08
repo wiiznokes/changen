@@ -9,17 +9,15 @@ use anyhow::bail;
 use changelog::{
     de::parse_changelog,
     ser::{
-        serialize_changelog, serialize_release, serialize_release_section_note, ChangeLogSerOption,
+        serialize_changelog, serialize_release, serialize_release_section_note,
         ChangeLogSerOptionRelease,
     },
-    Release, ReleaseSection, ReleaseTitle,
+    ReleaseSection,
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};
-use git_helpers_function::{tags_list, try_get_repo};
-use git_provider::{DiffTags, GitProvider};
-use indexmap::IndexMap;
-use note_generator::get_release_note;
+use git_provider::GitProvider;
+use release_note_generation::get_release_note;
 
 #[macro_use]
 extern crate log;
@@ -28,7 +26,8 @@ mod commit_parser;
 mod config;
 mod git_helpers_function;
 mod git_provider;
-mod note_generator;
+mod release_generation;
+mod release_note_generation;
 
 #[cfg(test)]
 mod test;
@@ -292,107 +291,12 @@ fn main() -> anyhow::Result<()> {
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
-            let mut changelog = parse_changelog(&input)?;
+            let changelog = parse_changelog(&input)?;
 
             debug!("changelog: {:?}", changelog);
 
-            let version = match version {
-                Some(version) => {
-                    if version.starts_with('v') {
-                        bail!("Error: You shound't include the v prefix in the version.")
-                    }
-                    version
-                }
-                None => {
-                    let tag = if let Some(tag) = tags_list().pop_back() {
-                        match tag.strip_prefix('v') {
-                            Some(version) => version.to_owned(),
-                            None => tag,
-                        }
-                    } else {
-                        bail!("No version provided. Can't fall back to last tag because there is none.");
-                    };
-                    eprintln!("No version provided. Using the existing last tag: {}", tag);
-                    tag
-                }
-            };
-
-            if changelog.releases.get(&version).is_some() {
-                bail!(
-                    "Version {} already exist. Create a new tag or use the --version option.",
-                    version
-                );
-            };
-
-            let empty_unreleased = Release {
-                title: ReleaseTitle {
-                    version: UNRELEASED.into(),
-                    title: None,
-                },
-                header: None,
-                note_sections: IndexMap::new(),
-                footer: None,
-            };
-
-            let (pos, Some(mut prev_unreleased)) = changelog
-                .releases
-                .insert_full(UNRELEASED.into(), empty_unreleased)
-            else {
-                bail!("No Unreleased section found.")
-            };
-
-            debug_assert!(pos == 0);
-
-            prev_unreleased.title.version = version.clone();
-
-            if !omit_diff {
-                let link = if let Some(repo) = try_get_repo(repo) {
-                    let mut tags = tags_list();
-
-                    match tags.pop_back() {
-                        Some(current) => {
-                            let prev = tags.pop_back();
-
-                            let diff_tags = DiffTags { prev, current };
-
-                            match provider.diff_link(&repo, &diff_tags) {
-                                Ok(link) => Some(link),
-                                Err(e) => {
-                                    eprintln!("{e}");
-                                    None
-                                }
-                            }
-                        }
-                        None => {
-                            eprintln!("No tags defined. Can't produce the diff");
-                            None
-                        }
-                    }
-                } else {
-                    None
-                };
-
-                if let Some(link) = link {
-                    let line = format!("Full Changelog: {link}\n");
-
-                    match &mut prev_unreleased.footer {
-                        Some(footer) => {
-                            footer.push_str("\n\n");
-                            footer.push_str(&line);
-                        }
-                        None => {
-                            prev_unreleased.footer = Some(line);
-                        }
-                    }
-                    let footer = prev_unreleased.footer.clone().unwrap_or_default();
-                }
-            }
-
-            changelog
-                .releases
-                .shift_insert(1, version.clone(), prev_unreleased);
-
-            let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
+            let (version, output) =
+                release_generation::release(changelog, version, provider, repo, omit_diff)?;
 
             write_output(&output, &path, stdout)?;
 
@@ -440,6 +344,8 @@ fn main() -> anyhow::Result<()> {
 
             match release {
                 Some(release) => {
+                    debug!("show release: {:?}", release);
+
                     let mut output = String::new();
                     serialize_release(
                         &mut output,
@@ -449,7 +355,7 @@ fn main() -> anyhow::Result<()> {
                             serialise_title: false,
                         },
                     );
-                    println!("{}", output);
+                    print!("{}", output);
                 }
                 None => {
                     bail!("No release found");

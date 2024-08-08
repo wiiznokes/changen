@@ -43,14 +43,17 @@ fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
 fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
     let version = sym('#').repeat(2) * sym(' ') * sym('[') * none_of("\n]").repeat(1..) - sym(']');
 
+    let release_link = sym('(') * none_of("\n)").repeat(1..) - sym(')');
+
     let title = sym(' ') * sym('-') * sym(' ') * none_of("\n]").repeat(1..);
 
-    let parser = version + title.opt();
+    let parser = version + release_link.opt() + title.opt();
 
-    parser.convert(|(version, title)| {
+    parser.convert(|((version, release_link), title)| {
         let res = ReleaseTitle {
             version: into_string(version),
             title: title.map(into_string),
+            release_link: release_link.map(into_string),
         };
 
         Ok::<ReleaseTitle, ()>(res)
