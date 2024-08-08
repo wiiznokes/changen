@@ -8,17 +8,33 @@ use changelog::ReleaseSectionNote;
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
-#[allow(clippy::too_many_arguments)]
+pub struct GenerateReleaseNoteOptions<'a> {
+    pub changelog_path: String,
+    pub parsing: CommitMessageParsing,
+    pub exclude_unidentified: bool,
+    pub exclude_not_pr: bool,
+    pub provider: GitProvider,
+    pub repo: Option<String>,
+    pub omit_pr_link: bool,
+    pub omit_thanks: bool,
+    pub map: &'a MapMessageToSection,
+}
+
 pub fn get_release_note(
-    changelog_path: String,
-    parsing: &CommitMessageParsing,
-    exclude_unidentified: bool,
-    provider: &GitProvider,
-    repo: &Option<String>,
-    omit_pr_link: bool,
-    omit_thanks: bool,
-    map: &MapMessageToSection,
+    options: GenerateReleaseNoteOptions,
 ) -> Result<Option<(String, ReleaseSectionNote)>> {
+    let GenerateReleaseNoteOptions {
+        changelog_path,
+        parsing,
+        exclude_unidentified,
+        exclude_not_pr,
+        provider,
+        repo,
+        omit_pr_link,
+        omit_thanks,
+        map,
+    } = options;
+
     let raw_commit = RawCommit::new();
 
     if let Response::Yes { reason } = commit_should_be_ignored(&raw_commit, &changelog_path) {
@@ -31,7 +47,7 @@ pub fn get_release_note(
             let section = match map.map_section(&commit.section) {
                 Some(section) => section,
                 None => {
-                    if *parsing == CommitMessageParsing::Strict {
+                    if parsing == CommitMessageParsing::Strict {
                         bail!("No commit type found for this: {}", commit.section);
                     }
 
@@ -52,7 +68,7 @@ pub fn get_release_note(
             commit
         }
         Err(e) => {
-            if *parsing == CommitMessageParsing::Strict {
+            if parsing == CommitMessageParsing::Strict {
                 bail!("invalid commit syntax: {}", e);
             }
 
@@ -91,6 +107,10 @@ pub fn get_release_note(
     };
 
     if let Some(related_pr) = &related_pr {
+        if !related_pr.is_pr && exclude_not_pr {
+            bail!("The commit {} was not attached to pr.", raw_commit.sha);
+        }
+
         if !omit_pr_link {
             commit
                 .message
@@ -103,6 +123,8 @@ pub fn get_release_note(
                 related_pr.author, related_pr.author_link
             ));
         }
+    } else if exclude_not_pr {
+        bail!("Error: No upstream commit or pr was found.");
     };
 
     Ok(Some((
