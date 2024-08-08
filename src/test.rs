@@ -3,7 +3,7 @@ use std::{fs::OpenOptions, io::Write};
 
 use changelog::{
     de::parse_changelog,
-    ser::{serialize_changelog, Options},
+    ser::{serialize_changelog, ChangeLogSerOption},
 };
 
 use crate::config::Config;
@@ -14,7 +14,7 @@ fn validate_default_changelog() {
 
     let changelog = parse_changelog(input).unwrap();
 
-    let output = serialize_changelog(&changelog, &Options::default());
+    let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
 
     assert_eq!(input, output);
 }
@@ -31,7 +31,7 @@ fn format_default_changelog() {
 
     let changelog = parse_changelog(input).unwrap();
 
-    let output = serialize_changelog(&changelog, &Options::default());
+    let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
 
     let mut file = OpenOptions::new()
         .create(true)

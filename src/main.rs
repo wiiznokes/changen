@@ -8,7 +8,10 @@ use std::{
 use anyhow::bail;
 use changelog::{
     de::parse_changelog,
-    ser::{serialize_changelog, serialize_release, serialize_release_section_note, Options},
+    ser::{
+        serialize_changelog, serialize_release, serialize_release_section_note, ChangeLogSerOption,
+        ChangeLogSerOptionRelease,
+    },
     Release, ReleaseSection, ReleaseTitle,
 };
 use clap::{Parser, Subcommand, ValueHint};
@@ -389,7 +392,7 @@ fn main() -> anyhow::Result<()> {
                 .releases
                 .shift_insert(1, version.clone(), prev_unreleased);
 
-            let output = serialize_changelog(&changelog, &Options::default());
+            let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
 
             write_output(&output, &path, stdout)?;
 
@@ -438,7 +441,14 @@ fn main() -> anyhow::Result<()> {
             match release {
                 Some(release) => {
                     let mut output = String::new();
-                    serialize_release(&mut output, release, &Options::default());
+                    serialize_release(
+                        &mut output,
+                        release,
+                        &ChangeLogSerOptionRelease {
+                            section_order: vec![],
+                            serialise_title: false,
+                        },
+                    );
                     println!("{}", output);
                 }
                 None => {

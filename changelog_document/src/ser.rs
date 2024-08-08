@@ -3,11 +3,26 @@ use crate::*;
 // todo: use io::Write
 
 #[derive(Debug, Clone, Default)]
-pub struct Options {
-    pub section_order: Vec<String>,
+pub struct ChangeLogSerOption {
+    pub release_option: ChangeLogSerOptionRelease,
 }
 
-pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
+#[derive(Debug, Clone)]
+pub struct ChangeLogSerOptionRelease {
+    pub section_order: Vec<String>,
+    pub serialise_title: bool,
+}
+
+impl Default for ChangeLogSerOptionRelease {
+    fn default() -> Self {
+        Self {
+            section_order: Default::default(),
+            serialise_title: true,
+        }
+    }
+}
+
+pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) -> String {
     let mut s = String::new();
 
     if let Some(header) = &changelog.header {
@@ -16,7 +31,7 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
     }
 
     for release in changelog.releases.values() {
-        serialize_release(&mut s, release, options);
+        serialize_release(&mut s, release, &options.release_option);
     }
 
     if !changelog.footer_links.links.is_empty() {
@@ -45,7 +60,7 @@ pub fn serialize_release_section_note(s: &mut String, note: &ReleaseSectionNote)
 }
 
 // todo: handle footer links
-pub fn serialize_release(s: &mut String, release: &Release, options: &Options) {
+pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogSerOptionRelease) {
     let title = if let Some(title) = &release.title.title {
         format!("\n## [{}] - {}\n", release.title.version, title)
     } else {
@@ -95,8 +110,23 @@ mod test {
 
     #[test]
     fn test() {
-        let output = serialize_changelog(&CHANGELOG1, &Options::default());
+        let output = serialize_changelog(&CHANGELOG1, &ChangeLogSerOption::default());
 
         println!("{}", output);
+    }
+
+    #[test]
+    fn test2() {
+        let release_note = ReleaseSectionNote {
+            scope: Some("data".into()),
+            message: "the program".into(),
+            context: vec!["- fix la base".into(), "49-3 hihi".into()],
+        };
+
+        let mut output = String::new();
+
+        serialize_release_section_note(&mut output, &release_note);
+
+        println!("{:?}", output);
     }
 }

@@ -1,5 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
+use changelog::ser::{ChangeLogSerOption, ChangeLogSerOptionRelease};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +18,7 @@ impl Default for Config {
 
 impl Config {
     #[inline]
-    pub fn into_changelog_ser_options(self) -> changelog::ser::Options {
+    pub fn into_changelog_ser_options(self) -> changelog::ser::ChangeLogSerOption {
         self.map.into_changelog_ser_options()
     }
 }
@@ -42,9 +43,12 @@ impl Display for CommitMessageParsing {
 pub struct MapMessageToSection(pub IndexMap<String, HashSet<String>>);
 
 impl MapMessageToSection {
-    pub fn into_changelog_ser_options(self) -> changelog::ser::Options {
-        changelog::ser::Options {
-            section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+    pub fn into_changelog_ser_options(self) -> ChangeLogSerOption {
+        ChangeLogSerOption {
+            release_option: ChangeLogSerOptionRelease {
+                section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+                ..Default::default()
+            },
         }
     }
 
