@@ -25,12 +25,20 @@ impl Default for ChangeLogSerOptionRelease {
 pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) -> String {
     let mut s = String::new();
 
+    let mut should_new_line = false;
+
     if let Some(header) = &changelog.header {
         s.push_str(header);
         s.push('\n');
+
+        should_new_line = true;
     }
 
     for release in changelog.releases.values() {
+        if should_new_line {
+            s.push('\n');
+        }
+        should_new_line = true;
         serialize_release(&mut s, release, &options.release_option);
     }
 
@@ -45,32 +53,28 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) 
     s
 }
 
-pub fn serialize_release_section_note(s: &mut String, note: &ReleaseSectionNote) {
-    let note_title = if let Some(scope) = &note.scope {
-        format!("- {}: {}\n", scope, note.message)
-    } else {
-        format!("- {}\n", note.message)
-    };
-
-    s.push_str(&note_title);
-
-    for context in &note.context {
-        s.push_str(&format!("  {}\n", context));
-    }
-}
-
 // todo: handle footer links
 pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogSerOptionRelease) {
-    let title = if let Some(title) = &release.title.title {
-        format!("\n## [{}] - {}\n", release.title.version, title)
-    } else {
-        format!("\n## [{}]\n", release.title.version)
-    };
+    let mut should_new_line = false;
 
-    s.push_str(&title);
+    if options.serialise_title {
+        let title = if let Some(title) = &release.title.title {
+            format!("## [{}] - {}\n", release.title.version, title)
+        } else {
+            format!("## [{}]\n", release.title.version)
+        };
+
+        s.push_str(&title);
+
+        should_new_line = true;
+    }
 
     if let Some(header) = &release.header {
-        s.push_str(&format!("\n{}\n", header));
+        if should_new_line {
+            s.push('\n');
+        }
+        s.push_str(&format!("{}\n", header));
+        should_new_line = true;
     }
 
     let note_section_sorted = {
@@ -89,15 +93,39 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
     };
 
     for sections in &note_section_sorted {
-        s.push_str(&format!("\n### {}\n\n", sections.title));
+        if !sections.notes.is_empty() {
+            if should_new_line {
+                s.push('\n');
+            }
+            should_new_line = true;
 
-        for note in &sections.notes {
-            serialize_release_section_note(s, note);
+            s.push_str(&format!("### {}\n\n", sections.title));
+
+            for note in &sections.notes {
+                serialize_release_section_note(s, note);
+            }
         }
     }
 
     if let Some(footer) = &release.footer {
-        s.push_str(&format!("\n{}\n", footer));
+        if should_new_line {
+            s.push('\n');
+        }
+        s.push_str(&format!("{}\n", footer));
+    }
+}
+
+pub fn serialize_release_section_note(s: &mut String, note: &ReleaseSectionNote) {
+    let note_title = if let Some(scope) = &note.scope {
+        format!("- {}: {}\n", scope, note.message)
+    } else {
+        format!("- {}\n", note.message)
+    };
+
+    s.push_str(&note_title);
+
+    for context in &note.context {
+        s.push_str(&format!("  {}\n", context));
     }
 }
 

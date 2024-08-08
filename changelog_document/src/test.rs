@@ -65,7 +65,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
             },
         );
 
-        let version = String::from("Unreleased");
+        let version = String::from("0.1.0");
         releases.insert(
             version.clone(),
             Release {
