@@ -13,20 +13,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - stdout option
 - stdin pipe
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/commits/v0.1.3
-
-## [0.1.3](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.3)
-
-### Added
-
-- release subcommand
-- release changelog in CI
-- sort by scope
-- stdout option
-- stdin pipe
-
-Full Changelog: https://github.com/wiiznokes/changelog-generator/commits/v0.1.3
-
 ## [0.1.2]
 
 ### Added
