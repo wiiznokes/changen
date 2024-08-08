@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
       - uses: Swatinem/rust-cache@v2
       - run: |
           git tag ${{ github.event.inputs.tag }} || true
@@ -33,7 +36,8 @@ jobs:
 
       - uses: taiki-e/create-gh-release-action@v1
         with:
-          changelog: RELEASE_CHANGELOG.md
+          # currently cause problem because the file is parsed
+          #changelog: RELEASE_CHANGELOG.md
           ref: refs/tags/${{ github.event.inputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
