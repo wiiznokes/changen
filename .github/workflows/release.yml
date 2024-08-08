@@ -14,6 +14,9 @@ on:
     tags:
       - v[0-9]+.*
 
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -39,13 +42,6 @@ jobs:
           # https://cli.github.com/manual/gh_release_create
           gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \
             --notes-file RELEASE_CHANGELOG.md --target $GITHUB_SHA
-
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          # currently cause problem because the file is parsed
-          #changelog: RELEASE_CHANGELOG.md
-          ref: refs/tags/${{ github.event.inputs.tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   upload-assets:
     needs: create-release

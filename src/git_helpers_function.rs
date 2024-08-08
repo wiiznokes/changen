@@ -71,12 +71,16 @@ pub fn tags_list() -> VecDeque<String> {
         .output()
         .expect("Failed to execute git command");
 
-    String::from_utf8(output.stdout)
+    let tags = String::from_utf8(output.stdout)
         .unwrap()
         .trim()
         .lines()
         .map(ToString::to_string)
-        .collect()
+        .collect();
+
+    debug!("tags: {:?}", tags);
+
+    tags
 }
 
 pub fn try_get_repo(repo: Option<String>) -> Option<String> {
