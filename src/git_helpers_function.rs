@@ -11,7 +11,7 @@ pub struct RawCommit {
 }
 
 impl RawCommit {
-    pub fn new() -> Self {
+    pub fn last_from_fs() -> Self {
         let sha = last_commit_sha();
 
         Self {
@@ -21,6 +21,24 @@ impl RawCommit {
             sha,
         }
     }
+
+    pub fn from_sha(sha: &str) -> Self {
+        Self {
+            message: last_commit_message(),
+            desc: last_commit_description(),
+            list_files: commit_files_list(&sha),
+            sha: sha.into(),
+        }
+    }
+}
+
+pub fn commit_message(sha: &str) -> String {
+    let output = Command::new("git")
+        .args(["log", "-1", "--pretty=%s"])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
 pub fn last_commit_message() -> String {
@@ -53,6 +71,20 @@ pub fn last_commit_sha() -> String {
 pub fn commit_files_list(sha: &str) -> Vec<String> {
     let output = Command::new("git")
         .args(["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout)
+        .unwrap()
+        .trim()
+        .lines()
+        .map(ToString::to_string)
+        .collect()
+}
+
+pub fn commit_between_tags_list(tags: &str) -> Vec<String> {
+    let output = Command::new("git")
+        .args(["log", "--oneline", tags, "--format=format:%H"])
         .output()
         .expect("Failed to execute git command");
 

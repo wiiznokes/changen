@@ -35,7 +35,7 @@ pub fn get_release_note(
         map,
     } = options;
 
-    let raw_commit = RawCommit::new();
+    let raw_commit = RawCommit::last_from_fs();
 
     if let Response::Yes { reason } = commit_should_be_ignored(&raw_commit, &changelog_path) {
         eprintln!("Ignoring this commit. {reason}");
