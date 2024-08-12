@@ -1,13 +1,14 @@
 use crate::{
     commit_parser::{parse_commit, Commit},
-    git_helpers_function::{try_get_repo, RawCommit},
-    git_provider::GitProvider,
+    git_helpers_function::{commits_between_tags, try_get_repo, RawCommit},
+    git_provider::{GitProvider, RelatedPr},
 };
 use anyhow::{bail, Result};
-use changelog::ReleaseSectionNote;
+use changelog::{ser::serialize_release_section_note, Release, ReleaseSection, ReleaseSectionNote};
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
+#[derive(Debug, Clone)]
 pub struct GenerateReleaseNoteOptions<'a> {
     pub changelog_path: String,
     pub parsing: CommitMessageParsing,
@@ -20,7 +21,90 @@ pub struct GenerateReleaseNoteOptions<'a> {
     pub map: &'a MapMessageToSection,
 }
 
-pub fn get_release_note(
+pub fn gen_release_notes(
+    unreleased: &mut Release,
+    milestone: Option<String>,
+    tags: Option<String>,
+    options: GenerateReleaseNoteOptions,
+) -> Result<()> {
+    if let Some(milestone) = milestone {
+        let repo = try_get_repo(options.repo.to_owned()).unwrap();
+
+        for pr in options.provider.milestone_prs(&repo, &milestone)? {
+            let raw_commit = RawCommit {
+                message: pr.message,
+                desc: pr.body,
+                sha: "".into(),
+                list_files: vec![],
+            };
+
+            match get_release_note(raw_commit, Some(pr.inner), options.clone()) {
+                Ok(Some((section_title, release_note))) => {
+                    insert_release_note(unreleased, section_title, release_note);
+                }
+                Ok(None) => {}
+                Err(e) => error!("{e}"),
+            }
+        }
+
+        return Ok(());
+    }
+
+    if let Some(tags) = tags {
+        for sha in commits_between_tags(&tags) {
+            let raw_commit = RawCommit::from_sha(&sha);
+
+            match get_release_note(raw_commit, None, options.clone()) {
+                Ok(Some((section_title, release_note))) => {
+                    insert_release_note(unreleased, section_title, release_note);
+                }
+                Ok(None) => {}
+                Err(e) => error!("{e}"),
+            }
+        }
+
+        return Ok(());
+    }
+
+    if let Some((section_title, release_note)) =
+        get_release_note(RawCommit::last_from_fs(), None, options)?
+    {
+        let mut added = String::new();
+        serialize_release_section_note(&mut added, &release_note);
+
+        insert_release_note(unreleased, section_title.clone(), release_note);
+
+        eprintln!("Release note:\n{added}successfully added in the {section_title} section.",)
+    }
+
+    Ok(())
+}
+
+fn insert_release_note(
+    unreleased: &mut Release,
+    section_title: String,
+    release_note: ReleaseSectionNote,
+) {
+    let section = if let Some(section) = unreleased.note_sections.get_mut(&section_title) {
+        section
+    } else {
+        let release_section = ReleaseSection {
+            title: section_title.clone(),
+            notes: vec![],
+        };
+
+        unreleased
+            .note_sections
+            .insert(section_title.clone(), release_section);
+        unreleased.note_sections.get_mut(&section_title).unwrap()
+    };
+
+    section.notes.push(release_note);
+}
+
+fn get_release_note(
+    raw_commit: RawCommit,
+    related_pr_arg: Option<RelatedPr>,
     options: GenerateReleaseNoteOptions,
 ) -> Result<Option<(String, ReleaseSectionNote)>> {
     let GenerateReleaseNoteOptions {
@@ -34,8 +118,6 @@ pub fn get_release_note(
         omit_thanks,
         map,
     } = options;
-
-    let raw_commit = RawCommit::last_from_fs();
 
     if let Response::Yes { reason } = commit_should_be_ignored(&raw_commit, &changelog_path) {
         eprintln!("Ignoring this commit. {reason}");
@@ -93,6 +175,8 @@ pub fn get_release_note(
 
     let related_pr = if omit_pr_link && omit_thanks {
         None
+    } else if related_pr_arg.is_some() {
+        related_pr_arg
     } else {
         match try_get_repo(repo.to_owned()) {
             Some(repo) => match provider.related_pr(&repo, &raw_commit.sha) {

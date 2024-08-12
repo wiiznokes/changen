@@ -15,60 +15,51 @@ impl RawCommit {
         let sha = last_commit_sha();
 
         Self {
-            message: last_commit_message(),
-            desc: last_commit_description(),
-            list_files: commit_files_list(&sha),
+            message: commit_message(&sha),
+            desc: commit_description(&sha),
+            list_files: commit_files(&sha),
             sha,
         }
     }
 
     pub fn from_sha(sha: &str) -> Self {
         Self {
-            message: last_commit_message(),
-            desc: last_commit_description(),
-            list_files: commit_files_list(&sha),
+            message: commit_message(sha),
+            desc: commit_description(sha),
+            list_files: commit_files(sha),
             sha: sha.into(),
         }
     }
 }
 
-pub fn commit_message(sha: &str) -> String {
-    let output = Command::new("git")
-        .args(["log", "-1", "--pretty=%s"])
-        .output()
-        .expect("Failed to execute git command");
-
-    String::from_utf8(output.stdout).unwrap().trim().into()
-}
-
-pub fn last_commit_message() -> String {
-    let output = Command::new("git")
-        .args(["log", "-1", "--pretty=%s"])
-        .output()
-        .expect("Failed to execute git command");
-
-    String::from_utf8(output.stdout).unwrap().trim().into()
-}
-
-pub fn last_commit_description() -> String {
-    let output = Command::new("git")
-        .args(["log", "-1", "--pretty=%b"])
-        .output()
-        .expect("Failed to execute git command");
-
-    String::from_utf8(output.stdout).unwrap().trim().into()
-}
-
 pub fn last_commit_sha() -> String {
     let output = Command::new("git")
-        .args(["rev-parse", "--short", "HEAD"])
+        .args(["rev-parse", "HEAD"])
         .output()
         .expect("Failed to execute git command");
 
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-pub fn commit_files_list(sha: &str) -> Vec<String> {
+pub fn commit_message(sha: &str) -> String {
+    let output = Command::new("git")
+        .args(["show", "-s", "--pretty=%s", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout).unwrap().trim().into()
+}
+
+pub fn commit_description(sha: &str) -> String {
+    let output = Command::new("git")
+        .args(["show", "-s", "--pretty=%b", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout).unwrap().trim().into()
+}
+
+pub fn commit_files(sha: &str) -> Vec<String> {
     let output = Command::new("git")
         .args(["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
         .output()
@@ -82,7 +73,7 @@ pub fn commit_files_list(sha: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn commit_between_tags_list(tags: &str) -> Vec<String> {
+pub fn commits_between_tags(tags: &str) -> Vec<String> {
     let output = Command::new("git")
         .args(["log", "--oneline", tags, "--format=format:%H"])
         .output()
@@ -122,7 +113,7 @@ pub fn try_get_repo(repo: Option<String>) -> Option<String> {
     };
 
     if repo.is_none() {
-        eprintln!("Couln't get the repo name. Example: \"wizznokes/changelog-generator\".");
+        eprintln!("couldn't get the repo name. Example: \"wiiznokes/changelog-generator\".");
     }
 
     repo
@@ -134,17 +125,9 @@ mod test {
 
     #[test]
     fn test() {
-        let res = last_commit_message();
+        let raw = RawCommit::last_from_fs();
 
-        dbg!(&res);
-
-        let res = last_commit_description();
-
-        dbg!(&res);
-
-        let res = last_commit_sha();
-
-        dbg!(&res);
+        dbg!(&raw);
 
         let res = tags_list();
 
