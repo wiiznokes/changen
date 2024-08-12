@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - exclude no pr options in [#19](https://github.com/wiiznokes/changelog-generator/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
 
+### Changed
+
+- default_value_t in [commit](https://github.com/wiiznokes/changelog-generator/commit/da5d510410df619b8b19116c076ab080876ab7f7) by [@wiiznokes](https://github.com/wiiznokes)
+
 ### Documentation
 
 - mention git rebase config & fix some typos
