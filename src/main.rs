@@ -57,7 +57,7 @@ enum Commands {
         file: Option<PathBuf>,
         #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
         map: Option<PathBuf>,
-        #[arg(long, help = "Parsing of the commit message.", default_value_t = CommitMessageParsing::Smart)]
+        #[arg(long, help = "Parsing of the commit message.", default_value_t)]
         parsing: CommitMessageParsing,
         #[arg(long, help = "Don't include unidentified commits.")]
         exclude_unidentified: bool,
@@ -66,7 +66,11 @@ enum Commands {
             help = "Don't include commits which are not attached to a pull request."
         )]
         exclude_not_pr: bool,
-        #[arg(long, help = "We use the Github api to map commit sha to PRs.", default_value_t = GitProvider::Github)]
+        #[arg(
+            long,
+            help = "We use the Github api to map commit sha to PRs.",
+            default_value_t
+        )]
         provider: GitProvider,
         #[arg(
             long,
@@ -96,7 +100,11 @@ enum Commands {
             help = "Version number for the release. If omitted, use the last tag using \"git\" (omitting the 'v' prefix)."
         )]
         version: Option<String>,
-        #[arg(long, help = "We use the Github link to produce the tags diff", default_value_t = GitProvider::Github)]
+        #[arg(
+            long,
+            help = "We use the Github link to produce the tags diff",
+            default_value_t
+        )]
         provider: GitProvider,
         #[arg(
             long,

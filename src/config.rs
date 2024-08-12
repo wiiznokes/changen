@@ -1,6 +1,7 @@
 use std::{collections::HashSet, fmt::Display};
 
 use changelog::ser::{ChangeLogSerOption, ChangeLogSerOptionRelease};
+use clap::ValueEnum;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -23,13 +24,15 @@ impl Config {
     }
 }
 
-#[derive(clap::ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum CommitMessageParsing {
     #[default]
     Smart,
     Strict,
 }
 
+// todo: use derive_more::Display when this issue is resolved
+// https://github.com/JelteF/derive_more/issues/216
 impl Display for CommitMessageParsing {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
