@@ -79,6 +79,10 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("commits_between_tags error")
+    }
+
     String::from_utf8(output.stdout)
         .unwrap()
         .trim()
@@ -131,6 +135,10 @@ mod test {
         dbg!(&raw);
 
         let res = tags_list();
+
+        dbg!(&res);
+
+        let res = commits_between_tags("..v0.1.5");
 
         dbg!(&res);
     }
