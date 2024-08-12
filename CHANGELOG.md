@@ -5,19 +5,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-### Added
-
-- exclude no pr options in [#19](https://github.com/wiiznokes/changelog-generator/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
-- add internal keyword in [commit](https://github.com/wiiznokes/changelog-generator/commit/1c80ea700771dddc01a7ae07dcd78d93af9343a1) by [@wiiznokes](https://github.com/wiiznokes)
-
-### Changed
-
-- default_value_t in [commit](https://github.com/wiiznokes/changelog-generator/commit/da5d510410df619b8b19116c076ab080876ab7f7) by [@wiiznokes](https://github.com/wiiznokes)
-
-### Documentation
-
-- mention git rebase config & fix some typos
-
 ## [0.1.5](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.5)
 
 ### Added

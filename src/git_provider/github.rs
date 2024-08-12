@@ -97,7 +97,7 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
             Ok(RelatedPr {
                 url,
                 author,
-                pr_id: "commit".into(),
+                pr_id: sha[..7].into(),
                 author_link,
                 is_pr: false,
             })

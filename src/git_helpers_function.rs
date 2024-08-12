@@ -83,6 +83,7 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
         .unwrap()
         .trim()
         .lines()
+        .rev()
         .map(ToString::to_string)
         .collect()
 }
