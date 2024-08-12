@@ -83,6 +83,18 @@ enum Commands {
         omit_thanks: bool,
         #[arg(long, help = "Print the result on the standard output.")]
         stdout: bool,
+        #[arg(
+            long,
+            help = "Include all commits of this milestone",
+            conflicts_with = "tags"
+        )]
+        milestone: Option<String>,
+        #[arg(
+            long,
+            help = "Include all commits between this tags. Ex: \"v1.0.1..HEAD\".",
+            conflicts_with = "milestone"
+        )]
+        tags: Option<String>,
     },
     /// Generate a new release
     Release {
@@ -241,6 +253,8 @@ fn main() -> anyhow::Result<()> {
             omit_pr_link,
             omit_thanks,
             stdout,
+            milestone,
+            tags,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
