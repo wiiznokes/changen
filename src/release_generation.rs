@@ -21,7 +21,7 @@ pub fn release(
     let version = match version {
         Some(version) => {
             if version.starts_with('v') {
-                bail!("Error: You shound't include the v prefix in the version.")
+                bail!("Error: You shouldn't include the v prefix in the version.")
             }
             version
         }

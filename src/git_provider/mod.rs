@@ -31,6 +31,13 @@ pub struct RelatedPr {
 }
 
 #[derive(Debug, Clone)]
+pub struct RelatedPrExt {
+    pub message: String,
+    pub body: String,
+    pub inner: RelatedPr,
+}
+
+#[derive(Debug, Clone)]
 pub struct DiffTags {
     pub prev: Option<String>,
     pub current: String,
@@ -54,6 +61,13 @@ impl GitProvider {
     pub fn release_link(&self, repo: &str, tag: &str) -> anyhow::Result<String> {
         match self {
             GitProvider::Github => github::release_link(repo, tag),
+            GitProvider::Other => bail!("No git provider was selected"),
+        }
+    }
+
+    pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPrExt>> {
+        match self {
+            GitProvider::Github => github::milestone_prs(repo, milestone),
             GitProvider::Other => bail!("No git provider was selected"),
         }
     }

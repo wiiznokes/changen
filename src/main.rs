@@ -8,16 +8,12 @@ use std::{
 use anyhow::bail;
 use changelog::{
     de::parse_changelog,
-    ser::{
-        serialize_changelog, serialize_release, serialize_release_section_note,
-        ChangeLogSerOptionRelease,
-    },
-    ReleaseSection,
+    ser::{serialize_changelog, serialize_release, ChangeLogSerOptionRelease},
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};
 use git_provider::GitProvider;
-use release_note_generation::{get_release_note, GenerateReleaseNoteOptions};
+use release_note_generation::{gen_release_notes, GenerateReleaseNoteOptions};
 
 #[macro_use]
 extern crate log;
@@ -83,6 +79,18 @@ enum Commands {
         omit_thanks: bool,
         #[arg(long, help = "Print the result on the standard output.")]
         stdout: bool,
+        #[arg(
+            long,
+            help = "Include all commits of this milestone",
+            conflicts_with = "tags"
+        )]
+        milestone: Option<String>,
+        #[arg(
+            long,
+            help = "Include all commits between this tags. Ex: \"v1.0.1..HEAD\".",
+            conflicts_with = "milestone"
+        )]
+        tags: Option<String>,
     },
     /// Generate a new release
     Release {
@@ -229,6 +237,9 @@ fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
+    debug!("is terminal: {}", io::stdin().is_terminal());
+    debug!("is terminal stdout: {}", io::stdout().is_terminal());
+
     match cli.command {
         Commands::Generate {
             file,
@@ -241,13 +252,13 @@ fn main() -> anyhow::Result<()> {
             omit_pr_link,
             omit_thanks,
             stdout,
+            milestone,
+            tags,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
 
-            debug!("is terminal: {}", io::stdin().is_terminal());
-            debug!("is terminal stdout: {}", io::stdout().is_terminal());
             debug!("path: {}", path.display());
             debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
@@ -256,8 +267,11 @@ fn main() -> anyhow::Result<()> {
 
             let config = get_config(map)?;
 
-            let Some((section_title, release_note)) =
-                get_release_note(GenerateReleaseNoteOptions {
+            gen_release_notes(
+                unreleased,
+                milestone,
+                tags,
+                GenerateReleaseNoteOptions {
                     changelog_path: path.to_string_lossy().to_string(),
                     parsing,
                     exclude_unidentified,
@@ -267,34 +281,12 @@ fn main() -> anyhow::Result<()> {
                     omit_pr_link,
                     omit_thanks,
                     map: &config.map,
-                })?
-            else {
-                return Ok(());
-            };
-
-            let section = if let Some(section) = unreleased.note_sections.get_mut(&section_title) {
-                section
-            } else {
-                let release_section = ReleaseSection {
-                    title: section_title.clone(),
-                    notes: vec![],
-                };
-
-                unreleased
-                    .note_sections
-                    .insert(section_title.clone(), release_section);
-                unreleased.note_sections.get_mut(&section_title).unwrap()
-            };
-
-            section.notes.push(release_note.clone());
+                },
+            )?;
 
             let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
 
             write_output(&output, &path, stdout)?;
-
-            let mut added = String::new();
-            serialize_release_section_note(&mut added, &release_note);
-            eprintln!("Release note:\n{added}succefully added in the {section_title} section.",)
         }
         #[allow(unused_variables)]
         Commands::Release {

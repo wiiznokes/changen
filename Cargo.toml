@@ -10,7 +10,7 @@ repository = "https://github.com/wiiznokes/changelog-generator.git"
 
 [package]
 name = "changelog-gen"
-version = "0.1.5"
+version = "0.1.6"
 keywords = ["changelog", "release", "tool", "release-note"]
 description = "Helper program to manage a changelog"
 categories = ["development-tools"]
@@ -46,4 +46,4 @@ serde = { version = "1", features = ["derive"] }
 # thiserror = "1"
 
 [patch.crates-io]
-# changelog_document = { path = "./changelog_document" }
+changelog_document = { path = "./changelog_document" }

@@ -97,7 +97,7 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
             Ok(RelatedPr {
                 url,
                 author,
-                pr_id: "commit".into(),
+                pr_id: sha[..7].into(),
                 author_link,
                 is_pr: false,
             })
@@ -124,8 +124,75 @@ pub fn release_link(repo: &str, tag: &str) -> anyhow::Result<String> {
     Ok(format!("https://github.com/{repo}/releases/tag/{tag}"))
 }
 
+pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPrExt>> {
+    let json = request_github(&format!(
+        "https://api.github.com/search/issues?q=repo:{repo}+is:pr+is:merged+milestone:{milestone}"
+    ))?;
+
+    let array = json
+        .get("items")
+        .expect("no items")
+        .as_array()
+        .expect("not an array");
+
+    let mut res = Vec::new();
+
+    for value in array {
+        let url = value
+            .get("html_url")
+            .ok_or(anyhow!("no html_url found"))?
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        let pr_id = value
+            .get("number")
+            .ok_or(anyhow!("no number found"))?
+            .as_u64()
+            .unwrap();
+
+        let pr_id = format!("#{}", pr_id);
+
+        let author = value
+            .get("user")
+            .ok_or(anyhow!("no user found"))?
+            .get("login")
+            .ok_or(anyhow!("no login found"))?
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        let author_link = format!("https://github.com/{}", author);
+
+        let message = value
+            .get("title")
+            .ok_or(anyhow!("no title found"))?
+            .to_string();
+        let body = value
+            .get("body")
+            .ok_or(anyhow!("no title found"))?
+            .to_string();
+
+        res.push(RelatedPrExt {
+            message,
+            body,
+            inner: RelatedPr {
+                url,
+                pr_id,
+                author,
+                author_link,
+                is_pr: true,
+            },
+        });
+    }
+
+    Ok(res)
+}
+
 #[cfg(test)]
 mod test {
+    use crate::git_provider::github::milestone_prs;
+
     use super::{diff_link, request_related_pr, DiffTags};
 
     #[test]
@@ -168,5 +235,16 @@ mod test {
             res,
             "https://github.com/wiiznokes/fan-control/compare/v2024.7...v2024.7.30".to_owned()
         );
+    }
+
+    #[test]
+    fn milestone() {
+        let res = milestone_prs("iced-rs/iced", "0.13").unwrap();
+
+        dbg!(&res);
+
+        let res = request_related_pr("wiiznokes/changelog-generator", "84d7fa4").unwrap();
+
+        dbg!(&res);
     }
 }
