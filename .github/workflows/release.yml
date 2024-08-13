@@ -27,7 +27,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
       - run: |
-          export LAST_TAG="$(git tag | tail -n 1)"
+          export LAST_TAG="$(git tag | sort -V | tail -n 2 | head -n 1)"
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
