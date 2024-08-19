@@ -70,6 +70,12 @@ pub fn gen_release_notes(
 
             let related_pr = match last_prs {
                 Some(ref mut last_prs) => last_prs.remove(&sha),
+                None => None,
+            };
+
+            // fallback to derive from commit
+            let related_pr = match related_pr {
+                Some(related_pr) => Some(related_pr),
                 None => match &options.repo {
                     Some(repo) => options.provider.offline_related_pr(repo, &raw_commit),
                     None => None,
