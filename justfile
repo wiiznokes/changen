@@ -35,3 +35,6 @@ expand:
 
 gen_all:
 	cargo run -- generate -f res/CHANGELOG_DEFAULT.md --stdout --exclude-unidentified --tags 0.1.7 > CHANGELOG2.md
+
+gen_release:
+	cargo run -- release -f CHANGELOG2.md --stdout  > CHANGELOG3.md
