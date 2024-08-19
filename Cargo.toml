@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "changelog_document"]
+members = [".", "changelog_document", "expe"]
 
 [workspace.package]
 authors = ["wiiznokes <wiiznokes2@gmail.com>"]
@@ -33,6 +33,7 @@ pom.workspace = true
 log = "0.4"
 env_logger = "0.11"
 cached = "0.53"
+semver = "1"
 # derive_more = { version = "1", features = ["display"] }
 
 [dev-dependencies]

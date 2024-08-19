@@ -226,6 +226,7 @@ dependencies = [
  "pom",
  "pretty_assertions",
  "reqwest",
+ "semver",
  "serde",
  "serde_json",
 ]
@@ -389,6 +390,14 @@ checksum = "534c5cf6194dfab3db3242765c03bbe257cf92f22b38f6bc0c58d59108a820ba"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "expe"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "semver",
 ]
 
 [[package]]
@@ -1100,6 +1109,12 @@ dependencies = [
  "core-foundation-sys",
  "libc",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61697e0a1c7e512e84a621326239844a24d8207b4669b41bc18b32ea5cbf988b"
 
 [[package]]
 name = "serde"

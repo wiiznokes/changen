@@ -26,11 +26,8 @@ pub fn release(
             version
         }
         None => {
-            let tag = if let Some(tag) = tags_list().pop_back() {
-                match tag.strip_prefix('v') {
-                    Some(version) => version.to_owned(),
-                    None => tag,
-                }
+            let tag = if let Some(tag) = tags_list()?.pop_back() {
+                tag.to_string()
             } else {
                 bail!("No version provided. Can't fall back to last tag because there is none.");
             };
@@ -69,10 +66,10 @@ pub fn release(
     prev_unreleased.title.version = version.clone();
 
     try_get_repo(repo.clone()).inspect(|repo| {
-        let mut tags = tags_list();
+        let mut tags = tags_list().unwrap();
 
         match tags.pop_back() {
-            Some(tag) => match provider.release_link(repo, &tag) {
+            Some(tag) => match provider.release_link(repo, &tag.to_string()) {
                 Ok(link) => {
                     prev_unreleased.title.release_link = Some(link);
                 }
@@ -88,13 +85,16 @@ pub fn release(
 
     if !omit_diff {
         let link = if let Some(repo) = try_get_repo(repo) {
-            let mut tags = tags_list();
+            let mut tags = tags_list()?;
 
             match tags.pop_back() {
                 Some(current) => {
-                    let prev = tags.pop_back();
+                    let prev = tags.pop_back().map(|e| e.to_string());
 
-                    let diff_tags = DiffTags { prev, current };
+                    let diff_tags = DiffTags {
+                        prev,
+                        current: current.to_string(),
+                    };
 
                     match provider.diff_link(&repo, &diff_tags) {
                         Ok(link) => Some(link),

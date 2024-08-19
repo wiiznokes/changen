@@ -1,6 +1,7 @@
 use std::{collections::VecDeque, process::Command};
 
 use cached::proc_macro::cached;
+use semver::Version;
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
@@ -92,23 +93,26 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
         .collect()
 }
 
-#[cached]
-pub fn tags_list() -> VecDeque<String> {
+#[cached(result = true)]
+pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
     let output = Command::new("git")
         .arg("tag")
         .output()
         .expect("Failed to execute git command");
 
-    let tags = String::from_utf8(output.stdout)
+    let mut tags = String::from_utf8(output.stdout)
         .unwrap()
         .trim()
         .lines()
-        .map(ToString::to_string)
-        .collect();
+        .map(Version::parse)
+        .collect::<Result<Vec<Version>, _>>()
+        .map_err(anyhow::Error::msg)?;
 
     debug!("tags: {:?}", tags);
 
-    tags
+    tags.sort();
+
+    Ok(tags.into())
 }
 
 pub fn try_get_repo(repo: Option<String>) -> Option<String> {
