@@ -19,8 +19,10 @@ trait ClientExt {
 impl ClientExt for RequestBuilder {
     fn bearer_auth_env(self, name: &str) -> Self {
         if let Ok(token) = env::var(name) {
+            info!("github token is used");
             self.bearer_auth(token)
         } else {
+            info!("no github token used");
             self
         }
     }
