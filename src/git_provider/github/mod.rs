@@ -1,5 +1,10 @@
+use std::env;
+
 use anyhow::{anyhow, bail};
-use reqwest::{blocking::Client, header::USER_AGENT};
+use reqwest::{
+    blocking::{Client, RequestBuilder},
+    header::USER_AGENT,
+};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -7,12 +12,27 @@ use crate::utils::{self, TextInterpolate};
 
 use super::*;
 
+trait ClientExt {
+    fn bearer_auth_env(self, name: &str) -> Self;
+}
+
+impl ClientExt for RequestBuilder {
+    fn bearer_auth_env(self, name: &str) -> Self {
+        if let Ok(token) = env::var(name) {
+            self.bearer_auth(token)
+        } else {
+            self
+        }
+    }
+}
+
 fn request_github(api: &str) -> anyhow::Result<Value> {
     let client = Client::new();
 
     let response = client
         .get(api)
         .header(USER_AGENT, "my-github-client")
+        .bearer_auth_env("GITHUB_TOKEN")
         .send()?;
 
     if response.status().is_success() {
@@ -37,6 +57,7 @@ fn request_github_graphql(query: &str) -> anyhow::Result<Value> {
     let response = client
         .post("https://api.github.com/graphql")
         .header(USER_AGENT, "my-github-client")
+        .bearer_auth_env("GITHUB_TOKEN")
         .json(&request_body)
         .send()?;
 
@@ -200,7 +221,7 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
     interpolate.interpolate("owner", &repo.owner);
     interpolate.interpolate("first", &n.to_string());
 
-    let value = request_github_graphql(query)?;
+    let value = request_github_graphql(&interpolate.text())?;
 
     #[derive(Debug, Deserialize)]
     struct Response {
@@ -244,6 +265,8 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
         oid: String,
     }
 
+    dbg!(&value);
+
     let response = serde_json::value::from_value::<Response>(value)?;
 
     let res = response
@@ -268,9 +291,8 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
 
 #[cfg(test)]
 mod test {
-    use crate::git_provider::github::milestone_prs;
 
-    use super::{diff_link, request_related_pr, DiffTags};
+    use super::*;
 
     #[test]
     fn pr() {
@@ -319,8 +341,11 @@ mod test {
         let res = milestone_prs("iced-rs/iced", "0.13").unwrap();
 
         dbg!(&res);
+    }
 
-        let res = request_related_pr("wiiznokes/changelog-generator", "84d7fa4").unwrap();
+    #[test]
+    fn lasts() {
+        let res = last_prs("iced-rs/iced", 3).unwrap();
 
         dbg!(&res);
     }

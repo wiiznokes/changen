@@ -62,7 +62,7 @@ mod test {
         assert_eq!(
             repo,
             Repo {
-                owner: "wiizonkes".into(),
+                owner: "wiiznokes".into(),
                 name: "fan-control".into()
             }
         );

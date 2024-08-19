@@ -3,7 +3,7 @@
     pullRequests(
       first: ###first
       states: MERGED
-      orderBy: { field: MERGED_AT, direction: DESC }
+      orderBy: { field: UPDATED_AT, direction: DESC }
     ) {
       nodes {
         number

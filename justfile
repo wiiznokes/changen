@@ -1,4 +1,5 @@
 set windows-powershell := true
+set dotenv-path := ".env"
 
 pull: fmt prettier fix test
 
