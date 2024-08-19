@@ -34,4 +34,4 @@ test_perf:
 expand:
 
 gen_all:
-	cargo run -- generate -f res/CHANGELOG_DEFAULT.md --stdout --exclude-not-pr --exclude-unidentified --tags 0.1.7 > CHANGELOG2.md
+	cargo run -- generate -f res/CHANGELOG_DEFAULT.md --stdout --exclude-unidentified --tags 0.1.7 > CHANGELOG2.md

@@ -5,8 +5,8 @@ use semver::Version;
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
-    pub message: String,
-    pub desc: String,
+    pub title: String,
+    pub body: String,
     pub sha: String,
     pub list_files: Vec<String>,
 }
@@ -16,8 +16,8 @@ impl RawCommit {
         let sha = last_commit_sha();
 
         Self {
-            message: commit_message(&sha),
-            desc: commit_description(&sha),
+            title: commit_message(&sha),
+            body: commit_description(&sha),
             list_files: commit_files(&sha),
             sha,
         }
@@ -25,11 +25,15 @@ impl RawCommit {
 
     pub fn from_sha(sha: &str) -> Self {
         Self {
-            message: commit_message(sha),
-            desc: commit_description(sha),
+            title: commit_message(sha),
+            body: commit_description(sha),
             list_files: commit_files(sha),
             sha: sha.into(),
         }
+    }
+
+    pub fn short_commit(&self) -> &str {
+        &self.sha[0..7]
     }
 }
 

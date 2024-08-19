@@ -119,7 +119,7 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<Option<Relate
                 author,
                 pr_id,
                 author_link,
-                message,
+                title: message,
                 body,
                 merge_commit: Some(sha.into()),
             }))
@@ -201,7 +201,7 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
             pr_id,
             author,
             author_link,
-            message,
+            title: message,
             body,
             merge_commit: None,
         });
@@ -278,7 +278,7 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
             pr_id: format!("#{}", e.number),
             author_link: format!("https://github.com/{}", e.author.login),
             author: e.author.login,
-            message: e.title,
+            title: e.title,
             body: e.body,
             merge_commit: Some(e.merge_commit.oid),
         })

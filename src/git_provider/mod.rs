@@ -26,7 +26,7 @@ pub struct RelatedPr {
     pub pr_id: String,
     pub author: String,
     pub author_link: String,
-    pub message: String,
+    pub title: String,
     pub body: String,
     pub merge_commit: Option<String>,
 }

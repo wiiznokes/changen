@@ -1,5 +1,5 @@
 use crate::{
-    commit_parser::{parse_commit, Commit},
+    commit_parser::{parse_commit, FormattedCommit},
     git_helpers_function::{commits_between_tags, try_get_repo, RawCommit},
     git_provider::{GitProvider, RelatedPr},
 };
@@ -32,18 +32,17 @@ pub fn gen_release_notes(
 
         for pr in options.provider.milestone_prs(&repo, &milestone)? {
             let raw_commit = RawCommit {
-                message: pr.message.clone(),
-                desc: pr.body.clone(),
+                title: pr.title.clone(),
+                body: pr.body.clone(),
                 sha: "".into(),
                 list_files: vec![],
             };
 
-            match get_release_note(raw_commit, Some(&pr), options.clone()) {
-                Ok(Some((section_title, release_note))) => {
+            match get_release_note(&raw_commit, Some(&pr), options.clone()) {
+                Ok((section_title, release_note)) => {
                     insert_release_note(unreleased, section_title, release_note);
                 }
-                Ok(None) => {}
-                Err(e) => error!("{e}"),
+                Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
             }
         }
 
@@ -72,12 +71,11 @@ pub fn gen_release_notes(
                 None => None,
             };
 
-            match get_release_note(raw_commit, related_pr, options.clone()) {
-                Ok(Some((section_title, release_note))) => {
+            match get_release_note(&raw_commit, related_pr, options.clone()) {
+                Ok((section_title, release_note)) => {
                     insert_release_note(unreleased, section_title, release_note);
                 }
-                Ok(None) => {}
-                Err(e) => error!("{e}"),
+                Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
             }
         }
 
@@ -98,15 +96,16 @@ pub fn gen_release_notes(
     }
     .flatten();
 
-    if let Some((section_title, release_note)) =
-        get_release_note(raw_commit, related_pr.as_ref(), options)?
-    {
-        let mut added = String::new();
-        serialize_release_section_note(&mut added, &release_note);
+    match get_release_note(&raw_commit, related_pr.as_ref(), options) {
+        Ok((section_title, release_note)) => {
+            let mut added = String::new();
+            serialize_release_section_note(&mut added, &release_note);
 
-        insert_release_note(unreleased, section_title.clone(), release_note);
+            insert_release_note(unreleased, section_title.clone(), release_note);
 
-        eprintln!("Release note:\n{added}successfully added in the {section_title} section.",)
+            eprintln!("Release note:\n{added}successfully added in the {section_title} section.")
+        }
+        Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
     }
 
     Ok(())
@@ -135,10 +134,10 @@ fn insert_release_note(
 }
 
 fn get_release_note(
-    raw_commit: RawCommit,
+    raw_commit: &RawCommit,
     related_pr: Option<&RelatedPr>,
     options: GenerateReleaseNoteOptions,
-) -> Result<Option<(String, ReleaseSectionNote)>> {
+) -> Result<(String, ReleaseSectionNote)> {
     let GenerateReleaseNoteOptions {
         changelog_path,
         parsing,
@@ -151,27 +150,32 @@ fn get_release_note(
         map,
     } = options;
 
-    if let Response::Yes { reason } = commit_should_be_ignored(&raw_commit, &changelog_path) {
-        eprintln!("Ignoring this commit. {reason}");
-        return Ok(None);
+    if let Response::Yes { reason } = commit_should_be_ignored(raw_commit, &changelog_path) {
+        bail!("Ignoring commit. {reason}");
     }
 
-    let mut commit = match parse_commit(&raw_commit.message) {
+    let mut commit = match parse_commit(&raw_commit.title) {
         Ok(mut commit) => {
             let section = match map.map_section(&commit.section) {
                 Some(section) => section,
                 None => {
                     if parsing == CommitMessageParsing::Strict {
-                        bail!("No commit type found for this: {}", commit.section);
+                        bail!(
+                            "no corresponding commit type was found for {}",
+                            commit.section
+                        );
                     }
 
                     if let Some(section) =
-                        map.try_find_section((&raw_commit.message, &raw_commit.desc))
+                        map.try_find_section((&raw_commit.title, &raw_commit.body))
                     {
                         section
                     } else {
                         if exclude_unidentified {
-                            bail!("Unidentified commit type");
+                            bail!(
+                                "No corresponding commit type was found for {}",
+                                commit.section
+                            );
                         }
                         "Unidentified".into()
                     }
@@ -183,24 +187,28 @@ fn get_release_note(
         }
         Err(e) => {
             if parsing == CommitMessageParsing::Strict {
-                bail!("invalid commit syntax: {}", e);
+                bail!(
+                    "Commit {}: invalid syntax: {}",
+                    raw_commit.short_commit(),
+                    e
+                );
             }
 
             let section = if let Some(section) =
-                map.try_find_section((&raw_commit.message, &raw_commit.desc))
+                map.try_find_section((&raw_commit.title, &raw_commit.body))
             {
                 section
             } else {
                 if exclude_unidentified {
-                    bail!("Unidentified commit type");
+                    bail!("Not identified.");
                 }
                 "Unidentified".into()
             };
 
-            Commit {
+            FormattedCommit {
                 section,
                 scope: None,
-                message: raw_commit.message,
+                message: raw_commit.title.clone(),
             }
         }
     };
@@ -219,17 +227,17 @@ fn get_release_note(
             ));
         }
     } else if exclude_not_pr {
-        bail!("Error: No upstream pr was found for {}.", raw_commit.sha);
+        bail!("no upstream pr was found");
     };
 
-    Ok(Some((
+    Ok((
         commit.section,
         ReleaseSectionNote {
             scope: commit.scope,
             message: commit.message,
             context: vec![],
         },
-    )))
+    ))
 }
 
 #[derive(Debug, Clone)]
@@ -260,7 +268,7 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
 
     let names = ["changelog", "log", "chglog", "notes"];
 
-    let match_pat = |pat: &str| raw.message.contains(pat) || raw.desc.contains(pat);
+    let match_pat = |pat: &str| raw.title.contains(pat) || raw.body.contains(pat);
 
     for n in names {
         let patterns = [
@@ -273,7 +281,7 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
             if match_pat(pattern) {
                 return Response::Yes {
                     reason: format!(
-                        "The pattern \"{pattern}\" was matched in the commit message or description."
+                        "\"{pattern}\" was matched in the commit title or description."
                     ),
                 };
             }
@@ -292,15 +300,15 @@ mod test {
     #[test]
     fn ignore_commit() {
         let mut raw = RawCommit {
-            message: "fix: something !log".into(),
-            desc: "".into(),
+            title: "fix: something !log".into(),
+            body: "".into(),
             sha: "".into(),
             list_files: vec![],
         };
 
         assert!(commit_should_be_ignored(&raw, "").bool());
 
-        raw.message = "fix: something log".into();
+        raw.title = "fix: something log".into();
 
         assert!(!commit_should_be_ignored(&raw, "").bool());
     }
