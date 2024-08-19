@@ -39,6 +39,10 @@ pub fn last_commit_sha() -> String {
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
@@ -47,6 +51,10 @@ pub fn commit_author(sha: &str) -> String {
         .args(["show", "-s", "--pretty=%an", sha])
         .output()
         .expect("Failed to execute git command");
+
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
 
     String::from_utf8(output.stdout)
         .expect("Failed to parse UTF-8")
@@ -60,6 +68,10 @@ pub fn commit_title(sha: &str) -> String {
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
@@ -68,6 +80,9 @@ pub fn commit_body(sha: &str) -> String {
         .args(["show", "-s", "--pretty=%b", sha])
         .output()
         .expect("Failed to execute git command");
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
 
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
@@ -77,6 +92,10 @@ pub fn commit_files(sha: &str) -> Vec<String> {
         .args(["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
         .output()
         .expect("Failed to execute git command");
+
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
 
     String::from_utf8(output.stdout)
         .unwrap()
@@ -93,7 +112,10 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
         .expect("Failed to execute git command");
 
     if !output.status.success() {
-        panic!("commits_between_tags error")
+        panic!(
+            "commits_between_tags error: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )
     }
 
     String::from_utf8(output.stdout)
@@ -111,6 +133,10 @@ pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
         .arg("tag")
         .output()
         .expect("Failed to execute git command");
+
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
 
     let mut tags = String::from_utf8(output.stdout)
         .unwrap()
