@@ -105,8 +105,7 @@ pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
         .trim()
         .lines()
         .map(Version::parse)
-        .collect::<Result<Vec<Version>, _>>()
-        .map_err(anyhow::Error::msg)?;
+        .collect::<Result<Vec<Version>, _>>()?;
 
     debug!("tags: {:?}", tags);
 
