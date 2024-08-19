@@ -105,22 +105,19 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
 
             let author_link = format!("https://github.com/{}", author);
 
-            let message = obj
+            let title = obj
                 .get("title")
                 .ok_or(anyhow!("no title found"))?
                 .to_string();
-            let body = obj
-                .get("body")
-                .ok_or(anyhow!("no title found"))?
-                .to_string();
+            let body = obj.get("body").ok_or(anyhow!("no body found"))?.to_string();
 
             Ok(RelatedPr {
                 url,
                 author,
                 pr_id,
                 author_link,
-                title: message,
-                body,
+                title: Some(title),
+                body: Some(body),
                 merge_commit: Some(sha.into()),
                 is_pr: true,
             })
@@ -135,16 +132,6 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
                 .ok_or(anyhow!("no html_url found"))?
                 .as_str()
                 .unwrap()
-                .to_string();
-
-            let title = obj
-                .get("title")
-                .ok_or(anyhow!("no title found"))?
-                .to_string();
-
-            let body = obj
-                .get("body")
-                .ok_or(anyhow!("no title found"))?
                 .to_string();
 
             let author = obj
@@ -163,8 +150,8 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
                 author,
                 pr_id: sha[..7].into(),
                 author_link,
-                title,
-                body,
+                title: None,
+                body: None,
                 merge_commit: Some(sha.into()),
                 is_pr: false,
             })
@@ -231,7 +218,7 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
 
         let author_link = format!("https://github.com/{}", author);
 
-        let message = obj
+        let title = obj
             .get("title")
             .ok_or(anyhow!("no title found"))?
             .to_string();
@@ -245,8 +232,8 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
             pr_id,
             author,
             author_link,
-            title: message,
-            body,
+            title: Some(title),
+            body: Some(body),
             merge_commit: None,
             is_pr: true,
         });
@@ -256,9 +243,32 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
 }
 
 pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
-    let query = include_str!("./last_prs.graphql");
+    let query = r##"
+{
+  repository(name: "#name", owner: "#owner") {
+    pullRequests(
+      first: #first
+      states: MERGED
+      orderBy: { field: UPDATED_AT, direction: DESC }
+    ) {
+      nodes {
+        number
+        title
+        body
+        url
+        author {
+          login
+        }
+        mergeCommit {
+          oid
+        }
+      }
+    }
+  }
+}
+"##;
 
-    let mut interpolate = TextInterpolate::new(query.into(), "###", "");
+    let mut interpolate = TextInterpolate::new(query.into(), "#", "");
 
     let repo = utils::Repo::try_from(repo)?;
 
@@ -323,8 +333,8 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
             pr_id: format!("#{}", e.number),
             author_link: format!("https://github.com/{}", e.author.login),
             author: e.author.login,
-            title: e.title,
-            body: e.body,
+            title: Some(e.title),
+            body: Some(e.body),
             merge_commit: Some(e.merge_commit.oid),
             is_pr: true,
         })

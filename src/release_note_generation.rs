@@ -32,8 +32,8 @@ pub fn gen_release_notes(
 
         for pr in options.provider.milestone_prs(&repo, &milestone)? {
             let raw_commit = RawCommit {
-                title: pr.title.clone(),
-                body: pr.body.clone(),
+                title: pr.title.clone().unwrap_or_default(),
+                body: pr.body.clone().unwrap_or_default(),
                 sha: "".into(),
                 list_files: vec![],
             };
