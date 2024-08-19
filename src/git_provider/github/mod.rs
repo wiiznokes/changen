@@ -265,8 +265,6 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
         oid: String,
     }
 
-    dbg!(&value);
-
     let response = serde_json::value::from_value::<Response>(value)?;
 
     let res = response
