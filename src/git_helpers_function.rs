@@ -107,11 +107,14 @@ pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
         .map(Version::parse)
         .collect::<Result<Vec<Version>, _>>()?;
 
-    debug!("tags: {:?}", tags);
-
     tags.sort();
 
-    let tags = tags.into_iter().map(|e| e.to_string()).collect::<VecDeque<_>>();
+    let tags = tags
+        .into_iter()
+        .map(|e| e.to_string())
+        .collect::<VecDeque<_>>();
+
+    debug!("tags: {:?}", tags);
 
     Ok(tags)
 }
