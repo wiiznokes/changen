@@ -63,7 +63,7 @@ pub fn release(
 
     prev_unreleased.title.version = version.clone();
 
-    try_get_repo(repo.clone()).inspect(|repo| {
+    try_get_repo(&repo).inspect(|repo| {
         let mut tags = tags_list().unwrap();
 
         match tags.pop_back() {
@@ -82,17 +82,14 @@ pub fn release(
     });
 
     if !omit_diff {
-        let link = if let Some(repo) = try_get_repo(repo) {
+        let link = if let Some(repo) = try_get_repo(&repo) {
             let mut tags = tags_list()?;
 
             match tags.pop_back() {
                 Some(current) => {
                     let prev = tags.pop_back();
 
-                    let diff_tags = DiffTags {
-                        prev,
-                        current,
-                    };
+                    let diff_tags = DiffTags { prev, current };
 
                     match provider.diff_link(&repo, &diff_tags) {
                         Ok(link) => Some(link),

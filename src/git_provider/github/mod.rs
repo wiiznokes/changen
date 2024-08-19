@@ -1,26 +1,23 @@
-use std::io::Read;
-
-use anyhow::{anyhow, bail, Ok};
+use anyhow::{anyhow, bail};
 use reqwest::{blocking::Client, header::USER_AGENT};
-use serde_json::Value;
+use serde::Deserialize;
+use serde_json::{json, Value};
+
+use crate::utils::{self, TextInterpolate};
 
 use super::*;
 
 fn request_github(api: &str) -> anyhow::Result<Value> {
     let client = Client::new();
 
-    let mut response = client
+    let response = client
         .get(api)
         .header(USER_AGENT, "my-github-client")
         .send()?;
 
     if response.status().is_success() {
-        let mut body = String::new();
-        response.read_to_string(&mut body)?;
-
-        let json = serde_json::from_str::<Value>(&body)?;
-
-        Ok(json)
+        let obj = response.json()?;
+        Ok(obj)
     } else {
         bail!(format!(
             "GitHub API returned status for {}: {}",
@@ -30,7 +27,31 @@ fn request_github(api: &str) -> anyhow::Result<Value> {
     }
 }
 
-pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
+fn request_github_graphql(query: &str) -> anyhow::Result<Value> {
+    let client = Client::new();
+
+    let request_body = json!({
+        "query": query,
+    });
+
+    let response = client
+        .post("https://api.github.com/graphql")
+        .header(USER_AGENT, "my-github-client")
+        .json(&request_body)
+        .send()?;
+
+    if response.status().is_success() {
+        let obj = response.json()?;
+        Ok(obj)
+    } else {
+        bail!(format!(
+            "GitHub API graphql returned status {}",
+            response.status()
+        ))
+    }
+}
+
+pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<Option<RelatedPr>> {
     let json = request_github(&format!(
         "https://api.github.com/repos/{repo}/commits/{sha}/pulls"
     ))?;
@@ -63,45 +84,26 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
 
             let author_link = format!("https://github.com/{}", author);
 
-            Ok(RelatedPr {
+            let message = obj
+                .get("title")
+                .ok_or(anyhow!("no title found"))?
+                .to_string();
+            let body = obj
+                .get("body")
+                .ok_or(anyhow!("no title found"))?
+                .to_string();
+
+            Ok(Some(RelatedPr {
                 url,
                 author,
                 pr_id,
                 author_link,
-                is_pr: true,
-            })
+                message,
+                body,
+                merge_commit: Some(sha.into()),
+            }))
         }
-        None => {
-            let json = request_github(&format!(
-                "https://api.github.com/repos/{repo}/commits/{sha}"
-            ))?;
-
-            let url = json
-                .get("html_url")
-                .ok_or(anyhow!("no html_url found"))?
-                .as_str()
-                .unwrap()
-                .to_string();
-
-            let author = json
-                .get("author")
-                .ok_or(anyhow!("no user found"))?
-                .get("login")
-                .ok_or(anyhow!("no login found"))?
-                .as_str()
-                .unwrap()
-                .to_string();
-
-            let author_link = format!("https://github.com/{}", author);
-
-            Ok(RelatedPr {
-                url,
-                author,
-                pr_id: sha[..7].into(),
-                author_link,
-                is_pr: false,
-            })
-        }
+        None => Ok(None),
     }
 }
 
@@ -124,7 +126,7 @@ pub fn release_link(repo: &str, tag: &str) -> anyhow::Result<String> {
     Ok(format!("https://github.com/{repo}/releases/tag/{tag}"))
 }
 
-pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPrExt>> {
+pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPr>> {
     let json = request_github(&format!(
         "https://api.github.com/search/issues?q=repo:{repo}+is:pr+is:merged+milestone:{milestone}"
     ))?;
@@ -137,15 +139,15 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
 
     let mut res = Vec::new();
 
-    for value in array {
-        let url = value
+    for obj in array {
+        let url = obj
             .get("html_url")
             .ok_or(anyhow!("no html_url found"))?
             .as_str()
             .unwrap()
             .to_string();
 
-        let pr_id = value
+        let pr_id = obj
             .get("number")
             .ok_or(anyhow!("no number found"))?
             .as_u64()
@@ -153,7 +155,7 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
 
         let pr_id = format!("#{}", pr_id);
 
-        let author = value
+        let author = obj
             .get("user")
             .ok_or(anyhow!("no user found"))?
             .get("login")
@@ -164,27 +166,102 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
 
         let author_link = format!("https://github.com/{}", author);
 
-        let message = value
+        let message = obj
             .get("title")
             .ok_or(anyhow!("no title found"))?
             .to_string();
-        let body = value
+        let body = obj
             .get("body")
             .ok_or(anyhow!("no title found"))?
             .to_string();
 
-        res.push(RelatedPrExt {
+        res.push(RelatedPr {
+            url,
+            pr_id,
+            author,
+            author_link,
             message,
             body,
-            inner: RelatedPr {
-                url,
-                pr_id,
-                author,
-                author_link,
-                is_pr: true,
-            },
+            merge_commit: None,
         });
     }
+
+    Ok(res)
+}
+
+pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
+    let query = include_str!("./last_prs.graphql");
+
+    let mut interpolate = TextInterpolate::new(query.into(), "###", "");
+
+    let repo = utils::Repo::try_from(repo)?;
+
+    interpolate.interpolate("name", &repo.name);
+    interpolate.interpolate("owner", &repo.owner);
+    interpolate.interpolate("first", &n.to_string());
+
+    let value = request_github_graphql(query)?;
+
+    #[derive(Debug, Deserialize)]
+    struct Response {
+        data: Data,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct Data {
+        repository: Repository,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct Repository {
+        #[serde(rename = "pullRequests")]
+        pull_requests: PullRequests,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct PullRequests {
+        nodes: Vec<PullRequest>,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct PullRequest {
+        author: Author,
+        body: String,
+        #[serde(rename = "mergeCommit")]
+        merge_commit: MergeCommit,
+        number: u32,
+        title: String,
+        url: String,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct Author {
+        login: String,
+    }
+
+    #[derive(Debug, Deserialize)]
+    struct MergeCommit {
+        oid: String,
+    }
+
+    let response = serde_json::value::from_value::<Response>(value)?;
+
+    let res = response
+        .data
+        .repository
+        .pull_requests
+        .nodes
+        .into_iter()
+        .map(|e| RelatedPr {
+            url: e.url,
+            pr_id: format!("#{}", e.number),
+            author_link: format!("https://github.com/{}", e.author.login),
+            author: e.author.login,
+            message: e.title,
+            body: e.body,
+            merge_commit: Some(e.merge_commit.oid),
+        })
+        .collect();
 
     Ok(res)
 }

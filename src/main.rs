@@ -24,6 +24,7 @@ mod git_helpers_function;
 mod git_provider;
 mod release_generation;
 mod release_note_generation;
+mod utils;
 
 #[cfg(test)]
 mod test;

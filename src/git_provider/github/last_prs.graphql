@@ -1,0 +1,22 @@
+{
+  repository(name: "###name", owner: "###owner") {
+    pullRequests(
+      first: ###first
+      states: MERGED
+      orderBy: { field: MERGED_AT, direction: DESC }
+    ) {
+      nodes {
+        number
+        title
+        body
+        url
+        author {
+          login
+        }
+        mergeCommit {
+          oid
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use anyhow::bail;
 
@@ -26,15 +26,9 @@ pub struct RelatedPr {
     pub pr_id: String,
     pub author: String,
     pub author_link: String,
-    /// False means this is a simple commit
-    pub is_pr: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct RelatedPrExt {
     pub message: String,
     pub body: String,
-    pub inner: RelatedPr,
+    pub merge_commit: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -44,7 +38,7 @@ pub struct DiffTags {
 }
 
 impl GitProvider {
-    pub fn related_pr(&self, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
+    pub fn related_pr(&self, repo: &str, sha: &str) -> anyhow::Result<Option<RelatedPr>> {
         match self {
             GitProvider::Github => github::request_related_pr(repo, sha),
             GitProvider::Other => bail!("No git provider was selected"),
@@ -65,10 +59,25 @@ impl GitProvider {
         }
     }
 
-    pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPrExt>> {
+    pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPr>> {
         match self {
             GitProvider::Github => github::milestone_prs(repo, milestone),
             GitProvider::Other => bail!("No git provider was selected"),
         }
+    }
+
+    pub fn last_prs(&self, repo: &str, n: usize) -> anyhow::Result<HashMap<String, RelatedPr>> {
+        let prs = match self {
+            GitProvider::Github => github::last_prs(repo, n),
+            GitProvider::Other => bail!("No git provider was selected"),
+        }?;
+
+        let mut hashmap = HashMap::new();
+
+        for pr in prs {
+            hashmap.insert(pr.merge_commit.clone().unwrap(), pr);
+        }
+
+        Ok(hashmap)
     }
 }

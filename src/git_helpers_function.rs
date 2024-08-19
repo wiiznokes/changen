@@ -119,9 +119,9 @@ pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
     Ok(tags)
 }
 
-pub fn try_get_repo(repo: Option<String>) -> Option<String> {
+pub fn try_get_repo(repo: &Option<String>) -> Option<String> {
     let repo = match repo {
-        Some(repo) => Some(repo),
+        Some(repo) => Some(repo.clone()),
         None => std::env::var("GITHUB_REPOSITORY").ok(),
     };
 
@@ -146,7 +146,7 @@ mod test {
 
         dbg!(&res);
 
-        let res = commits_between_tags("..v0.1.5");
+        let res = commits_between_tags("0.1.7");
 
         dbg!(&res);
     }

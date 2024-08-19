@@ -1,3 +1,4 @@
 [env]
-RUST_LOG = "warn,changelog_gen=debug"
+RUST_LOG = "warn,changelog_gen=info"
 RUST_BACKTRACE = "full"
+GITHUB_REPOSITORY = "wiiznokes/changelog"
