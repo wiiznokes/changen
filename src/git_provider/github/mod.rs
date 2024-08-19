@@ -72,7 +72,7 @@ fn request_github_graphql(query: &str) -> anyhow::Result<Value> {
     }
 }
 
-pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<Option<RelatedPr>> {
+pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
     let json = request_github(&format!(
         "https://api.github.com/repos/{repo}/commits/{sha}/pulls"
     ))?;
@@ -114,7 +114,7 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<Option<Relate
                 .ok_or(anyhow!("no title found"))?
                 .to_string();
 
-            Ok(Some(RelatedPr {
+            Ok(RelatedPr {
                 url,
                 author,
                 pr_id,
@@ -122,9 +122,53 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<Option<Relate
                 title: message,
                 body,
                 merge_commit: Some(sha.into()),
-            }))
+                is_pr: true,
+            })
         }
-        None => Ok(None),
+        None => {
+            let obj = request_github(&format!(
+                "https://api.github.com/repos/{repo}/commits/{sha}"
+            ))?;
+
+            let url = obj
+                .get("html_url")
+                .ok_or(anyhow!("no html_url found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let title = obj
+                .get("title")
+                .ok_or(anyhow!("no title found"))?
+                .to_string();
+
+            let body = obj
+                .get("body")
+                .ok_or(anyhow!("no title found"))?
+                .to_string();
+
+            let author = obj
+                .get("author")
+                .ok_or(anyhow!("no user found"))?
+                .get("login")
+                .ok_or(anyhow!("no login found"))?
+                .as_str()
+                .unwrap()
+                .to_string();
+
+            let author_link = format!("https://github.com/{}", author);
+
+            Ok(RelatedPr {
+                url,
+                author,
+                pr_id: sha[..7].into(),
+                author_link,
+                title,
+                body,
+                merge_commit: Some(sha.into()),
+                is_pr: false,
+            })
+        }
     }
 }
 
@@ -204,6 +248,7 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
             title: message,
             body,
             merge_commit: None,
+            is_pr: true,
         });
     }
 
@@ -281,6 +326,7 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
             title: e.title,
             body: e.body,
             merge_commit: Some(e.merge_commit.oid),
+            is_pr: true,
         })
         .collect();
 

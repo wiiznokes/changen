@@ -29,6 +29,7 @@ pub struct RelatedPr {
     pub title: String,
     pub body: String,
     pub merge_commit: Option<String>,
+    pub is_pr: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -38,7 +39,7 @@ pub struct DiffTags {
 }
 
 impl GitProvider {
-    pub fn related_pr(&self, repo: &str, sha: &str) -> anyhow::Result<Option<RelatedPr>> {
+    pub fn related_pr(&self, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
         match self {
             GitProvider::Github => github::request_related_pr(repo, sha),
             GitProvider::Other => bail!("No git provider was selected"),

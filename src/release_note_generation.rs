@@ -93,8 +93,7 @@ pub fn gen_release_notes(
             }
         },
         None => None,
-    }
-    .flatten();
+    };
 
     match get_release_note(&raw_commit, related_pr.as_ref(), options) {
         Ok((section_title, release_note)) => {
@@ -214,6 +213,10 @@ fn get_release_note(
     };
 
     if let Some(related_pr) = &related_pr {
+        if !related_pr.is_pr && exclude_not_pr {
+            bail!("No upstream pr was found");
+        }
+
         if !omit_pr_link {
             commit
                 .message
