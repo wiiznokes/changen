@@ -6,7 +6,7 @@ use changelog::{
 use indexmap::IndexMap;
 
 use crate::{
-    git_helpers_function::{tags_list, try_get_repo},
+    git_helpers_function::tags_list,
     git_provider::{DiffTags, GitProvider},
     UNRELEASED,
 };
@@ -63,8 +63,8 @@ pub fn release(
 
     prev_unreleased.title.version = version.clone();
 
-    try_get_repo(&repo).inspect(|repo| {
-        let mut tags = tags_list().unwrap();
+    if let Some(repo) = &repo {
+        let mut tags = tags_list()?;
 
         match tags.pop_back() {
             Some(tag) => match provider.release_link(repo, &tag) {
@@ -79,10 +79,10 @@ pub fn release(
                 eprintln!("No tags defined. Can't produce the release link.");
             }
         }
-    });
+    }
 
     if !omit_diff {
-        let link = if let Some(repo) = try_get_repo(&repo) {
+        let link = if let Some(repo) = &repo {
             let mut tags = tags_list()?;
 
             match tags.pop_back() {
@@ -91,7 +91,7 @@ pub fn release(
 
                     let diff_tags = DiffTags { prev, current };
 
-                    match provider.diff_link(&repo, &diff_tags) {
+                    match provider.diff_link(repo, &diff_tags) {
                         Ok(link) => Some(link),
                         Err(e) => {
                             eprintln!("{e}");

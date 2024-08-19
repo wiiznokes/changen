@@ -5,6 +5,7 @@ use semver::Version;
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
+    pub author: String,
     pub title: String,
     pub body: String,
     pub sha: String,
@@ -14,19 +15,14 @@ pub struct RawCommit {
 impl RawCommit {
     pub fn last_from_fs() -> Self {
         let sha = last_commit_sha();
-
-        Self {
-            title: commit_message(&sha),
-            body: commit_description(&sha),
-            list_files: commit_files(&sha),
-            sha,
-        }
+        Self::from_sha(&sha)
     }
 
     pub fn from_sha(sha: &str) -> Self {
         Self {
-            title: commit_message(sha),
-            body: commit_description(sha),
+            author: commit_author(sha),
+            title: commit_title(sha),
+            body: commit_body(sha),
             list_files: commit_files(sha),
             sha: sha.into(),
         }
@@ -46,7 +42,19 @@ pub fn last_commit_sha() -> String {
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-pub fn commit_message(sha: &str) -> String {
+pub fn commit_author(sha: &str) -> String {
+    let output = Command::new("git")
+        .args(["show", "-s", "--pretty=%an", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    String::from_utf8(output.stdout)
+        .expect("Failed to parse UTF-8")
+        .trim()
+        .into()
+}
+
+pub fn commit_title(sha: &str) -> String {
     let output = Command::new("git")
         .args(["show", "-s", "--pretty=%s", sha])
         .output()
@@ -55,7 +63,7 @@ pub fn commit_message(sha: &str) -> String {
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-pub fn commit_description(sha: &str) -> String {
+pub fn commit_body(sha: &str) -> String {
     let output = Command::new("git")
         .args(["show", "-s", "--pretty=%b", sha])
         .output()
@@ -123,9 +131,9 @@ pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
     Ok(tags)
 }
 
-pub fn try_get_repo(repo: &Option<String>) -> Option<String> {
+pub fn try_get_repo(repo: Option<String>) -> Option<String> {
     let repo = match repo {
-        Some(repo) => Some(repo.clone()),
+        Some(repo) => Some(repo),
         None => std::env::var("GITHUB_REPOSITORY").ok(),
     };
 

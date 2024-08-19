@@ -113,9 +113,9 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
 
             Ok(RelatedPr {
                 url,
-                author,
+                author: Some(author),
                 pr_id,
-                author_link,
+                author_link: Some(author_link),
                 title: Some(title),
                 body: Some(body),
                 merge_commit: Some(sha.into()),
@@ -147,9 +147,9 @@ pub fn request_related_pr(repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
 
             Ok(RelatedPr {
                 url,
-                author,
+                author: Some(author),
                 pr_id: sha[..7].into(),
-                author_link,
+                author_link: Some(author_link),
                 title: None,
                 body: None,
                 merge_commit: Some(sha.into()),
@@ -230,8 +230,8 @@ pub fn milestone_prs(repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedP
         res.push(RelatedPr {
             url,
             pr_id,
-            author,
-            author_link,
+            author: Some(author),
+            author_link: Some(author_link),
             title: Some(title),
             body: Some(body),
             merge_commit: None,
@@ -331,8 +331,8 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
         .map(|e| RelatedPr {
             url: e.url,
             pr_id: format!("#{}", e.number),
-            author_link: format!("https://github.com/{}", e.author.login),
-            author: e.author.login,
+            author_link: Some(format!("https://github.com/{}", e.author.login)),
+            author: Some(e.author.login),
             title: Some(e.title),
             body: Some(e.body),
             merge_commit: Some(e.merge_commit.oid),
@@ -341,6 +341,19 @@ pub fn last_prs(repo: &str, n: usize) -> anyhow::Result<Vec<RelatedPr>> {
         .collect();
 
     Ok(res)
+}
+
+pub fn offline_related_pr(repo: &str, raw_commit: &RawCommit) -> Option<RelatedPr> {
+    Some(RelatedPr {
+        url: format!("https://github.com/{repo}/commit/{}", raw_commit.sha),
+        pr_id: raw_commit.sha[..7].into(),
+        author: Some(raw_commit.author.clone()),
+        author_link: Some(format!("https://github.com/{}", raw_commit.author)),
+        title: Some(raw_commit.title.clone()),
+        body: Some(raw_commit.body.clone()),
+        merge_commit: Some(raw_commit.sha.clone()),
+        is_pr: false,
+    })
 }
 
 #[cfg(test)]

@@ -2,6 +2,8 @@ use std::{collections::HashMap, fmt::Display};
 
 use anyhow::bail;
 
+use crate::git_helpers_function::RawCommit;
+
 mod github;
 
 #[derive(clap::ValueEnum, Debug, Clone, Default, PartialEq, Eq)]
@@ -24,8 +26,8 @@ impl Display for GitProvider {
 pub struct RelatedPr {
     pub url: String,
     pub pr_id: String,
-    pub author: String,
-    pub author_link: String,
+    pub author: Option<String>,
+    pub author_link: Option<String>,
     pub title: Option<String>,
     pub body: Option<String>,
     pub merge_commit: Option<String>,
@@ -80,5 +82,13 @@ impl GitProvider {
         }
 
         Ok(hashmap)
+    }
+
+    /// Fallback function
+    pub fn offline_related_pr(&self, repo: &str, raw_commit: &RawCommit) -> Option<RelatedPr> {
+        match self {
+            GitProvider::Github => github::offline_related_pr(repo, raw_commit),
+            GitProvider::Other => None,
+        }
     }
 }

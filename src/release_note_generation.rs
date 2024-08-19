@@ -1,6 +1,6 @@
 use crate::{
     commit_parser::{parse_commit, FormattedCommit},
-    git_helpers_function::{commits_between_tags, try_get_repo, RawCommit},
+    git_helpers_function::{commits_between_tags, RawCommit},
     git_provider::{GitProvider, RelatedPr},
 };
 use anyhow::{bail, Result};
@@ -28,14 +28,16 @@ pub fn gen_release_notes(
     options: GenerateReleaseNoteOptions,
 ) -> Result<()> {
     if let Some(milestone) = milestone {
-        let repo = try_get_repo(&options.repo).unwrap();
-
-        for pr in options.provider.milestone_prs(&repo, &milestone)? {
+        for pr in options
+            .provider
+            .milestone_prs(&options.repo.clone().unwrap(), &milestone)?
+        {
             let raw_commit = RawCommit {
                 title: pr.title.clone().unwrap_or_default(),
                 body: pr.body.clone().unwrap_or_default(),
                 sha: "".into(),
                 list_files: vec![],
+                author: pr.author.clone().unwrap_or_default(),
             };
 
             match get_release_note(&raw_commit, Some(&pr), options.clone()) {
@@ -52,8 +54,8 @@ pub fn gen_release_notes(
     if let Some(tags) = tags {
         let commits = commits_between_tags(&tags);
 
-        let last_prs = match try_get_repo(&options.repo) {
-            Some(repo) => match options.provider.last_prs(&repo, commits.len()) {
+        let mut last_prs = match &options.repo {
+            Some(repo) => match options.provider.last_prs(repo, commits.len()) {
                 Ok(last_prs) => Some(last_prs),
                 Err(e) => {
                     eprintln!("error while requesting pr link: {}", e);
@@ -67,11 +69,14 @@ pub fn gen_release_notes(
             let raw_commit = RawCommit::from_sha(&sha);
 
             let related_pr = match last_prs {
-                Some(ref last_prs) => last_prs.get(&sha),
-                None => None,
+                Some(ref mut last_prs) => last_prs.remove(&sha),
+                None => match &options.repo {
+                    Some(repo) => options.provider.offline_related_pr(repo, &raw_commit),
+                    None => None,
+                },
             };
 
-            match get_release_note(&raw_commit, related_pr, options.clone()) {
+            match get_release_note(&raw_commit, related_pr.as_ref(), options.clone()) {
                 Ok((section_title, release_note)) => {
                     insert_release_note(unreleased, section_title, release_note);
                 }
@@ -84,8 +89,8 @@ pub fn gen_release_notes(
 
     let raw_commit = RawCommit::last_from_fs();
 
-    let related_pr = match try_get_repo(&options.repo) {
-        Some(repo) => match options.provider.related_pr(&repo, &raw_commit.sha) {
+    let related_pr = match &options.repo {
+        Some(repo) => match options.provider.related_pr(repo, &raw_commit.sha) {
             Ok(related_pr) => Some(related_pr),
             Err(e) => {
                 eprintln!("error while requesting pr link: {}", e);
@@ -224,10 +229,12 @@ fn get_release_note(
         }
 
         if !omit_thanks {
-            commit.message.push_str(&format!(
-                " by [@{}]({})",
-                related_pr.author, related_pr.author_link
-            ));
+            if let (Some(author), Some(author_link)) = (&related_pr.author, &related_pr.author_link)
+            {
+                commit
+                    .message
+                    .push_str(&format!(" by [@{author}]({author_link})"));
+            }
         }
     } else if exclude_not_pr {
         bail!("no upstream pr was found");
@@ -307,6 +314,7 @@ mod test {
             body: "".into(),
             sha: "".into(),
             list_files: vec![],
+            author: "".into(),
         };
 
         assert!(commit_should_be_ignored(&raw, "").bool());

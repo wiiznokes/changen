@@ -12,6 +12,7 @@ use changelog::{
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};
+use git_helpers_function::try_get_repo;
 use git_provider::GitProvider;
 use release_note_generation::{gen_release_notes, GenerateReleaseNoteOptions};
 
@@ -278,7 +279,7 @@ fn main() -> anyhow::Result<()> {
                     exclude_unidentified,
                     exclude_not_pr,
                     provider,
-                    repo,
+                    repo: try_get_repo(repo),
                     omit_pr_link,
                     omit_thanks,
                     map: &config.map,
