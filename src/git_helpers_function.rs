@@ -94,7 +94,7 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
 }
 
 #[cached(result = true)]
-pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
+pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
     let output = Command::new("git")
         .arg("tag")
         .output()
@@ -111,7 +111,9 @@ pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
 
     tags.sort();
 
-    Ok(tags.into())
+    let tags = tags.into_iter().map(|e| e.to_string()).collect::<VecDeque<_>>();
+
+    Ok(tags)
 }
 
 pub fn try_get_repo(repo: Option<String>) -> Option<String> {

@@ -26,9 +26,7 @@ pub fn release(
             version
         }
         None => {
-            let tag = if let Some(tag) = tags_list()?.pop_back() {
-                tag.to_string()
-            } else {
+            let Some(tag) = tags_list()?.pop_back() else {
                 bail!("No version provided. Can't fall back to last tag because there is none.");
             };
             eprintln!("No version provided. Using the existing last tag: {}", tag);
@@ -69,7 +67,7 @@ pub fn release(
         let mut tags = tags_list().unwrap();
 
         match tags.pop_back() {
-            Some(tag) => match provider.release_link(repo, &tag.to_string()) {
+            Some(tag) => match provider.release_link(repo, &tag) {
                 Ok(link) => {
                     prev_unreleased.title.release_link = Some(link);
                 }
@@ -89,11 +87,11 @@ pub fn release(
 
             match tags.pop_back() {
                 Some(current) => {
-                    let prev = tags.pop_back().map(|e| e.to_string());
+                    let prev = tags.pop_back();
 
                     let diff_tags = DiffTags {
                         prev,
-                        current: current.to_string(),
+                        current,
                     };
 
                     match provider.diff_link(&repo, &diff_tags) {
