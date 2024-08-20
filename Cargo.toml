@@ -47,4 +47,4 @@ serde = { version = "1", features = ["derive"] }
 # thiserror = "1"
 
 [patch.crates-io]
-changelog_document = { path = "./changelog_document" }
+# changelog_document = { path = "./changelog_document" }
