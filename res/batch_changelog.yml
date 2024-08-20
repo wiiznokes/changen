@@ -1,0 +1,46 @@
+name: Changelog Generation
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag in the format X.Y.Z"
+        required: true
+        type: string
+  push:
+    tags:
+      - "[0-9]+.*"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: changelog-gen
+
+      - run: changelog-gen generate --tag={{ github.event.inputs.tag }} \
+          --exclude-unidentified
+      - run: changelog-gen release
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+
+      - run: |
+          changelog-gen show > RELEASE_CHANGELOG.md
+
+          # https://cli.github.com/manual/gh_release_create
+          gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \
+            --notes-file RELEASE_CHANGELOG.md --target $GITHUB_SHA
