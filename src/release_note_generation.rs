@@ -1,10 +1,13 @@
 use crate::{
     commit_parser::{parse_commit, FormattedCommit},
     git_helpers_function::{commits_between_tags, RawCommit},
-    git_provider::{GitProvider, RelatedPr},
+    git_provider::{DiffTags, GitProvider, RelatedPr},
+    utils::get_last_tag,
 };
 use anyhow::{bail, Result};
-use changelog::{ser::serialize_release_section_note, Release, ReleaseSection, ReleaseSectionNote};
+use changelog::{
+    ser::serialize_release_section_note, ChangeLog, Release, ReleaseSection, ReleaseSectionNote,
+};
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
@@ -22,11 +25,15 @@ pub struct GenerateReleaseNoteOptions<'a> {
 }
 
 pub fn gen_release_notes(
-    unreleased: &mut Release,
+    changelog: &mut ChangeLog,
     milestone: Option<String>,
-    tags: Option<String>,
+    tag: Option<String>,
     options: GenerateReleaseNoteOptions,
 ) -> Result<()> {
+    let last_tag = get_last_tag(changelog);
+
+    let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
+
     if let Some(milestone) = milestone {
         for pr in options
             .provider
@@ -51,8 +58,11 @@ pub fn gen_release_notes(
         return Ok(());
     }
 
-    if let Some(tags) = tags {
-        let commits = commits_between_tags(&tags);
+    if let Some(tag) = tag {
+        let commits = commits_between_tags(&DiffTags {
+            prev: last_tag,
+            new: tag,
+        });
 
         let mut last_prs = match &options.repo {
             Some(repo) => match options.provider.last_prs(repo, commits.len()) {

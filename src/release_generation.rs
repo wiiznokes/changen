@@ -7,6 +7,7 @@ use indexmap::IndexMap;
 
 use crate::{
     git_provider::{DiffTags, GitProvider},
+    utils::get_last_tag,
     UNRELEASED,
 };
 
@@ -17,17 +18,7 @@ pub fn release(
     repo: Option<String>,
     omit_diff: bool,
 ) -> anyhow::Result<(String, String)> {
-    fn get_prev(changelog: &ChangeLog) -> Option<String> {
-        let mut keys = changelog.releases.keys();
-        if let Some(e) = keys.next() {
-            if e != UNRELEASED {
-                return Some(e.to_owned());
-            }
-        }
-        keys.next().cloned()
-    }
-
-    let diff_tags = DiffTags::new(version, get_prev(&changelog))?;
+    let diff_tags = DiffTags::new(version, get_last_tag(&changelog))?;
 
     if changelog.releases.get(&diff_tags.new).is_some() {
         bail!(

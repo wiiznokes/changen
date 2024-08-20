@@ -1,4 +1,7 @@
 use anyhow::bail;
+use changelog::ChangeLog;
+
+use crate::UNRELEASED;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Repo {
@@ -49,6 +52,16 @@ impl TextInterpolate {
     pub fn text(self) -> String {
         self.buffer
     }
+}
+
+pub fn get_last_tag(changelog: &ChangeLog) -> Option<String> {
+    let mut keys = changelog.releases.keys();
+    if let Some(e) = keys.next() {
+        if e != UNRELEASED {
+            return Some(e.to_owned());
+        }
+    }
+    keys.next().cloned()
 }
 
 #[cfg(test)]

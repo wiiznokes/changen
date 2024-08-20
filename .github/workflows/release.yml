@@ -15,7 +15,7 @@ on:
       - "[0-9]+.*"
 
 env:
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   create-release:
@@ -27,12 +27,11 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
       - run: |
-          export LAST_TAG="$(git tag | sort -V | tail -n 2 | head -n 1)"
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
           git fetch --tags
-          cargo run --locked -- generate --tags=$LAST_TAG..${{ github.event.inputs.tag }} \
+          cargo run --locked -- generate --tag={{ github.event.inputs.tag }} \
             --exclude-unidentified
           cargo run --locked -- release
       - uses: stefanzweifel/git-auto-commit-action@v5

@@ -84,15 +84,15 @@ enum Commands {
         #[arg(
             long,
             help = "Include all commits of this milestone",
-            conflicts_with = "tags"
+            conflicts_with = "tag"
         )]
         milestone: Option<String>,
         #[arg(
             long,
-            help = "Include all commits between this tags. Ex: \"v1.0.1..HEAD\".",
+            help = "Include all commits from this tags to the last one present in the changelog. Ex: \"1.0.1\".",
             conflicts_with = "milestone"
         )]
-        tags: Option<String>,
+        tag: Option<String>,
     },
     /// Generate a new release
     Release {
@@ -256,7 +256,7 @@ fn main() -> anyhow::Result<()> {
             omit_thanks,
             stdout,
             milestone,
-            tags,
+            tag,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -266,14 +266,12 @@ fn main() -> anyhow::Result<()> {
             debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
 
-            let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
-
             let config = get_config(map)?;
 
             gen_release_notes(
-                unreleased,
+                &mut changelog,
                 milestone,
-                tags,
+                tag,
                 GenerateReleaseNoteOptions {
                     changelog_path: path.to_string_lossy().to_string(),
                     parsing,

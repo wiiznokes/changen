@@ -34,7 +34,7 @@ test_perf:
 expand:
 
 gen_all f='res/CHANGELOG_DEFAULT.md':
-	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --tags 0.1.7 > CHANGELOG2.md
+	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --tag 0.1.7 > CHANGELOG2.md
 
-gen_release f='CHANGELOG2.md' v='':
-	cargo run -- release -f {{f}} --version 0.1.7 --stdout  > CHANGELOG3.md
+gen_release f='CHANGELOG3.md' v='':
+	cargo run -- release -f {{f}} --stdout
