@@ -1,4 +1,5 @@
 set windows-powershell := true
+set dotenv-path := ".env"
 
 pull: fmt prettier fix test
 
@@ -31,3 +32,9 @@ test_perf:
     cargo test -p changelog_document changelog2 --release  -- --show-output
 
 expand:
+
+gen_all f='res/CHANGELOG_DEFAULT.md':
+	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --tag 0.1.7 > CHANGELOG2.md
+
+gen_release f='CHANGELOG3.md' v='':
+	cargo run -- release -f {{f}} --stdout

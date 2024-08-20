@@ -6,8 +6,8 @@ use changelog::{
 use indexmap::IndexMap;
 
 use crate::{
-    git_helpers_function::{tags_list, try_get_repo},
     git_provider::{DiffTags, GitProvider},
+    utils::get_last_tag,
     UNRELEASED,
 };
 
@@ -18,31 +18,12 @@ pub fn release(
     repo: Option<String>,
     omit_diff: bool,
 ) -> anyhow::Result<(String, String)> {
-    let version = match version {
-        Some(version) => {
-            if version.starts_with('v') {
-                bail!("Error: You shouldn't include the v prefix in the version.")
-            }
-            version
-        }
-        None => {
-            let tag = if let Some(tag) = tags_list().pop_back() {
-                match tag.strip_prefix('v') {
-                    Some(version) => version.to_owned(),
-                    None => tag,
-                }
-            } else {
-                bail!("No version provided. Can't fall back to last tag because there is none.");
-            };
-            eprintln!("No version provided. Using the existing last tag: {}", tag);
-            tag
-        }
-    };
+    let diff_tags = DiffTags::new(version, get_last_tag(&changelog))?;
 
-    if changelog.releases.get(&version).is_some() {
+    if changelog.releases.get(&diff_tags.new).is_some() {
         bail!(
             "Version {} already exist. Create a new tag or use the --version option.",
-            version
+            diff_tags.new
         );
     };
 
@@ -66,46 +47,25 @@ pub fn release(
 
     debug_assert!(pos == 0);
 
-    prev_unreleased.title.version = version.clone();
+    prev_unreleased.title.version = diff_tags.new.clone();
 
-    try_get_repo(repo.clone()).inspect(|repo| {
-        let mut tags = tags_list();
-
-        match tags.pop_back() {
-            Some(tag) => match provider.release_link(repo, &tag) {
-                Ok(link) => {
-                    prev_unreleased.title.release_link = Some(link);
-                }
-                Err(e) => {
-                    eprintln!("{e}");
-                }
-            },
-            None => {
-                eprintln!("No tags defined. Can't produce the release link.");
+    if let Some(repo) = &repo {
+        match provider.release_link(repo, &diff_tags.new) {
+            Ok(link) => {
+                prev_unreleased.title.release_link = Some(link);
+            }
+            Err(e) => {
+                eprintln!("{e}");
             }
         }
-    });
+    }
 
     if !omit_diff {
-        let link = if let Some(repo) = try_get_repo(repo) {
-            let mut tags = tags_list();
-
-            match tags.pop_back() {
-                Some(current) => {
-                    let prev = tags.pop_back();
-
-                    let diff_tags = DiffTags { prev, current };
-
-                    match provider.diff_link(&repo, &diff_tags) {
-                        Ok(link) => Some(link),
-                        Err(e) => {
-                            eprintln!("{e}");
-                            None
-                        }
-                    }
-                }
-                None => {
-                    eprintln!("No tags defined. Can't produce the diff");
+        let link = if let Some(repo) = &repo {
+            match provider.diff_link(repo, &diff_tags) {
+                Ok(link) => Some(link),
+                Err(e) => {
+                    eprintln!("{e}");
                     None
                 }
             }
@@ -130,11 +90,11 @@ pub fn release(
 
     changelog
         .releases
-        .shift_insert(1, version.clone(), prev_unreleased);
+        .shift_insert(1, diff_tags.new.clone(), prev_unreleased);
 
     debug!("release: serialize changelog: {:?}", changelog);
 
     let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
 
-    Ok((version, output))
+    Ok((diff_tags.new, output))
 }

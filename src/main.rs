@@ -12,6 +12,7 @@ use changelog::{
 };
 use clap::{Parser, Subcommand, ValueHint};
 use config::{CommitMessageParsing, Config};
+use git_helpers_function::try_get_repo;
 use git_provider::GitProvider;
 use release_note_generation::{gen_release_notes, GenerateReleaseNoteOptions};
 
@@ -24,6 +25,7 @@ mod git_helpers_function;
 mod git_provider;
 mod release_generation;
 mod release_note_generation;
+mod utils;
 
 #[cfg(test)]
 mod test;
@@ -82,15 +84,15 @@ enum Commands {
         #[arg(
             long,
             help = "Include all commits of this milestone",
-            conflicts_with = "tags"
+            conflicts_with = "tag"
         )]
         milestone: Option<String>,
         #[arg(
             long,
-            help = "Include all commits between this tags. Ex: \"v1.0.1..HEAD\".",
+            help = "Include all commits from this tags to the last one present in the changelog. Ex: \"1.0.1\".",
             conflicts_with = "milestone"
         )]
-        tags: Option<String>,
+        tag: Option<String>,
     },
     /// Generate a new release
     Release {
@@ -105,7 +107,8 @@ enum Commands {
         #[arg(
             short,
             long,
-            help = "Version number for the release. If omitted, use the last tag using \"git\" (omitting the 'v' prefix)."
+            help = "Version number for the release. If omitted, use the last tag using \"git\".",
+            default_missing_value=None
         )]
         version: Option<String>,
         #[arg(
@@ -253,7 +256,7 @@ fn main() -> anyhow::Result<()> {
             omit_thanks,
             stdout,
             milestone,
-            tags,
+            tag,
         } => {
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
@@ -263,21 +266,19 @@ fn main() -> anyhow::Result<()> {
             debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
 
-            let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
-
             let config = get_config(map)?;
 
             gen_release_notes(
-                unreleased,
+                &mut changelog,
                 milestone,
-                tags,
+                tag,
                 GenerateReleaseNoteOptions {
                     changelog_path: path.to_string_lossy().to_string(),
                     parsing,
                     exclude_unidentified,
                     exclude_not_pr,
                     provider,
-                    repo,
+                    repo: try_get_repo(repo),
                     omit_pr_link,
                     omit_thanks,
                     map: &config.map,
@@ -301,8 +302,13 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
 
-            let (version, output) =
-                release_generation::release(changelog, version, provider, repo, omit_diff)?;
+            let (version, output) = release_generation::release(
+                changelog,
+                version,
+                provider,
+                try_get_repo(repo),
+                omit_diff,
+            )?;
 
             write_output(&output, &path, stdout)?;
 

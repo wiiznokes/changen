@@ -1,4 +1,4 @@
-name: Release
+name: Changelog Generation
 
 permissions:
   contents: write
@@ -16,42 +16,31 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CARGO_TERM_COLOR: always
 
 jobs:
-  create-release:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-tags: true
 
-      - uses: Swatinem/rust-cache@v2
-      - run: |
-          git tag ${{ github.event.inputs.tag }} || true
-          git push origin --tags || true
-          # https://github.com/actions/checkout/issues/1467
-          git fetch --tags
-          cargo run --locked -- generate --tag={{ github.event.inputs.tag }} \
-            --exclude-unidentified
-          cargo run --locked -- release
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: changelog-gen
+
+      - run: changelog-gen generate --tag={{ github.event.inputs.tag }} \
+          --exclude-unidentified
+      - run: changelog-gen release
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
 
       - run: |
-          cargo run --locked -- show > RELEASE_CHANGELOG.md
+          changelog-gen show > RELEASE_CHANGELOG.md
 
           # https://cli.github.com/manual/gh_release_create
           gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \
             --notes-file RELEASE_CHANGELOG.md --target $GITHUB_SHA
-
-  upload-assets:
-    needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/upload-rust-binary-action@v1
-        with:
-          bin: changelog-gen
-          ref: refs/tags/${{ github.event.inputs.tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}

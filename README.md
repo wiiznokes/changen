@@ -5,7 +5,7 @@
 - feature-rich changelog format
 - low-config changelog management
 - customizable
-- continuous logging, with an unreleased section
+- continuous logging, with an unreleased section, and also batch logging, for one commit by release
 
 ## See in action
 
@@ -13,7 +13,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 - [The changelog file](./CHANGELOG.md) - see what the syntax have to offer
 - [Its commits history](https://github.com/wiiznokes/changelog-generator/commits/master/CHANGELOG.md)
-- [The Github workflow](./res/changelog.yml)
+- [The release Github workflow](./res/batch_changelog.yml)
 
 ## Getting started
 

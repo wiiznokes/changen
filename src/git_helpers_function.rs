@@ -1,11 +1,15 @@
 use std::{collections::VecDeque, process::Command};
 
-use cached::proc_macro::cached;
+use anyhow::bail;
+use semver::Version;
+
+use crate::git_provider::DiffTags;
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
-    pub message: String,
-    pub desc: String,
+    pub author: String,
+    pub title: String,
+    pub body: String,
     pub sha: String,
     pub list_files: Vec<String>,
 }
@@ -13,22 +17,21 @@ pub struct RawCommit {
 impl RawCommit {
     pub fn last_from_fs() -> Self {
         let sha = last_commit_sha();
-
-        Self {
-            message: commit_message(&sha),
-            desc: commit_description(&sha),
-            list_files: commit_files(&sha),
-            sha,
-        }
+        Self::from_sha(&sha)
     }
 
     pub fn from_sha(sha: &str) -> Self {
         Self {
-            message: commit_message(sha),
-            desc: commit_description(sha),
+            author: commit_author(sha),
+            title: commit_title(sha),
+            body: commit_body(sha),
             list_files: commit_files(sha),
             sha: sha.into(),
         }
+    }
+
+    pub fn short_commit(&self) -> &str {
+        &self.sha[0..7]
     }
 }
 
@@ -38,23 +41,50 @@ pub fn last_commit_sha() -> String {
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-pub fn commit_message(sha: &str) -> String {
+pub fn commit_author(sha: &str) -> String {
+    let output = Command::new("git")
+        .args(["show", "-s", "--pretty=%an", sha])
+        .output()
+        .expect("Failed to execute git command");
+
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
+    String::from_utf8(output.stdout)
+        .expect("Failed to parse UTF-8")
+        .trim()
+        .into()
+}
+
+pub fn commit_title(sha: &str) -> String {
     let output = Command::new("git")
         .args(["show", "-s", "--pretty=%s", sha])
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
 
-pub fn commit_description(sha: &str) -> String {
+pub fn commit_body(sha: &str) -> String {
     let output = Command::new("git")
         .args(["show", "-s", "--pretty=%b", sha])
         .output()
         .expect("Failed to execute git command");
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
 
     String::from_utf8(output.stdout).unwrap().trim().into()
 }
@@ -65,6 +95,10 @@ pub fn commit_files(sha: &str) -> Vec<String> {
         .output()
         .expect("Failed to execute git command");
 
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
     String::from_utf8(output.stdout)
         .unwrap()
         .trim()
@@ -73,14 +107,20 @@ pub fn commit_files(sha: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn commits_between_tags(tags: &str) -> Vec<String> {
+pub fn commits_between_tags(tags: &DiffTags) -> Vec<String> {
+    let prev = tags.prev.as_deref().unwrap_or("HEAD");
+    let tags = format!("{}..{}", prev, tags.new);
+
     let output = Command::new("git")
-        .args(["log", "--oneline", tags, "--format=format:%H"])
+        .args(["log", "--oneline", &tags, "--format=format:%H"])
         .output()
         .expect("Failed to execute git command");
 
     if !output.status.success() {
-        panic!("commits_between_tags error")
+        panic!(
+            "commits_between_tags error: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )
     }
 
     String::from_utf8(output.stdout)
@@ -92,23 +132,30 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
         .collect()
 }
 
-#[cached]
-pub fn tags_list() -> VecDeque<String> {
+pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
     let output = Command::new("git")
         .arg("tag")
         .output()
         .expect("Failed to execute git command");
 
-    let tags = String::from_utf8(output.stdout)
+    if !output.status.success() {
+        panic!("{}", String::from_utf8_lossy(&output.stderr))
+    }
+
+    let mut tags = String::from_utf8(output.stdout)
         .unwrap()
         .trim()
         .lines()
-        .map(ToString::to_string)
-        .collect();
+        .map(Version::parse)
+        .collect::<Result<Vec<Version>, _>>()?;
+
+    tags.sort();
+
+    let tags = tags.into();
 
     debug!("tags: {:?}", tags);
 
-    tags
+    Ok(tags)
 }
 
 pub fn try_get_repo(repo: Option<String>) -> Option<String> {
@@ -124,11 +171,43 @@ pub fn try_get_repo(repo: Option<String>) -> Option<String> {
     repo
 }
 
+impl DiffTags {
+    pub fn new(new: Option<String>, prev: Option<String>) -> anyhow::Result<Self> {
+        let new = match new {
+            Some(new) => Version::parse(&new)?,
+            None => match tags_list()?.pop_back() {
+                Some(v) => v,
+                None => {
+                    bail!("No version provided. Can't fall back to last tag because there is none.")
+                }
+            },
+        };
+
+        if let Some(prev) = &prev {
+            let prev = Version::parse(prev)?;
+
+            if prev > new {
+                bail!(
+                    "The new version {} is inferior to the previous version {}",
+                    new.to_string(),
+                    prev.to_string()
+                )
+            }
+        }
+
+        Ok(DiffTags {
+            prev,
+            new: new.to_string(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
+    #[ignore = "github problem with fetching tags ?"]
     fn test() {
         let raw = RawCommit::last_from_fs();
 
@@ -138,7 +217,10 @@ mod test {
 
         dbg!(&res);
 
-        let res = commits_between_tags("..v0.1.5");
+        let res = commits_between_tags(&DiffTags {
+            prev: None,
+            new: "0.1.7".into(),
+        });
 
         dbg!(&res);
     }

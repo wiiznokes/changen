@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use anyhow::bail;
+
+use crate::git_helpers_function::RawCommit;
 
 mod github;
 
@@ -24,23 +26,18 @@ impl Display for GitProvider {
 pub struct RelatedPr {
     pub url: String,
     pub pr_id: String,
-    pub author: String,
-    pub author_link: String,
-    /// False means this is a simple commit
+    pub author: Option<String>,
+    pub author_link: Option<String>,
+    pub title: Option<String>,
+    pub body: Option<String>,
+    pub merge_commit: Option<String>,
     pub is_pr: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct RelatedPrExt {
-    pub message: String,
-    pub body: String,
-    pub inner: RelatedPr,
 }
 
 #[derive(Debug, Clone)]
 pub struct DiffTags {
     pub prev: Option<String>,
-    pub current: String,
+    pub new: String,
 }
 
 impl GitProvider {
@@ -65,10 +62,33 @@ impl GitProvider {
         }
     }
 
-    pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPrExt>> {
+    pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPr>> {
         match self {
             GitProvider::Github => github::milestone_prs(repo, milestone),
             GitProvider::Other => bail!("No git provider was selected"),
+        }
+    }
+
+    pub fn last_prs(&self, repo: &str, n: usize) -> anyhow::Result<HashMap<String, RelatedPr>> {
+        let prs = match self {
+            GitProvider::Github => github::last_prs(repo, n),
+            GitProvider::Other => bail!("No git provider was selected"),
+        }?;
+
+        let mut hashmap = HashMap::new();
+
+        for pr in prs {
+            hashmap.insert(pr.merge_commit.clone().unwrap(), pr);
+        }
+
+        Ok(hashmap)
+    }
+
+    /// Fallback function
+    pub fn offline_related_pr(&self, repo: &str, raw_commit: &RawCommit) -> Option<RelatedPr> {
+        match self {
+            GitProvider::Github => github::offline_related_pr(repo, raw_commit),
+            GitProvider::Other => None,
         }
     }
 }
