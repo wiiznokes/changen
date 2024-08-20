@@ -24,13 +24,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-tags: true
+          fetch-depth: 0
 
       - uses: Swatinem/rust-cache@v2
       - run: |
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
-          git fetch --tags
+          git fetch --tags || true
           cargo run --locked -- generate --tag=${{ github.event.inputs.tag }} \
             --exclude-unidentified
           cargo run --locked -- release
