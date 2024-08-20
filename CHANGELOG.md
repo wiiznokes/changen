@@ -5,6 +5,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.6)
+
+### Added
+
+- exclude no pr options in [#19](https://github.com/wiiznokes/changelog-generator/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
+- add internal keyword in [1c80ea7](https://github.com/wiiznokes/changelog-generator/commit/1c80ea700771dddc01a7ae07dcd78d93af9343a1) by [@wiiznokes](https://github.com/wiiznokes)
+- semver + batch upgrade in [#22](https://github.com/wiiznokes/changelog-generator/pull/22) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Changed
+
+- default_value_t in [da5d510](https://github.com/wiiznokes/changelog-generator/commit/da5d510410df619b8b19116c076ab080876ab7f7) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Fixed
+
+- don't use on push tag in CI in [96350bb](https://github.com/wiiznokes/changelog-generator/commit/96350bb5b8e9a82ce369172269063846ab97f43c) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Documentation
+
+- mention git rebase config & fix some typos in [84d7fa4](https://github.com/wiiznokes/changelog-generator/commit/84d7fa44178cd405935698ed46fed938e80da603) by [@wiiznokes](https://github.com/wiiznokes)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.5...0.1.6
+
 ## [0.1.5](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.5)
 
 ### Added
