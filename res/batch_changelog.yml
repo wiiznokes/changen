@@ -30,7 +30,7 @@ jobs:
         with:
           tool: changelog-gen
 
-      - run: changelog-gen generate --tag={{ github.event.inputs.tag }} \
+      - run: changelog-gen generate --tag=${{ github.event.inputs.tag }} \
           --exclude-unidentified
       - run: changelog-gen release
 

@@ -31,7 +31,7 @@ jobs:
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
           git fetch --tags
-          cargo run --locked -- generate --tag={{ github.event.inputs.tag }} \
+          cargo run --locked -- generate --tag=${{ github.event.inputs.tag }} \
             --exclude-unidentified
           cargo run --locked -- release
       - uses: stefanzweifel/git-auto-commit-action@v5
