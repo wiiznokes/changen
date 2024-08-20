@@ -37,7 +37,7 @@ pub struct RelatedPr {
 #[derive(Debug, Clone)]
 pub struct DiffTags {
     pub prev: Option<String>,
-    pub current: String,
+    pub new: String,
 }
 
 impl GitProvider {

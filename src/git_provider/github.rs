@@ -166,10 +166,10 @@ pub fn diff_link(repo: &str, diff_tags: &DiffTags) -> anyhow::Result<String> {
 
     let link = match &diff_tags.prev {
         Some(prev) => {
-            format!("{base}/compare/{prev}...{}", diff_tags.current)
+            format!("{base}/compare/{prev}...{}", diff_tags.new)
         }
         None => {
-            format!("{base}/commits/{}", diff_tags.current)
+            format!("{base}/commits/{}", diff_tags.new)
         }
     };
 
@@ -380,7 +380,7 @@ mod test {
             "wiiznokes/fan-control",
             &DiffTags {
                 prev: None,
-                current: "v0.1.0".into(),
+                new: "v0.1.0".into(),
             },
         )
         .unwrap();
@@ -394,7 +394,7 @@ mod test {
             "wiiznokes/fan-control",
             &DiffTags {
                 prev: Some("v2024.7".into()),
-                current: "v2024.7.30".into(),
+                new: "v2024.7.30".into(),
             },
         )
         .unwrap();

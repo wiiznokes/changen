@@ -107,7 +107,8 @@ enum Commands {
         #[arg(
             short,
             long,
-            help = "Version number for the release. If omitted, use the last tag using \"git\" (omitting the 'v' prefix)."
+            help = "Version number for the release. If omitted, use the last tag using \"git\".",
+            default_missing_value=None
         )]
         version: Option<String>,
         #[arg(
@@ -303,8 +304,13 @@ fn main() -> anyhow::Result<()> {
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
 
-            let (version, output) =
-                release_generation::release(changelog, version, provider, repo, omit_diff)?;
+            let (version, output) = release_generation::release(
+                changelog,
+                version,
+                provider,
+                try_get_repo(repo),
+                omit_diff,
+            )?;
 
             write_output(&output, &path, stdout)?;
 

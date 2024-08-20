@@ -1,7 +1,10 @@
 use std::{collections::VecDeque, process::Command};
 
+use anyhow::bail;
 use cached::proc_macro::cached;
 use semver::Version;
+
+use crate::git_provider::DiffTags;
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
@@ -128,7 +131,7 @@ pub fn commits_between_tags(tags: &str) -> Vec<String> {
 }
 
 #[cached(result = true)]
-pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
+pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
     let output = Command::new("git")
         .arg("tag")
         .output()
@@ -147,10 +150,7 @@ pub fn tags_list() -> anyhow::Result<VecDeque<String>> {
 
     tags.sort();
 
-    let tags = tags
-        .into_iter()
-        .map(|e| e.to_string())
-        .collect::<VecDeque<_>>();
+    let tags = tags.into();
 
     debug!("tags: {:?}", tags);
 
@@ -168,6 +168,37 @@ pub fn try_get_repo(repo: Option<String>) -> Option<String> {
     }
 
     repo
+}
+
+impl DiffTags {
+    pub fn new(new: Option<String>, prev: Option<String>) -> anyhow::Result<Self> {
+        let new = match new {
+            Some(new) => Version::parse(&new)?,
+            None => match tags_list()?.pop_back() {
+                Some(v) => v,
+                None => {
+                    bail!("No version provided. Can't fall back to last tag because there is none.")
+                }
+            },
+        };
+
+        if let Some(prev) = &prev {
+            let prev = Version::parse(prev)?;
+
+            if prev > new {
+                bail!(
+                    "The new version {} is inferior to the previous version {}",
+                    new.to_string(),
+                    prev.to_string()
+                )
+            }
+        }
+
+        Ok(DiffTags {
+            prev,
+            new: new.to_string(),
+        })
+    }
 }
 
 #[cfg(test)]
