@@ -10,9 +10,9 @@ on:
         description: "Tag in the format X.Y.Z"
         required: true
         type: string
-  push:
-    tags:
-      - "[0-9]+.*"
+  # push:
+  #   tags:
+  #     - "[0-9]+.*"
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
