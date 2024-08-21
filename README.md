@@ -1,5 +1,7 @@
 # Changelog generator
 
+[![crates.io](https://img.shields.io/crates/v/changelog_gen?style=flat-square&logo=rust)](https://crates.io/crates/changelog_gen)
+
 ## Features
 
 - feature-rich changelog format
