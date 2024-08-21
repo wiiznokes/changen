@@ -10,11 +10,10 @@ use changelog::{
     de::parse_changelog,
     ser::{serialize_changelog, serialize_release, ChangeLogSerOptionRelease},
 };
-use clap::{Parser, Subcommand, ValueHint};
-use config::{CommitMessageParsing, Config};
+use clap::Parser;
+use config::{Cli, Commands, MapMessageToSection, New, Show, Validate};
 use git_helpers_function::try_get_repo;
-use git_provider::GitProvider;
-use release_note_generation::{gen_release_notes, GenerateReleaseNoteOptions};
+use release_note_generation::gen_release_notes;
 
 #[macro_use]
 extern crate log;
@@ -31,154 +30,6 @@ mod utils;
 mod test;
 
 const UNRELEASED: &str = "Unreleased";
-
-#[derive(Parser)]
-#[command(name = "changelog", about = "Changelog generator", long_about = None)]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Generate the release note of the last commit
-    Generate {
-        #[arg(
-            short,
-            long,
-            help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md",
-            value_hint = ValueHint::FilePath,
-            short_alias = 'o',
-            alias = "output",
-        )]
-        file: Option<PathBuf>,
-        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
-        map: Option<PathBuf>,
-        #[arg(long, help = "Parsing of the commit message.", default_value_t)]
-        parsing: CommitMessageParsing,
-        #[arg(long, help = "Don't include unidentified commits.")]
-        exclude_unidentified: bool,
-        #[arg(
-            long,
-            help = "Don't include commits which are not attached to a pull request."
-        )]
-        exclude_not_pr: bool,
-        #[arg(
-            long,
-            help = "We use the Github api to map commit sha to PRs.",
-            default_value_t
-        )]
-        provider: GitProvider,
-        #[arg(
-            long,
-            help = "Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
-        )]
-        repo: Option<String>,
-        #[arg(long, help = "Omit the PR link from the output.")]
-        omit_pr_link: bool,
-        #[arg(long, help = "Omit contributors' acknowledgements/mention.")]
-        omit_thanks: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
-        #[arg(
-            long,
-            help = "Include all commits of this milestone",
-            conflicts_with = "tag"
-        )]
-        milestone: Option<String>,
-        #[arg(
-            long,
-            help = "Include all commits from this tags to the last one present in the changelog. Ex: \"1.0.1\".",
-            conflicts_with = "milestone"
-        )]
-        tag: Option<String>,
-    },
-    /// Generate a new release
-    Release {
-        #[arg(
-            short,
-            long,
-            help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md",
-            value_hint = ValueHint::FilePath,
-        )]
-        file: Option<PathBuf>,
-        #[arg(
-            short,
-            long,
-            help = "Version number for the release. If omitted, use the last tag using \"git\".",
-            default_missing_value=None
-        )]
-        version: Option<String>,
-        #[arg(
-            long,
-            help = "We use the Github link to produce the tags diff",
-            default_value_t
-        )]
-        provider: GitProvider,
-        #[arg(
-            long,
-            help = "Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
-        )]
-        repo: Option<String>,
-        #[arg(long, help = "Omit the commit history between releases.")]
-        omit_diff: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
-    },
-    /// Validate a changelog syntax
-    Validate {
-        #[arg(
-            short,
-            long,
-            help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md",
-            value_hint = ValueHint::FilePath,
-        )]
-        file: Option<PathBuf>,
-        #[arg(long, alias = "fmt", help = "Format the changelog.")]
-        format: bool,
-        #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
-        map: Option<PathBuf>,
-        #[arg(long, help = "Show the Abstract Syntax Tree.")]
-        ast: bool,
-        #[arg(long, help = "Print the result on the standard output.")]
-        stdout: bool,
-    },
-    /// Show a specific release on stdout
-    Show {
-        #[arg(
-            short,
-            long,
-            help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md",
-            value_hint = ValueHint::FilePath,
-        )]
-        file: Option<PathBuf>,
-        #[arg(
-            short,
-            help = "0 being unreleased, 1 is the last release",
-            default_value_t = 1
-        )]
-        n: usize,
-        #[arg(short, long, help = "Specific version.")]
-        version: Option<String>,
-    },
-    /// Create a new changelog file with an accepted syntax
-    New {
-        #[arg(
-            short,
-            long,
-            help = "Path to the changelog file.",
-            default_value = "CHANGELOG.md",
-            value_hint = ValueHint::FilePath,
-        )]
-        path: Option<PathBuf>,
-        #[arg(short, long, help = "Override of existing file.")]
-        force: bool,
-    },
-}
 
 fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
     path.unwrap_or(PathBuf::from("CHANGELOG.md"))
@@ -219,22 +70,6 @@ fn write_output(output: &str, path: &Path, stdout: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn get_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
-    match path {
-        Some(path) => {
-            let mut file = File::open(&path)?;
-
-            let mut content = Vec::new();
-
-            file.read_to_end(&mut content)?;
-
-            let map = serde_json::de::from_slice(&content)?;
-            Ok(map)
-        }
-        None => Ok(Config::default()),
-    }
-}
-
 fn main() -> anyhow::Result<()> {
     env_logger::init();
 
@@ -244,83 +79,53 @@ fn main() -> anyhow::Result<()> {
     debug!("is terminal stdout: {}", io::stdout().is_terminal());
 
     match cli.command {
-        Commands::Generate {
-            file,
-            map,
-            parsing,
-            exclude_unidentified,
-            exclude_not_pr,
-            provider,
-            repo,
-            omit_pr_link,
-            omit_thanks,
-            stdout,
-            milestone,
-            tag,
-        } => {
-            let path = get_changelog_path(file);
+        Commands::Generate(mut options) => {
+            let path = get_changelog_path(options.file.clone());
             let input = read_file(&path)?;
             let mut changelog = parse_changelog(&input)?;
+
+            options.repo = try_get_repo(options.repo);
 
             debug!("path: {}", path.display());
             debug!("input: {}", input);
             debug!("changelog: {:?}", changelog);
 
-            let config = get_config(map)?;
+            let map = MapMessageToSection::try_new(options.map.as_ref())?;
 
             gen_release_notes(
                 &mut changelog,
-                milestone,
-                tag,
-                GenerateReleaseNoteOptions {
-                    changelog_path: path.to_string_lossy().to_string(),
-                    parsing,
-                    exclude_unidentified,
-                    exclude_not_pr,
-                    provider,
-                    repo: try_get_repo(repo),
-                    omit_pr_link,
-                    omit_thanks,
-                    map: &config.map,
-                },
+                path.to_string_lossy().to_string(),
+                &map,
+                &options,
             )?;
 
-            let output = serialize_changelog(&changelog, &config.into_changelog_ser_options());
+            let output = serialize_changelog(&changelog, &map.into_changelog_ser_options());
 
-            write_output(&output, &path, stdout)?;
+            write_output(&output, &path, options.stdout)?;
         }
-        #[allow(unused_variables)]
-        Commands::Release {
-            file,
-            version,
-            provider,
-            repo,
-            omit_diff,
-            stdout,
-        } => {
-            let path = get_changelog_path(file);
+
+        Commands::Release(mut options) => {
+            let path = get_changelog_path(options.file.clone());
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
+            options.repo = try_get_repo(options.repo);
 
-            let (version, output) = release_generation::release(
-                changelog,
-                version,
-                provider,
-                try_get_repo(repo),
-                omit_diff,
-            )?;
+            let (version, output) = release_generation::release(changelog, &options)?;
 
-            write_output(&output, &path, stdout)?;
+            write_output(&output, &path, options.stdout)?;
 
             eprintln!("New release {} succefully created.", version);
         }
-        Commands::Validate {
-            file,
-            ast,
-            format,
-            map,
-            stdout,
-        } => {
+
+        Commands::Validate(options) => {
+            let Validate {
+                file,
+                format,
+                map,
+                ast,
+                stdout,
+            } = options;
+
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
@@ -332,16 +137,19 @@ fn main() -> anyhow::Result<()> {
             }
 
             if format {
-                let options = get_config(map)?.into_changelog_ser_options();
+                let ser_options = MapMessageToSection::try_new(map)?.into_changelog_ser_options();
 
-                let output = serialize_changelog(&changelog, &options);
+                let output = serialize_changelog(&changelog, &ser_options);
 
                 write_output(&output, &path, stdout)?;
             }
 
             eprintln!("Changelog parsed with success!");
         }
-        Commands::Show { file, n, version } => {
+
+        Commands::Show(options) => {
+            let Show { file, n, version } = options;
+
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
             let changelog = parse_changelog(&input)?;
@@ -364,7 +172,7 @@ fn main() -> anyhow::Result<()> {
                         release,
                         &ChangeLogSerOptionRelease {
                             section_order: vec![],
-                            serialise_title: false,
+                            serialize_title: false,
                         },
                     );
                     print!("{}", output);
@@ -374,7 +182,10 @@ fn main() -> anyhow::Result<()> {
                 }
             };
         }
-        Commands::New { path, force } => {
+
+        Commands::New(options) => {
+            let New { path, force } = options;
+
             let path = get_changelog_path(path);
 
             if path.exists() && !force {

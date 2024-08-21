@@ -1,7 +1,8 @@
 use crate::{
     commit_parser::{parse_commit, FormattedCommit},
+    config::Generate,
     git_helpers_function::{commits_between_tags, RawCommit},
-    git_provider::{DiffTags, GitProvider, RelatedPr},
+    git_provider::{DiffTags, RelatedPr},
     utils::get_last_tag,
 };
 use anyhow::{bail, Result};
@@ -11,33 +12,20 @@ use changelog::{
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
-#[derive(Debug, Clone)]
-pub struct GenerateReleaseNoteOptions<'a> {
-    pub changelog_path: String,
-    pub parsing: CommitMessageParsing,
-    pub exclude_unidentified: bool,
-    pub exclude_not_pr: bool,
-    pub provider: GitProvider,
-    pub repo: Option<String>,
-    pub omit_pr_link: bool,
-    pub omit_thanks: bool,
-    pub map: &'a MapMessageToSection,
-}
-
 pub fn gen_release_notes(
     changelog: &mut ChangeLog,
-    milestone: Option<String>,
-    tag: Option<String>,
-    options: GenerateReleaseNoteOptions,
+    changelog_path: String,
+    map: &MapMessageToSection,
+    options: &Generate,
 ) -> Result<()> {
     let last_tag = get_last_tag(changelog);
 
     let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
 
-    if let Some(milestone) = milestone {
+    if let Some(milestone) = &options.milestone {
         for pr in options
             .provider
-            .milestone_prs(&options.repo.clone().unwrap(), &milestone)?
+            .milestone_prs(&options.repo.clone().unwrap(), milestone)?
         {
             let raw_commit = RawCommit {
                 title: pr.title.clone().unwrap_or_default(),
@@ -47,7 +35,7 @@ pub fn gen_release_notes(
                 author: pr.author.clone().unwrap_or_default(),
             };
 
-            match get_release_note(&raw_commit, Some(&pr), options.clone()) {
+            match get_release_note(&raw_commit, Some(&pr), &changelog_path, map, options) {
                 Ok((section_title, release_note)) => {
                     insert_release_note(unreleased, section_title, release_note);
                 }
@@ -58,10 +46,10 @@ pub fn gen_release_notes(
         return Ok(());
     }
 
-    if let Some(tag) = tag {
+    if let Some(tag) = &options.tag {
         let commits = commits_between_tags(&DiffTags {
             prev: last_tag,
-            new: tag,
+            new: tag.to_string(),
         });
 
         let mut last_prs = match &options.repo {
@@ -92,7 +80,13 @@ pub fn gen_release_notes(
                 },
             };
 
-            match get_release_note(&raw_commit, related_pr.as_ref(), options.clone()) {
+            match get_release_note(
+                &raw_commit,
+                related_pr.as_ref(),
+                &changelog_path,
+                map,
+                options,
+            ) {
                 Ok((section_title, release_note)) => {
                     insert_release_note(unreleased, section_title, release_note);
                 }
@@ -116,7 +110,13 @@ pub fn gen_release_notes(
         None => None,
     };
 
-    match get_release_note(&raw_commit, related_pr.as_ref(), options) {
+    match get_release_note(
+        &raw_commit,
+        related_pr.as_ref(),
+        &changelog_path,
+        map,
+        options,
+    ) {
         Ok((section_title, release_note)) => {
             let mut added = String::new();
             serialize_release_section_note(&mut added, &release_note);
@@ -156,21 +156,11 @@ fn insert_release_note(
 fn get_release_note(
     raw_commit: &RawCommit,
     related_pr: Option<&RelatedPr>,
-    options: GenerateReleaseNoteOptions,
+    changelog_path: &str,
+    map: &MapMessageToSection,
+    options: &Generate,
 ) -> Result<(String, ReleaseSectionNote)> {
-    let GenerateReleaseNoteOptions {
-        changelog_path,
-        parsing,
-        exclude_unidentified,
-        exclude_not_pr,
-        provider: _,
-        repo: _,
-        omit_pr_link,
-        omit_thanks,
-        map,
-    } = options;
-
-    if let Response::Yes { reason } = commit_should_be_ignored(raw_commit, &changelog_path) {
+    if let Response::Yes { reason } = commit_should_be_ignored(raw_commit, changelog_path) {
         bail!("Ignoring commit. {reason}");
     }
 
@@ -179,7 +169,7 @@ fn get_release_note(
             let section = match map.map_section(&commit.section) {
                 Some(section) => section,
                 None => {
-                    if parsing == CommitMessageParsing::Strict {
+                    if options.parsing == CommitMessageParsing::Strict {
                         bail!(
                             "no corresponding commit type was found for {}",
                             commit.section
@@ -191,7 +181,7 @@ fn get_release_note(
                     {
                         section
                     } else {
-                        if exclude_unidentified {
+                        if options.exclude_unidentified {
                             bail!(
                                 "No corresponding commit type was found for {}",
                                 commit.section
@@ -206,7 +196,7 @@ fn get_release_note(
             commit
         }
         Err(e) => {
-            if parsing == CommitMessageParsing::Strict {
+            if options.parsing == CommitMessageParsing::Strict {
                 bail!(
                     "Commit {}: invalid syntax: {}",
                     raw_commit.short_commit(),
@@ -219,7 +209,7 @@ fn get_release_note(
             {
                 section
             } else {
-                if exclude_unidentified {
+                if options.exclude_unidentified {
                     bail!("Not identified.");
                 }
                 "Unidentified".into()
@@ -234,17 +224,17 @@ fn get_release_note(
     };
 
     if let Some(related_pr) = &related_pr {
-        if !related_pr.is_pr && exclude_not_pr {
+        if !related_pr.is_pr && options.exclude_not_pr {
             bail!("No upstream pr was found");
         }
 
-        if !omit_pr_link {
+        if !options.omit_pr_link {
             commit
                 .message
                 .push_str(&format!(" in [{}]({})", related_pr.pr_id, related_pr.url));
         }
 
-        if !omit_thanks {
+        if !options.omit_thanks {
             if let (Some(author), Some(author_link)) = (&related_pr.author, &related_pr.author_link)
             {
                 commit
@@ -252,7 +242,7 @@ fn get_release_note(
                     .push_str(&format!(" by [@{author}]({author_link})"));
             }
         }
-    } else if exclude_not_pr {
+    } else if options.exclude_not_pr {
         bail!("no upstream pr was found");
     };
 
