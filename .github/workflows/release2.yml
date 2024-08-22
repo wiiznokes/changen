@@ -2,7 +2,8 @@ name: Release2
 
 permissions:
   contents: write
-  
+  pull-requests: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -50,6 +51,7 @@ jobs:
           branch: changelog-release
           commit-message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
           delete-branch: true
+          branch-suffix: short-commit-hash
 
       - run: |
           cargo run --locked -- show
