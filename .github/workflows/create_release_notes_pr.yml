@@ -1,8 +1,4 @@
-name: Release2
-
-permissions:
-  contents: write
-  pull-requests: write
+name: Release Notes PR
 
 on:
   workflow_dispatch:
@@ -11,9 +7,14 @@ on:
         description: "Tag in the format X.Y.Z"
         required: true
         type: string
-  push:
-    tags:
-      - "[0-9]+.*"
+  # You can uncomment this
+  # push:
+  #   tags:
+  #     - "[0-9]+.*"
+
+permissions:
+  contents: write
+  pull-requests: write
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -38,20 +39,21 @@ jobs:
           git fetch --tags || true
           echo Using given tag ${{ github.event.inputs.tag }}
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: changelog-gen
+
       - run: |
-          cargo run --locked -- generate --exclude-unidentified
-          cargo run --locked -- release
+          changelog-gen generate --exclude-unidentified
+          changelog-gen release
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "Automatic release PR"
-          base: expe-declaer
+          title: "Automatic Release Notes Generation"
+          base: master
           branch: changelog-release
           commit-message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+          body: ""
           delete-branch: true
           branch-suffix: short-commit-hash
-
-      - run: |
-          cargo run --locked -- show

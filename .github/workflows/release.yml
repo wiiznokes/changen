@@ -1,8 +1,5 @@
 name: Release
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
     inputs:
@@ -10,9 +7,9 @@ on:
         description: "Tag in the format X.Y.Z"
         required: true
         type: string
-  # push:
-  #   tags:
-  #     - "[0-9]+.*"
+
+permissions:
+  contents: write
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -26,19 +23,18 @@ jobs:
           fetch-tags: true
           fetch-depth: 0
 
-      - uses: Swatinem/rust-cache@v2
-
-      - if: ${{ github.event.inputs.tag != '' }}
-        run: |
+      - run: |
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
           git fetch --tags || true
+          echo Using given tag ${{ github.event.inputs.tag }}
 
+      - uses: Swatinem/rust-cache@v2
       - run: |
-          git tag
           cargo run --locked -- generate --exclude-unidentified
           cargo run --locked -- release
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
