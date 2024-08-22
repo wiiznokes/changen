@@ -20,6 +20,11 @@ edition.workspace = true
 license.workspace = true
 homepage.workspace = true
 repository.workspace = true
+default-run = "changelog-gen"
+
+[[bin]]
+name = "gen-doc"
+path = "src/gen_doc.rs"
 
 
 [dependencies]
@@ -36,6 +41,9 @@ env_logger = "0.11"
 cached = "0.53"
 semver = "1"
 # derive_more = { version = "1", features = ["display"] }
+
+# todo: bin only https://github.com/rust-lang/cargo/issues/1982
+clap-markdown = "0.1"
 
 [dev-dependencies]
 pretty_assertions = "1"

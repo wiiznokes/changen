@@ -120,7 +120,7 @@ pub enum Commands {
     New(New),
 }
 
-/// Generate release notes. Default to `last_release_in_changelog..HEAD`
+/// Generate release notes. By default, generate from the last release in the changelog to HEAD.
 #[derive(Args)]
 pub struct Generate {
     #[arg(
@@ -183,7 +183,7 @@ pub struct Generate {
     pub until: Option<String>,
 }
 
-/// Generate a new release
+/// Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format. 
 #[derive(Args)]
 pub struct Release {
     #[arg(
@@ -197,7 +197,7 @@ pub struct Release {
     #[arg(
         short,
         long,
-        help = "Version number for the release. If omitted, use the last tag using \"git\".",
+        help = "Version number for the release. If omitted, use the last tag present in the repo.",
         num_args(0..=1),
         default_missing_value=None
     )]
@@ -256,7 +256,8 @@ pub struct Show {
     #[arg(
         short,
         help = "0 being unreleased, 1 is the last release",
-        default_value_t = 1
+        default_value_t = 1,
+        conflicts_with = "version"
     )]
     pub n: usize,
     #[arg(short, long, help = "Specific version.")]
