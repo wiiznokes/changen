@@ -22,9 +22,9 @@ homepage.workspace = true
 repository.workspace = true
 default-run = "changelog-gen"
 
-[[bin]]
-name = "gen-doc"
-path = "src/gen_doc.rs"
+# [[bin]]
+# name = "gen-doc"
+# path = "src/gen_doc.rs"
 
 
 [dependencies]
