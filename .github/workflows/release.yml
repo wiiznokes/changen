@@ -34,7 +34,7 @@ jobs:
       - run: |
           cargo run --locked -- generate --exclude-unidentified
           cargo run --locked -- release
-          cargo run --locked --bin gen-doc
+          # cargo run --locked --bin gen-doc
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:

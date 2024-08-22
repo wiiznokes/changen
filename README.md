@@ -41,7 +41,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
    To make a new release, use `changelog-gen release --version 1.0.0`.
 
 > [!WARNING]  
-> All tags of the repo and versions in the changelog must follow the [semver](https://semver.org/) format. This may be relaxed in the future.
+> _All_ tags of the repo and versions in the changelog _must_ follow the [semver](https://semver.org/) format, and should match each other.
 
 **The full API reference can be found [here](./res/API_REFERENCE.md)** (automatically generated).
 

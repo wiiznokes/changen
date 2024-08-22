@@ -113,6 +113,7 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    #[command(alias = "gen")]
     Generate(Generate),
     Release(Release),
     Validate(Validate),

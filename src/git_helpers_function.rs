@@ -147,12 +147,16 @@ pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
         panic!("{}", String::from_utf8_lossy(&output.stderr))
     }
 
-    let mut tags = String::from_utf8(output.stdout)
-        .unwrap()
-        .trim()
-        .lines()
-        .map(Version::parse)
-        .collect::<Result<Vec<Version>, _>>()?;
+    let mut tags = Vec::new();
+
+    for tag in String::from_utf8(output.stdout)?.trim().lines() {
+        match Version::parse(tag) {
+            Ok(v) => tags.push(v),
+            Err(e) => {
+                eprintln!("incorrect semver tag {tag}: {e}");
+            }
+        }
+    }
 
     tags.sort();
 
