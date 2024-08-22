@@ -43,7 +43,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 > [!WARNING]  
 > All tags of the repo and version in the changelog must follow the [semver](https://semver.org/) format. This may be relaxed in the future.
 
-**The full API reference can be found [here](./res/api_reference.md) (automatically generated).**
+**The full API reference can be found [here](./res/api_reference.md)** (automatically generated).
 
 ## Commit syntax
 
