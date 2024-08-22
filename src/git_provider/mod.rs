@@ -10,14 +10,15 @@ mod github;
 pub enum GitProvider {
     #[default]
     Github,
-    Other,
+    None,
 }
-
+// todo: use derive_more::Display when this issue is resolved
+// https://github.com/JelteF/derive_more/issues/216
 impl Display for GitProvider {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             GitProvider::Github => write!(f, "github"),
-            GitProvider::Other => write!(f, "other "),
+            GitProvider::None => write!(f, "none "),
         }
     }
 }
@@ -44,35 +45,35 @@ impl GitProvider {
     pub fn related_pr(&self, repo: &str, sha: &str) -> anyhow::Result<RelatedPr> {
         match self {
             GitProvider::Github => github::request_related_pr(repo, sha),
-            GitProvider::Other => bail!("No git provider was selected"),
+            GitProvider::None => bail!("No git provider was selected"),
         }
     }
 
     pub fn diff_link(&self, repo: &str, diff_tags: &DiffTags) -> anyhow::Result<String> {
         match self {
             GitProvider::Github => github::diff_link(repo, diff_tags),
-            GitProvider::Other => bail!("No git provider was selected"),
+            GitProvider::None => bail!("No git provider was selected"),
         }
     }
 
     pub fn release_link(&self, repo: &str, tag: &str) -> anyhow::Result<String> {
         match self {
             GitProvider::Github => github::release_link(repo, tag),
-            GitProvider::Other => bail!("No git provider was selected"),
+            GitProvider::None => bail!("No git provider was selected"),
         }
     }
 
     pub fn milestone_prs(&self, repo: &str, milestone: &str) -> anyhow::Result<Vec<RelatedPr>> {
         match self {
             GitProvider::Github => github::milestone_prs(repo, milestone),
-            GitProvider::Other => bail!("No git provider was selected"),
+            GitProvider::None => bail!("No git provider was selected"),
         }
     }
 
     pub fn last_prs(&self, repo: &str, n: usize) -> anyhow::Result<HashMap<String, RelatedPr>> {
         let prs = match self {
             GitProvider::Github => github::last_prs(repo, n),
-            GitProvider::Other => bail!("No git provider was selected"),
+            GitProvider::None => bail!("No git provider was selected"),
         }?;
 
         let mut hashmap = HashMap::new();
@@ -88,7 +89,7 @@ impl GitProvider {
     pub fn offline_related_pr(&self, repo: &str, raw_commit: &RawCommit) -> Option<RelatedPr> {
         match self {
             GitProvider::Github => github::offline_related_pr(repo, raw_commit),
-            GitProvider::Other => None,
+            GitProvider::None => None,
         }
     }
 }
