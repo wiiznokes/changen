@@ -54,7 +54,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           title: "Automatic release PR"
-          base: master
+          base: expe-declaer
           branch: changelog-release
           commit-message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
           delete-branch: true
