@@ -46,14 +46,19 @@ jobs:
 
       - run: |
           git tag
-          cargo run --locked -- generate --exclude-unidentified --stdout > CHANGELOG2.md
-          cargo run --locked -- release -f CHANGELOG2.md
-          diff CHANGELOG.md CHANGELOG2.md || true
+          cargo run --locked -- generate --exclude-unidentified
+          cargo run --locked -- release
 
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
         with:
-          commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+          title: "Automatic release PR"
+          branch: changelog-release
+          commit-message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+          delete-branch: true
 
+
+     
       - run: |
           cargo run --locked -- show
