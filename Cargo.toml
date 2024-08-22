@@ -34,7 +34,7 @@ anyhow.workspace = true
 serde.workspace = true
 serde_json = "1"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
-changelog = { version = "0.1.4", package = "changelog_document" }
+changelog = { version = "0.1.5", package = "changelog_document" }
 pom.workspace = true
 log = "0.4"
 env_logger = "0.11"

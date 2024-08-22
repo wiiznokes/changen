@@ -215,7 +215,7 @@ version = "0.1.6"
 dependencies = [
  "anyhow",
  "cached",
- "changelog_document 0.1.4",
+ "changelog_document 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap",
  "clap-markdown",
  "env_logger",
@@ -231,24 +231,24 @@ dependencies = [
 
 [[package]]
 name = "changelog_document"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c62d802cfbd38c155f3932cdd3a8c44638ca541ca08ede5b65d344a8c828397"
-dependencies = [
- "anyhow",
- "indexmap",
- "pom",
- "serde",
-]
-
-[[package]]
-name = "changelog_document"
 version = "0.1.5"
 dependencies = [
  "anyhow",
  "indexmap",
  "pom",
  "pretty_assertions",
+ "serde",
+]
+
+[[package]]
+name = "changelog_document"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63ba372e8af4123c661eda0e4867d0e986da61b21d0c4f97b63b21e5c8771e4a"
+dependencies = [
+ "anyhow",
+ "indexmap",
+ "pom",
  "serde",
 ]
 
