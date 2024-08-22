@@ -121,6 +121,8 @@ fn handle_period(
         until: options.until.clone(),
     };
 
+    info!("generate period: {:?}", period);
+
     let commits = commits_between_tags(&period);
 
     let mut last_prs = match &options.repo {
