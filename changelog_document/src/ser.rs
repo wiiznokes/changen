@@ -65,7 +65,7 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
         }
 
         if let Some(title) = &release.title.title {
-            full_title.push_str(&format!("- {}", title));
+            full_title.push_str(&format!(" - {}", title));
         }
 
         full_title.push('\n');

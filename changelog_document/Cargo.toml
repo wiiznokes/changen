@@ -1,6 +1,6 @@
 [package]
 name = "changelog_document"
-version = "0.1.4"
+version = "0.1.5"
 categories = ["parsing"]
 keywords = ["changelog", "parser", "serializer", "pom-based", "release-note"]
 description = "Feature-rich changelog format. Include a parser and serializer."
@@ -15,3 +15,7 @@ pom.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 indexmap = "2"
+
+
+[dev-dependencies]
+pretty_assertions.workspace = true
