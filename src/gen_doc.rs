@@ -9,7 +9,7 @@ fn main() -> anyhow::Result<()> {
         .create(true)
         .truncate(true)
         .write(true)
-        .open("res/api_reference.md")?;
+        .open("res/API_REFERENCE.md")?;
 
     file.write_all(doc.as_bytes())?;
 

@@ -20,7 +20,7 @@ Changelog generator
 ###### **Subcommands:**
 
 * `generate` — Generate release notes. By default, generate from the last release in the changelog to HEAD
-* `release` — Generate a new release. By default, use the last tag present in the repo, sorted using [semver](https://semver.org/) format
+* `release` — Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
 * `validate` — Validate a changelog syntax
 * `show` — Show a specific release on stdout
 * `new` — Create a new changelog file with an accepted syntax
@@ -51,7 +51,7 @@ Generate release notes. By default, generate from the last release in the change
 
   Default value: `github`
 
-  Possible values: `github`, `other`
+  Possible values: `github`, `none`
 
 * `--repo <REPO>` — Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
 * `--omit-pr-link` — Omit the PR link from the output.
@@ -66,7 +66,7 @@ Generate release notes. By default, generate from the last release in the change
 
 ## `changelog release`
 
-Generate a new release. By default, use the last tag present in the repo, sorted using [semver](https://semver.org/) format
+Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
 
 **Usage:** `changelog release [OPTIONS]`
 
@@ -81,7 +81,7 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
   Default value: `github`
 
-  Possible values: `github`, `other`
+  Possible values: `github`, `none`
 
 * `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
 * `--omit-diff` — Omit the commit history between releases.
