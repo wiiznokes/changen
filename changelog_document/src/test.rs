@@ -1,8 +1,10 @@
 use std::{fs::File, io::Read, sync::LazyLock};
 
-use de::parse_changelog;
+use pretty_assertions::assert_eq;
 
 use crate::*;
+use de::parse_changelog;
+use ser::ChangeLogSerOptionRelease;
 
 #[test]
 fn test_file() {
@@ -116,3 +118,20 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
         ],
     },
 });
+
+#[test]
+fn release_title() {
+    let input = "## [2024.7] - 2024-07-24\n";
+
+    let f_input = input.chars().collect::<Vec<_>>();
+
+    let parser = de::release();
+
+    let res = parser.parse(&f_input).unwrap();
+
+    let mut s = String::new();
+
+    ser::serialize_release(&mut s, &res, &ChangeLogSerOptionRelease::default());
+
+    assert_eq!(input, s);
+}

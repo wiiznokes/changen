@@ -10,7 +10,7 @@ pub fn parse_changelog(input: &str) -> anyhow::Result<ChangeLog> {
     Ok(changelog)
 }
 
-fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
+pub(crate) fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
     let header = (!call(release) * any()).repeat(0..).convert(|header| {
         let header = into_string(header);
 
@@ -40,7 +40,7 @@ fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
     })
 }
 
-fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
+pub(crate) fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
     let version = sym('#').repeat(2) * sym(' ') * sym('[') * none_of("\n]").repeat(1..) - sym(']');
 
     let release_link = sym('(') * none_of("\n)").repeat(1..) - sym(')');
@@ -60,7 +60,7 @@ fn release_title<'a>() -> Parser<'a, char, ReleaseTitle> {
     })
 }
 
-fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
+pub(crate) fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     let scope = none_of(" \t\r`:\n").repeat(1..) - sym(':');
 
     let context_line = one_of(" \t") * none_of("\n").repeat(1..) - sym('\n');
@@ -82,7 +82,7 @@ fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote> {
     })
 }
 
-fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
+pub(crate) fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
     let title = space() * sym('#').repeat(3) * sym(' ') * none_of("\n").repeat(1..) - sym('\n');
 
     let parser = title - space() + release_section_note().repeat(1..);
@@ -97,7 +97,7 @@ fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
     })
 }
 
-fn release<'a>() -> Parser<'a, char, Release> {
+pub(crate) fn release<'a>() -> Parser<'a, char, Release> {
     let header = ((!call(release_title) + !call(release_section) + !call(footer_links)) * any())
         .repeat(0..)
         .convert(|header| {
@@ -142,7 +142,7 @@ fn release<'a>() -> Parser<'a, char, Release> {
     })
 }
 
-fn footer_link<'a>() -> Parser<'a, char, FooterLink> {
+pub(crate) fn footer_link<'a>() -> Parser<'a, char, FooterLink> {
     let parser = sym('[') * none_of("\n]").repeat(1..) - sym(']') * sym(':') * sym(' ')
         + none_of("\n").repeat(1..)
         - sym('\n');
@@ -157,7 +157,7 @@ fn footer_link<'a>() -> Parser<'a, char, FooterLink> {
     })
 }
 
-fn footer_links<'a>() -> Parser<'a, char, FooterLinks> {
+pub(crate) fn footer_links<'a>() -> Parser<'a, char, FooterLinks> {
     let parser = space() * footer_link().repeat(0..) - space() - end();
 
     parser.convert(|links| {
@@ -167,7 +167,7 @@ fn footer_links<'a>() -> Parser<'a, char, FooterLinks> {
     })
 }
 
-mod utils {
+pub(crate) mod utils {
     use pom::parser::*;
 
     pub fn into_string(v: Vec<char>) -> String {
