@@ -1,5 +1,6 @@
 [workspace]
 members = [".", "changelog_document"]
+exclude = ["expe"]
 
 [workspace.package]
 authors = ["wiiznokes <wiiznokes2@gmail.com>"]

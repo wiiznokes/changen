@@ -120,7 +120,7 @@ pub enum Commands {
     New(New),
 }
 
-/// Generate the release note of the last commit
+/// Generate release notes. Default to `last_release_in_changelog..HEAD`
 #[derive(Args)]
 pub struct Generate {
     #[arg(
@@ -163,16 +163,24 @@ pub struct Generate {
     pub stdout: bool,
     #[arg(
         long,
-        help = "Include all commits of this milestone",
-        conflicts_with = "tag"
+        help = "Generate only this commit, or tag.",
+        conflicts_with_all = ["milestone", "since", "until"],
     )]
-    pub milestone: Option<String>,
+    pub specific: Option<String>,
     #[arg(
         long,
-        help = "Include all commits from this tags to the last one present in the changelog. Ex: \"1.0.1\".",
-        conflicts_with = "milestone"
+        help = "Include all commits of this milestone",
+        conflicts_with_all = ["since", "until"],
     )]
-    pub tag: Option<String>,
+    pub milestone: Option<String>,
+    #[arg(long, help = "Include all commits in \"since..until\".")]
+    pub since: Option<String>,
+    #[arg(
+        long,
+        help = "Include all commits in \"since..until\".",
+        requires = "since"
+    )]
+    pub until: Option<String>,
 }
 
 /// Generate a new release
@@ -190,9 +198,12 @@ pub struct Release {
         short,
         long,
         help = "Version number for the release. If omitted, use the last tag using \"git\".",
+        num_args(0..=1),
         default_missing_value=None
     )]
     pub version: Option<String>,
+    #[arg(long, help = "Previous version number. Used for the diff.")]
+    pub previous_version: Option<String>,
     #[arg(
         long,
         help = "We use the Github link to produce the tags diff",

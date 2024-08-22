@@ -27,13 +27,17 @@ jobs:
           fetch-depth: 0
 
       - uses: Swatinem/rust-cache@v2
-      - run: |
+
+      - if: ${{ github.event.inputs.tag != '' }}
+        run: |
           git tag ${{ github.event.inputs.tag }} || true
           git push origin --tags || true
           # https://github.com/actions/checkout/issues/1467
           git fetch --tags || true
-          cargo run --locked -- generate --tag=${{ github.event.inputs.tag }} \
-            --exclude-unidentified
+
+      - run: |
+          git tag
+          cargo run --locked -- generate --exclude-unidentified
           cargo run --locked -- release
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:

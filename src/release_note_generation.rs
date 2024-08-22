@@ -2,7 +2,7 @@ use crate::{
     commit_parser::{parse_commit, FormattedCommit},
     config::Generate,
     git_helpers_function::{commits_between_tags, RawCommit},
-    git_provider::{DiffTags, RelatedPr},
+    git_provider::RelatedPr,
     utils::get_last_tag,
 };
 use anyhow::{bail, Result};
@@ -13,91 +13,67 @@ use changelog::{
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
 pub fn gen_release_notes(
-    changelog: &mut ChangeLog,
+    changelog: &ChangeLog,
+    unreleased: &mut Release,
     changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
 ) -> Result<()> {
-    let last_tag = get_last_tag(changelog);
-
-    let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
+    if let Some(specific) = &options.specific {
+        return handle_specific(unreleased, changelog_path, map, options, specific);
+    }
 
     if let Some(milestone) = &options.milestone {
-        for pr in options
-            .provider
-            .milestone_prs(&options.repo.clone().unwrap(), milestone)?
-        {
-            let raw_commit = RawCommit {
-                title: pr.title.clone().unwrap_or_default(),
-                body: pr.body.clone().unwrap_or_default(),
-                sha: "".into(),
-                list_files: vec![],
-                author: pr.author.clone().unwrap_or_default(),
-            };
-
-            match get_release_note(&raw_commit, Some(&pr), &changelog_path, map, options) {
-                Ok((section_title, release_note)) => {
-                    insert_release_note(unreleased, section_title, release_note);
-                }
-                Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
-            }
-        }
-
-        return Ok(());
+        return handle_milestone(unreleased, changelog_path, map, options, milestone);
     }
 
-    if let Some(tag) = &options.tag {
-        let commits = commits_between_tags(&DiffTags {
-            prev: last_tag,
-            new: tag.to_string(),
-        });
+    handle_period(changelog, unreleased, changelog_path, map, options)
+}
 
-        let mut last_prs = match &options.repo {
-            Some(repo) => match options.provider.last_prs(repo, commits.len()) {
-                Ok(last_prs) => Some(last_prs),
-                Err(e) => {
-                    eprintln!("error while requesting pr link: {}", e);
-                    None
-                }
-            },
-            None => None,
+#[derive(Debug, Clone)]
+pub struct Period {
+    pub since: Option<String>,
+    pub until: Option<String>,
+}
+
+fn handle_milestone(
+    unreleased: &mut Release,
+    changelog_path: String,
+    map: &MapMessageToSection,
+    options: &Generate,
+    milestone: &str,
+) -> Result<()> {
+    for pr in options
+        .provider
+        .milestone_prs(&options.repo.clone().unwrap(), milestone)?
+    {
+        let raw_commit = RawCommit {
+            title: pr.title.clone().unwrap_or_default(),
+            body: pr.body.clone().unwrap_or_default(),
+            sha: "".into(),
+            list_files: vec![],
+            author: pr.author.clone().unwrap_or_default(),
         };
 
-        for sha in commits {
-            let raw_commit = RawCommit::from_sha(&sha);
-
-            let related_pr = match last_prs {
-                Some(ref mut last_prs) => last_prs.remove(&sha),
-                None => None,
-            };
-
-            // fallback to derive from commit
-            let related_pr = match related_pr {
-                Some(related_pr) => Some(related_pr),
-                None => match &options.repo {
-                    Some(repo) => options.provider.offline_related_pr(repo, &raw_commit),
-                    None => None,
-                },
-            };
-
-            match get_release_note(
-                &raw_commit,
-                related_pr.as_ref(),
-                &changelog_path,
-                map,
-                options,
-            ) {
-                Ok((section_title, release_note)) => {
-                    insert_release_note(unreleased, section_title, release_note);
-                }
-                Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
+        match get_release_note(&raw_commit, Some(&pr), &changelog_path, map, options) {
+            Ok((section_title, release_note)) => {
+                insert_release_note(unreleased, section_title, release_note);
             }
+            Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
         }
-
-        return Ok(());
     }
 
-    let raw_commit = RawCommit::last_from_fs();
+    Ok(())
+}
+
+fn handle_specific(
+    unreleased: &mut Release,
+    changelog_path: String,
+    map: &MapMessageToSection,
+    options: &Generate,
+    specific: &str,
+) -> Result<()> {
+    let raw_commit = RawCommit::from_sha(specific);
 
     let related_pr = match &options.repo {
         Some(repo) => match options.provider.related_pr(repo, &raw_commit.sha) {
@@ -131,26 +107,65 @@ pub fn gen_release_notes(
     Ok(())
 }
 
-fn insert_release_note(
+fn handle_period(
+    changelog: &ChangeLog,
     unreleased: &mut Release,
-    section_title: String,
-    release_note: ReleaseSectionNote,
-) {
-    let section = if let Some(section) = unreleased.note_sections.get_mut(&section_title) {
-        section
-    } else {
-        let release_section = ReleaseSection {
-            title: section_title.clone(),
-            notes: vec![],
-        };
+    changelog_path: String,
+    map: &MapMessageToSection,
+    options: &Generate,
+) -> Result<()> {
+    let since = options.since.clone().or_else(|| get_last_tag(changelog));
 
-        unreleased
-            .note_sections
-            .insert(section_title.clone(), release_section);
-        unreleased.note_sections.get_mut(&section_title).unwrap()
+    let period = Period {
+        since,
+        until: options.until.clone(),
     };
 
-    section.notes.push(release_note);
+    let commits = commits_between_tags(&period);
+
+    let mut last_prs = match &options.repo {
+        Some(repo) => match options.provider.last_prs(repo, commits.len()) {
+            Ok(last_prs) => Some(last_prs),
+            Err(e) => {
+                eprintln!("error while requesting pr link: {}", e);
+                None
+            }
+        },
+        None => None,
+    };
+
+    for sha in commits {
+        let raw_commit = RawCommit::from_sha(&sha);
+
+        let related_pr = match last_prs {
+            Some(ref mut last_prs) => last_prs.remove(&sha),
+            None => None,
+        };
+
+        // fallback to derive from commit
+        let related_pr = match related_pr {
+            Some(related_pr) => Some(related_pr),
+            None => match &options.repo {
+                Some(repo) => options.provider.offline_related_pr(repo, &raw_commit),
+                None => None,
+            },
+        };
+
+        match get_release_note(
+            &raw_commit,
+            related_pr.as_ref(),
+            &changelog_path,
+            map,
+            options,
+        ) {
+            Ok((section_title, release_note)) => {
+                insert_release_note(unreleased, section_title, release_note);
+            }
+            Err(e) => eprintln!("commit {}: {e}", raw_commit.short_commit()),
+        }
+    }
+
+    Ok(())
 }
 
 fn get_release_note(
@@ -254,6 +269,28 @@ fn get_release_note(
             context: vec![],
         },
     ))
+}
+
+fn insert_release_note(
+    unreleased: &mut Release,
+    section_title: String,
+    release_note: ReleaseSectionNote,
+) {
+    let section = if let Some(section) = unreleased.note_sections.get_mut(&section_title) {
+        section
+    } else {
+        let release_section = ReleaseSection {
+            title: section_title.clone(),
+            notes: vec![],
+        };
+
+        unreleased
+            .note_sections
+            .insert(section_title.clone(), release_section);
+        unreleased.note_sections.get_mut(&section_title).unwrap()
+    };
+
+    section.notes.push(release_note);
 }
 
 #[derive(Debug, Clone)]

@@ -92,8 +92,13 @@ fn main() -> anyhow::Result<()> {
 
             let map = MapMessageToSection::try_new(options.map.as_ref())?;
 
+            let changelog_cloned = changelog.clone();
+
+            let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
+
             gen_release_notes(
-                &mut changelog,
+                &changelog_cloned,
+                unreleased,
                 path.to_string_lossy().to_string(),
                 &map,
                 &options,

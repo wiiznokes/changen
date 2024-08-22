@@ -3,7 +3,7 @@ use std::{collections::VecDeque, process::Command};
 use anyhow::bail;
 use semver::Version;
 
-use crate::git_provider::DiffTags;
+use crate::{git_provider::DiffTags, release_note_generation::Period};
 
 #[derive(Clone, Debug)]
 pub struct RawCommit {
@@ -107,12 +107,16 @@ pub fn commit_files(sha: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn commits_between_tags(tags: &DiffTags) -> Vec<String> {
-    let prev = tags.prev.as_deref().unwrap_or("HEAD");
-    let tags = format!("{}..{}", prev, tags.new);
+pub fn commits_between_tags(tags: &Period) -> Vec<String> {
+    let until = tags.until.as_deref().unwrap_or("HEAD");
+
+    let period = match &tags.since {
+        Some(since) => format!("{}..{}", since, until),
+        None => until.to_string(),
+    };
 
     let output = Command::new("git")
-        .args(["log", "--oneline", &tags, "--format=format:%H"])
+        .args(["log", "--oneline", &period, "--format=format:%H"])
         .output()
         .expect("Failed to execute git command");
 
@@ -132,6 +136,7 @@ pub fn commits_between_tags(tags: &DiffTags) -> Vec<String> {
         .collect()
 }
 
+/// Most recent at the end
 pub fn tags_list() -> anyhow::Result<VecDeque<Version>> {
     let output = Command::new("git")
         .arg("tag")
@@ -217,9 +222,9 @@ mod test {
 
         dbg!(&res);
 
-        let res = commits_between_tags(&DiffTags {
-            prev: None,
-            new: "0.1.7".into(),
+        let res = commits_between_tags(&Period {
+            since: Some("0.1.5".into()),
+            until: None,
         });
 
         dbg!(&res);

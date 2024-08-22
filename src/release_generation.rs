@@ -14,13 +14,18 @@ pub fn release(
     let crate::config::Release {
         file: _,
         version,
+        previous_version,
         provider,
         repo,
         omit_diff,
         stdout: _,
     } = options;
 
-    let diff_tags = DiffTags::new(version.clone(), get_last_tag(&changelog))?;
+    let previous_version = previous_version
+        .clone()
+        .or_else(|| get_last_tag(&changelog));
+
+    let diff_tags = DiffTags::new(version.clone(), previous_version)?;
 
     if changelog.releases.get(&diff_tags.new).is_some() {
         bail!(
