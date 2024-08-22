@@ -1,0 +1,47 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag in the format X.Y.Z"
+        required: true
+        type: string
+  push:
+    tags:
+      - "[0-9]+.*"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - if: ${{ github.event.inputs.tag != '' }}
+        run: |
+          git tag ${{ github.event.inputs.tag }} || true
+          git push origin --tags || true
+          # https://github.com/actions/checkout/issues/1467
+          git fetch --tags || true
+
+      - run: |
+          git tag
+          cargo run --locked -- generate --exclude-unidentified
+          cargo run --locked -- release
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+
+      - run: |
+          cargo run --locked -- show
