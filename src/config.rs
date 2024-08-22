@@ -256,7 +256,8 @@ pub struct Show {
     #[arg(
         short,
         help = "0 being unreleased, 1 is the last release",
-        default_value_t = 1
+        default_value_t = 1,
+        conflicts_with = "version"
     )]
     pub n: usize,
     #[arg(short, long, help = "Specific version.")]
