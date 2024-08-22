@@ -1,5 +1,6 @@
 [workspace]
 members = [".", "changelog_document"]
+exclude = ["expe"]
 
 [workspace.package]
 authors = ["wiiznokes <wiiznokes2@gmail.com>"]
@@ -28,7 +29,7 @@ anyhow.workspace = true
 serde.workspace = true
 serde_json = "1"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
-changelog = { version = "0.1.3", package = "changelog_document" }
+changelog = { version = "0.1.4", package = "changelog_document" }
 pom.workspace = true
 log = "0.4"
 env_logger = "0.11"
@@ -47,4 +48,4 @@ serde = { version = "1", features = ["derive"] }
 # thiserror = "1"
 
 [patch.crates-io]
-changelog_document = { path = "./changelog_document" }
+# changelog_document = { path = "./changelog_document" }

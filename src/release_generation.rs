@@ -5,20 +5,27 @@ use changelog::{
 };
 use indexmap::IndexMap;
 
-use crate::{
-    git_provider::{DiffTags, GitProvider},
-    utils::get_last_tag,
-    UNRELEASED,
-};
+use crate::{git_provider::DiffTags, utils::get_last_tag, UNRELEASED};
 
 pub fn release(
     mut changelog: ChangeLog,
-    version: Option<String>,
-    provider: GitProvider,
-    repo: Option<String>,
-    omit_diff: bool,
+    options: &crate::config::Release,
 ) -> anyhow::Result<(String, String)> {
-    let diff_tags = DiffTags::new(version, get_last_tag(&changelog))?;
+    let crate::config::Release {
+        file: _,
+        version,
+        previous_version,
+        provider,
+        repo,
+        omit_diff,
+        stdout: _,
+    } = options;
+
+    let previous_version = previous_version
+        .clone()
+        .or_else(|| get_last_tag(&changelog));
+
+    let diff_tags = DiffTags::new(version.clone(), previous_version)?;
 
     if changelog.releases.get(&diff_tags.new).is_some() {
         bail!(

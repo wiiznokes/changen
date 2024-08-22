@@ -1,0 +1,59 @@
+name: Release Notes PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag in the format X.Y.Z"
+        required: true
+        type: string
+  # You can uncomment this
+  # push:
+  #   tags:
+  #     - "[0-9]+.*"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+
+      - if: ${{ github.ref_name != '' }}
+        run: echo Using pushed tag ${{ github.ref_name }}
+
+      - if: ${{ github.event.inputs.tag != '' }}
+        run: |
+          git tag ${{ github.event.inputs.tag }} || true
+          git push origin --tags || true
+          # https://github.com/actions/checkout/issues/1467
+          git fetch --tags || true
+          echo Using given tag ${{ github.event.inputs.tag }}
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: changelog-gen
+
+      - run: |
+          changelog-gen generate --exclude-unidentified
+          changelog-gen release
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "Automatic Release Notes Generation"
+          base: master
+          branch: changelog-release
+          commit-message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+          body: ""
+          delete-branch: true
+          branch-suffix: short-commit-hash

@@ -6,7 +6,7 @@ use changelog::{
     ser::{serialize_changelog, ChangeLogSerOption},
 };
 
-use crate::config::Config;
+use crate::config::MapMessageToSection;
 
 #[test]
 fn validate_default_changelog() {
@@ -22,7 +22,7 @@ fn validate_default_changelog() {
 #[test]
 fn validate_default_map() {
     let map = include_str!("../res/map_commit_type_to_section.json");
-    serde_json::de::from_str::<Config>(map).unwrap();
+    serde_json::de::from_str::<MapMessageToSection>(map).unwrap();
 }
 
 #[test]

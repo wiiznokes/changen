@@ -1,5 +1,7 @@
 # Changelog generator
 
+[![crates.io](https://img.shields.io/crates/v/changelog_gen?style=flat-square&logo=rust)](https://crates.io/crates/changelog_gen)
+
 ## Features
 
 - feature-rich changelog format
@@ -13,7 +15,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 - [The changelog file](./CHANGELOG.md) - see what the syntax have to offer
 - [Its commits history](https://github.com/wiiznokes/changelog-generator/commits/master/CHANGELOG.md)
-- [The release Github workflow](./res/batch_changelog.yml)
+- [The release Github workflow](./.github/workflows/create_release_notes_pr.yml) - It will create a PR
 
 ## Getting started
 

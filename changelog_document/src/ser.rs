@@ -10,14 +10,14 @@ pub struct ChangeLogSerOption {
 #[derive(Debug, Clone)]
 pub struct ChangeLogSerOptionRelease {
     pub section_order: Vec<String>,
-    pub serialise_title: bool,
+    pub serialize_title: bool,
 }
 
 impl Default for ChangeLogSerOptionRelease {
     fn default() -> Self {
         Self {
             section_order: Default::default(),
-            serialise_title: true,
+            serialize_title: true,
         }
     }
 }
@@ -57,7 +57,7 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) 
 pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogSerOptionRelease) {
     let mut should_new_line = false;
 
-    if options.serialise_title {
+    if options.serialize_title {
         let mut full_title = format!("## [{}]", release.title.version);
 
         if let Some(release_link) = &release.title.release_link {
