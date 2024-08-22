@@ -38,3 +38,6 @@ gen_all f='res/CHANGELOG_DEFAULT.md':
 
 gen_release f='CHANGELOG3.md' v='':
 	cargo run -- release -f {{f}} --stdout
+
+gen_doc:
+	cargo run --locked --bin gen-doc

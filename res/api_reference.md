@@ -19,8 +19,8 @@ Changelog generator
 
 ###### **Subcommands:**
 
-* `generate` — Generate release notes. Default to `last_release_in_changelog..HEAD`
-* `release` — Generate a new release
+* `generate` — Generate release notes. By default, generate from the last release in the changelog to HEAD
+* `release` — Generate a new release. By default, use the last tag present in the repo, sorted using [semver](https://semver.org/) format
 * `validate` — Validate a changelog syntax
 * `show` — Show a specific release on stdout
 * `new` — Create a new changelog file with an accepted syntax
@@ -29,7 +29,7 @@ Changelog generator
 
 ## `changelog generate`
 
-Generate release notes. Default to `last_release_in_changelog..HEAD`
+Generate release notes. By default, generate from the last release in the changelog to HEAD
 
 **Usage:** `changelog generate [OPTIONS]`
 
@@ -66,7 +66,7 @@ Generate release notes. Default to `last_release_in_changelog..HEAD`
 
 ## `changelog release`
 
-Generate a new release
+Generate a new release. By default, use the last tag present in the repo, sorted using [semver](https://semver.org/) format
 
 **Usage:** `changelog release [OPTIONS]`
 
@@ -75,7 +75,7 @@ Generate a new release
 * `-f`, `--file <FILE>` — Path to the changelog file.
 
   Default value: `CHANGELOG.md`
-* `-v`, `--version <VERSION>` — Version number for the release. If omitted, use the last tag using "git".
+* `-v`, `--version <VERSION>` — Version number for the release. If omitted, use the last tag present in the repo.
 * `--previous-version <PREVIOUS_VERSION>` — Previous version number. Used for the diff.
 * `--provider <PROVIDER>` — We use the Github link to produce the tags diff
 

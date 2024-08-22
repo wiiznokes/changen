@@ -7,7 +7,6 @@
 - feature-rich changelog format
 - low-config changelog management
 - customizable
-- continuous logging, with an unreleased section, and also batch logging, for one commit by release
 
 ## See in action
 
@@ -19,13 +18,34 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 ## Getting started
 
-_If you don't have a changelog file yet, you can use `changelog-gen new`_
+1. Create the changelog
 
-If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`
+   If you don't have a changelog file yet, you can use `changelog-gen new`.
 
-> Note: You can always use the --help command to see available options! For example, `changelog-gen validate --fmt` will format your changelog.
+2. Validate your changelog syntax
 
-When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
+   If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`.
+
+3. Generate release notes
+
+   When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
+
+   It can generate release notes
+
+   - between two tags/commits
+   - for a specific commit/tag
+   - for a milestone
+
+   By default, it will generate release notes from the last release in the changelog to HEAD. It will get the list of commits using a `git log` command, and try to match them against remote PRs if it have the necessary infos.
+
+4. Make a new release
+
+   To make a new release, use `changelog-gen release --version 1.0.0`.
+
+> [!WARNING]  
+> All tags of the repo and version in the changelog must follow the [semver](https://semver.org/) format. This may be relaxed in the future
+
+The full API reference can be found [here](./res/api_reference.md) (automatically generated).
 
 ## Commit syntax
 
@@ -54,14 +74,6 @@ Use with `changelog-gen generate --map path/to/map.json`
 #### Changelog custom path
 
 `changelog-gen generate --file path/to/CHANGELOG.md`
-
-#### Avoid useless merge commits when there was a changelog generation committed not present on your branch
-
-This can happen often when you're not used to changes being committed on master that are not yours. Just use rebase onto instead of merge commit: `git config --global pull.rebase true`
-
-#### Other
-
-A lot of options are available. Use `changelog generate --help` to see them.
 
 ## Acknowledgement
 
