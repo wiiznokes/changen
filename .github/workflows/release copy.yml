@@ -4,16 +4,16 @@ permissions:
   contents: write
 
 on:
+  push:
+    tags:
+      - "[0-9]+.*"
+
   workflow_dispatch:
     inputs:
       tag:
         description: "Tag in the format X.Y.Z"
         required: true
         type: string
-  push:
-    tags:
-      - "[0-9]+.*"
-
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -25,6 +25,13 @@ jobs:
         with:
           fetch-tags: true
           fetch-depth: 0
+          
+      - name: Get the tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Print the tag name
+        run: echo "The tag is ${{ env.TAG_NAME }}"
 
       - uses: Swatinem/rust-cache@v2
 

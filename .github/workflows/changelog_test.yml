@@ -3,6 +3,9 @@ name: Changelog Generation Test
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
+
     paths-ignore:
       - "CHANGELOG.md"
 
