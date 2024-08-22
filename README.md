@@ -16,29 +16,29 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 ## Getting started
 
-#### 1. Create the changelog
+1. Create the changelog
 
-If you don't have a changelog file yet, you can use `changelog-gen new`.
+   If you don't have a changelog file yet, you can use `changelog-gen new`.
 
-#### 2. Validate your changelog syntax
+2. Validate your changelog syntax
 
-If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`.
+   If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`.
 
-#### 3. Generate release notes
+3. Generate release notes
 
-When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
+   When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
 
-It can generate release notes
+   It can generate release notes
 
-- between two tags/commits
-- for a specific commit/tag
-- for a milestone
+   - between two tags/commits
+   - for a specific commit/tag
+   - for a milestone
 
-By default, it will generate release notes from the last release in the changelog to HEAD. It will get the list of commits using a `git log` command, and try to match them against remote PRs if it have the necessary infos.
+   By default, it will generate release notes from the last release in the changelog to HEAD. It will get the list of commits using a `git log` command, and try to match them against remote PRs if it have the necessary infos.
 
-#### 4. Make a new release
+4. Make a new release
 
-To make a new release, use `changelog-gen release --version 1.0.0`.
+   To make a new release, use `changelog-gen release --version 1.0.0`.
 
 > [!WARNING]  
 > All tags of the repo and version in the changelog must follow the [semver](https://semver.org/) format. This may be relaxed in the future.
