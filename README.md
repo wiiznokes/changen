@@ -16,15 +16,15 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 ## Getting started
 
-1. Create the changelog
+1. #### Create the changelog
 
    If you don't have a changelog file yet, you can use `changelog-gen new`.
 
-2. Validate your changelog syntax
+2. #### Validate your changelog syntax
 
    If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`.
 
-3. Generate release notes
+3. #### Generate release notes
 
    When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
 
@@ -36,7 +36,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
    By default, it will generate release notes from the last release in the changelog to HEAD. It will get the list of commits using a `git log` command, and try to match them against remote PRs if it have the necessary infos.
 
-4. Make a new release
+4. #### Make a new release
 
    To make a new release, use `changelog-gen release --version 1.0.0`.
 
