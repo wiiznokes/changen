@@ -46,8 +46,8 @@ jobs:
 
       - run: |
           git tag
-          cargo run --locked -- generate --exclude-unidentified
-          cargo run --locked -- release --stdout > CHANGELOG2.md
+          cargo run --locked -- generate --exclude-unidentified --stdout > CHANGELOG2.md
+          cargo run --locked -- release -f CHANGELOG2.md
           diff CHANGELOG.md CHANGELOG2.md || true
 
 
