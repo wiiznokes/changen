@@ -161,7 +161,7 @@ fn default_sort_order() -> Vec<String> {
 
 #[test]
 fn end_to_end() {
-    for e in read_dir("./tests/fmt").unwrap() {
+    for e in read_dir("./tests").unwrap() {
         let e = e.unwrap();
 
         let filename = e.file_name().into_string().unwrap();
@@ -197,6 +197,17 @@ fn end_to_end() {
                 .unwrap();
 
             assert_eq!(res, content);
+        }
+
+        if filename.ends_with(".err") {
+            let mut content = String::new();
+
+            File::open(e.path())
+                .unwrap()
+                .read_to_string(&mut content)
+                .unwrap();
+
+            parse_changelog(&content).unwrap_err();
         }
     }
 }

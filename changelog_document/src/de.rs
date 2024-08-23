@@ -61,7 +61,10 @@ pub(crate) fn changelog_parser(options: &Options) -> Parser<'_, char, ChangeLog>
                 continue;
             }
 
-            let version = Version::parse(&release.title.version).expect("Not valid semver");
+            let version = match Version::parse(&release.title.version) {
+                Ok(v) => v,
+                Err(e) => return Err(format!("not valid semver {e}")),
+            };
 
             if releases.insert(version, release).is_some() {
                 return Err("Duplicate version found".to_string());

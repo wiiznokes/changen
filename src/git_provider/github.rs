@@ -363,6 +363,7 @@ mod test {
 
     use super::*;
 
+    #[ignore = "403"]
     #[test]
     fn pr() {
         let res = request_related_pr("wiiznokes/fan-control", "74c8a3c").unwrap();
@@ -405,6 +406,7 @@ mod test {
         );
     }
 
+    #[ignore = "403"]
     #[test]
     fn milestone() {
         let res = milestone_prs("iced-rs/iced", "0.13").unwrap();
@@ -412,6 +414,7 @@ mod test {
         dbg!(&res);
     }
 
+    #[ignore = "403"]
     #[test]
     fn lasts() {
         let res = last_prs("iced-rs/iced", 3).unwrap();
