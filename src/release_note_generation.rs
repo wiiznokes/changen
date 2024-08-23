@@ -3,7 +3,6 @@ use crate::{
     config::Generate,
     git_helpers_function::{commits_between_tags, RawCommit},
     git_provider::RelatedPr,
-    utils::get_last_tag,
 };
 use anyhow::{bail, Result};
 use changelog::{
@@ -114,7 +113,10 @@ fn handle_period(
     map: &MapMessageToSection,
     options: &Generate,
 ) -> Result<()> {
-    let since = options.since.clone().or_else(|| get_last_tag(changelog));
+    let since = options
+        .since
+        .clone()
+        .or_else(|| changelog.last_version().map(|e| e.to_string()));
 
     let period = Period {
         since,

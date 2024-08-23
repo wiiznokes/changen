@@ -11,15 +11,17 @@ pub struct Options {
 
 impl ChangeLog {
     pub fn sanitize(&mut self, options: &Options) {
-        for (_, release) in &mut self.releases {
+        for release in self.releases.values_mut() {
             release.deduplicate();
             release.remove_empty();
             release.sort_notes(&options.sort_options);
         }
+
+        self.unreleased_or_default();
     }
 
     pub fn deduplicate(&mut self) {
-        for (_, release) in &mut self.releases {
+        for release in self.releases.values_mut() {
             release.deduplicate();
         }
     }

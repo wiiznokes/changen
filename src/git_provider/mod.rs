@@ -1,6 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
 use anyhow::bail;
+use semver::Version;
 
 use crate::git_helpers_function::RawCommit;
 
@@ -37,8 +38,8 @@ pub struct RelatedPr {
 
 #[derive(Debug, Clone)]
 pub struct DiffTags {
-    pub prev: Option<String>,
-    pub new: String,
+    pub prev: Option<Version>,
+    pub new: Version,
 }
 
 impl GitProvider {

@@ -28,8 +28,6 @@ mod utils;
 #[cfg(test)]
 mod test;
 
-const UNRELEASED: &str = "Unreleased";
-
 fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
     path.unwrap_or(PathBuf::from("CHANGELOG.md"))
 }
@@ -89,7 +87,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             let changelog_cloned = changelog.clone();
 
-            let (_, unreleased) = changelog.releases.get_index_mut(0).expect("no release");
+            let unreleased = changelog.unreleased_or_default();
 
             gen_release_notes(
                 &changelog_cloned,
@@ -98,8 +96,6 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 &map,
                 &options,
             )?;
-
-            unreleased.deduplicate();
 
             changelog.sanitize(&map.to_fmt_options());
 
@@ -118,7 +114,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             write_output(&output, &path, options.stdout)?;
 
-            eprintln!("New release {} succefully created.", version);
+            eprintln!("New release {} successfully created.", version);
         }
 
         Commands::Validate(options) => {
@@ -162,8 +158,14 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             let release = if let Some(ref version) = version {
                 changelog.releases.get(version)
+            } else if changelog.unreleased.is_some() {
+                if n == 0 {
+                    changelog.unreleased.as_ref()
+                } else {
+                    changelog.releases.values().nth(n - 1)
+                }
             } else {
-                changelog.releases.get_index(n).map(|(_, r)| r)
+                changelog.releases.values().nth(n)
             };
 
             match release {
