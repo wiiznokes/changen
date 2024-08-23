@@ -129,6 +129,8 @@ pub enum Commands {
     Validate(Validate),
     Show(Show),
     New(New),
+    #[command(aliases = ["delete", "rm"])]
+    Remove(Remove),
 }
 
 /// Generate release notes. By default, generate from the last release in the changelog to HEAD.
@@ -271,11 +273,12 @@ pub struct Show {
     pub file: Option<PathBuf>,
     #[arg(
         short,
-        help = "0 being unreleased, 1 is the last release",
-        default_value_t = 1,
-        conflicts_with = "version"
+        help = "-1 being unreleased, 0 the last release, ...",
+        default_value_t = 0,
+        conflicts_with = "version",
+        allow_hyphen_values = true
     )]
-    pub n: usize,
+    pub n: i32,
     #[arg(
         short,
         long,
@@ -296,4 +299,41 @@ pub struct New {
     pub path: Option<PathBuf>,
     #[arg(short, long, help = "Override of existing file.")]
     pub force: bool,
+}
+
+/// Show a specific release on stdout
+#[derive(Args)]
+pub struct Remove {
+    #[arg(
+        short,
+        long,
+        help = "Path to the changelog file.",
+        default_value = "CHANGELOG.md",
+        value_hint = ValueHint::FilePath,
+    )]
+    pub file: Option<PathBuf>,
+    #[arg(long, help = "Print the result on the standard output.")]
+    pub stdout: bool,
+
+    #[clap(flatten)]
+    pub remove_id: RemoveSelection,
+}
+
+// fixme: move this to an enum https://github.com/clap-rs/clap/issues/2621
+#[derive(Args)]
+#[group(required = true, multiple = false)]
+pub struct RemoveSelection {
+    #[arg(
+        short,
+        help = "-1 being unreleased, 0 the last release, ...",
+        conflicts_with = "version",
+        allow_hyphen_values = true
+    )]
+    pub n: Option<i32>,
+    #[arg(
+        short,
+        long,
+        help = "Remove a specific version. Also accept regex. Example: 1.0.0-*"
+    )]
+    pub version: Option<Regex>,
 }

@@ -1,5 +1,6 @@
 use core::str;
 use std::{
+    borrow::Cow,
     fs::{File, OpenOptions},
     io::{self, IsTerminal, Read, Write},
     path::{Path, PathBuf},
@@ -10,7 +11,7 @@ use changelog::{
     de::parse_changelog,
     ser::{serialize_changelog, serialize_release, OptionsRelease},
 };
-use config::{Cli, Commands, MapMessageToSection, New, Show, Validate};
+use config::{Cli, Commands, MapMessageToSection, New, Remove, Show, Validate};
 use git_helpers_function::try_get_repo;
 use release_note_generation::gen_release_notes;
 
@@ -156,23 +157,21 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             debug!("changelog: {:?}", changelog);
 
-            let releases = if let Some(ref regex) = version {
+            let releases = if let Some(regex) = &version {
                 let mut res = Vec::new();
 
-                for release in changelog.releases.values().rev() {
+                for release in changelog.releases() {
                     if regex.is_match(release.version()) {
-                        res.push(release)
+                        res.push(Cow::Borrowed(release))
                     }
                 }
                 res
-            } else if changelog.unreleased.is_some() {
-                if n == 0 {
-                    changelog.unreleased.as_ref().into_iter().collect()
-                } else {
-                    changelog.releases.values().nth(n - 1).into_iter().collect()
-                }
             } else {
-                changelog.releases.values().nth(n).into_iter().collect()
+                changelog
+                    .nth_release(n)
+                    .map(|e| e.release())
+                    .into_iter()
+                    .collect()
             };
 
             if releases.is_empty() {
@@ -217,6 +216,40 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             file.write_all(changelog.as_bytes())?;
 
             println!("Changelog successfully created!");
+        }
+        Commands::Remove(options) => {
+            let Remove {
+                file,
+                stdout,
+                remove_id,
+            } = options;
+
+            let path = get_changelog_path(file);
+            let input = read_file(&path)?;
+            let mut changelog = parse_changelog(&input)?;
+
+            debug!("changelog: {:?}", changelog);
+
+            if let Some(regex) = &remove_id.version {
+                changelog
+                    .releases
+                    .retain(|_, v| !regex.is_match(v.version()));
+            } else {
+                match changelog.nth_release(remove_id.n.unwrap())?.owned() {
+                    changelog::utils::NthRelease::Unreleased(_) => {
+                        changelog.unreleased.take();
+                    }
+                    changelog::utils::NthRelease::Released(key, _) => {
+                        changelog.releases.remove(&key);
+                    }
+                }
+            }
+
+            changelog.sanitize(&changelog::fmt::Options::default());
+
+            let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
+
+            write_output(&output, &path, stdout)?;
         }
     }
 

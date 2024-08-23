@@ -10,6 +10,7 @@ This document contains the help content for the `changelog` command-line program
 * [`changelog validate`↴](#changelog-validate)
 * [`changelog show`↴](#changelog-show)
 * [`changelog new`↴](#changelog-new)
+* [`changelog remove`↴](#changelog-remove)
 
 ## `changelog`
 
@@ -24,6 +25,7 @@ Changelog generator
 * `validate` — Validate a changelog syntax
 * `show` — Show a specific release on stdout
 * `new` — Create a new changelog file with an accepted syntax
+* `remove` — Show a specific release on stdout
 
 
 
@@ -85,7 +87,7 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
 * `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
 * `--omit-diff` — Omit the commit history between releases.
-* `--override` — Override the last release if exist, by replacing all the existing release notes.
+* `--force` — Override the last release if exist, by replacing all the existing release notes.
 * `--stdout` — Print the result on the standard output.
 
 
@@ -119,10 +121,10 @@ Show a specific release on stdout
 * `-f`, `--file <FILE>` — Path to the changelog file.
 
   Default value: `CHANGELOG.md`
-* `-n <N>` — 0 being unreleased, 1 is the last release
+* `-n <N>` — -1 being unreleased, 0 the last release, ...
 
-  Default value: `1`
-* `-v`, `--version <VERSION>` — Specific version.
+  Default value: `0`
+* `-v`, `--version <VERSION>` — Show a specific version. Also accept regex. Example: 1.0.0-*
 
 
 
@@ -138,6 +140,23 @@ Create a new changelog file with an accepted syntax
 
   Default value: `CHANGELOG.md`
 * `-f`, `--force` — Override of existing file.
+
+
+
+## `changelog remove`
+
+Show a specific release on stdout
+
+**Usage:** `changelog remove [OPTIONS] <-n <N>|--version <VERSION>>`
+
+###### **Options:**
+
+* `-f`, `--file <FILE>` — Path to the changelog file.
+
+  Default value: `CHANGELOG.md`
+* `--stdout` — Print the result on the standard output.
+* `-n <N>` — -1 being unreleased, 0 the last release, ...
+* `-v`, `--version <VERSION>` — Remove a specific version. Also accept regex. Example: 1.0.0-*
 
 
 
