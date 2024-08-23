@@ -301,7 +301,7 @@ pub struct New {
     pub force: bool,
 }
 
-/// Show a specific release on stdout
+/// Remove a release
 #[derive(Args)]
 pub struct Remove {
     #[arg(
