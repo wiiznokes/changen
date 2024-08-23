@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc1](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc1)
+
+### Added
+
+- relax dep on semver + temporaly drop gen-doc (#32) in [#32](https://github.com/wiiznokes/changelog-generator/pull/32) by [@wiiznokes](https://github.com/wiiznokes)
+- deduplicate notes, end to end testing, refractor (#41) in [#41](https://github.com/wiiznokes/changelog-generator/pull/41) by [@wiiznokes](https://github.com/wiiznokes)
+- semver (#43) in [#43](https://github.com/wiiznokes/changelog-generator/pull/43) by [@wiiznokes](https://github.com/wiiznokes)
+- add regex (#44) in [#44](https://github.com/wiiznokes/changelog-generator/pull/44) by [@wiiznokes](https://github.com/wiiznokes)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.7...0.1.9-rc1
+
 ## [0.1.7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.7)
 
 ### Fixed
