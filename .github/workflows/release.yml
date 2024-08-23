@@ -20,14 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # https://github.com/actions/checkout/issues/1467
           fetch-tags: true
           fetch-depth: 0
 
       - run: |
-          git tag ${{ github.event.inputs.tag }} || true
-          git push origin --tags || true
-          # https://github.com/actions/checkout/issues/1467
-          git fetch --tags || true
+          gh release delete ${{ github.event.inputs.tag }} -y || true
+          git tag -d ${{ github.event.inputs.tag }} || true
+          git push origin --delete ${{ github.event.inputs.tag }} || true
+          git tag ${{ github.event.inputs.tag }}
+          git push origin ${{ github.event.inputs.tag }}
+          git fetch --tags
           echo Using given tag ${{ github.event.inputs.tag }}
 
       - uses: Swatinem/rust-cache@v2
