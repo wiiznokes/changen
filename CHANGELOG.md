@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc3](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc3)
+
+### Added
+
+- relax dep on semver + temporaly drop gen-doc (#32) in [#32](https://github.com/wiiznokes/changelog-generator/pull/32) by [@wiiznokes](https://github.com/wiiznokes)
+- deduplicate notes, end to end testing, refractor (#41) in [#41](https://github.com/wiiznokes/changelog-generator/pull/41) by [@wiiznokes](https://github.com/wiiznokes)
+- semver (#43) in [#43](https://github.com/wiiznokes/changelog-generator/pull/43) by [@wiiznokes](https://github.com/wiiznokes)
+- add regex (#44) in [#44](https://github.com/wiiznokes/changelog-generator/pull/44) by [@wiiznokes](https://github.com/wiiznokes)
+- remove command in [a506199](https://github.com/wiiznokes/changelog-generator/commit/a5061996e13c1356041c2804210a7fd4c41438e1) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Fixed
+
+- fix in [c396e4d](https://github.com/wiiznokes/changelog-generator/commit/c396e4d241c553efeb1b364b0934376f3e9854ac) by [@wiiznokes](https://github.com/wiiznokes)
+- remove args in [c50c937](https://github.com/wiiznokes/changelog-generator/commit/c50c9374dc48e357065b45c3bed03bd0656312cf) by [@wiiznokes](https://github.com/wiiznokes)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.7...0.1.9-rc3
+
 ## [0.1.7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.7)
 
 ### Fixed
