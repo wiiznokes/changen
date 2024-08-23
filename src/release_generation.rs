@@ -104,7 +104,7 @@ pub fn release(
 
     debug!("release: serialize changelog: {:?}", changelog);
 
-    changelog.sanitize(changelog::fmt::Options::default());
+    changelog.sanitize(&changelog::fmt::Options::default());
 
     let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 

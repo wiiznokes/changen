@@ -101,7 +101,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             unreleased.deduplicate();
 
-            changelog.sanitize(map.to_fmt_options());
+            changelog.sanitize(&map.to_fmt_options());
 
             let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
@@ -142,7 +142,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             if format {
                 let map = MapMessageToSection::try_new(map)?;
-                changelog.sanitize(map.to_fmt_options());
+                changelog.sanitize(&map.to_fmt_options());
                 let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
                 write_output(&output, &path, stdout)?;

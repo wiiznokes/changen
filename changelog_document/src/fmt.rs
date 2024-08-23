@@ -6,15 +6,15 @@ use crate::{ChangeLog, Release, ReleaseSectionNote};
 
 #[derive(Debug, Clone, Default)]
 pub struct Options {
-    pub section_order: Vec<String>,
+    pub sort_options: SortOptions,
 }
 
 impl ChangeLog {
-    pub fn sanitize(&mut self, options: Options) {
+    pub fn sanitize(&mut self, options: &Options) {
         for (_, release) in &mut self.releases {
             release.deduplicate();
             release.remove_empty();
-            release.sort_notes(&options.section_order);
+            release.sort_notes(&options.sort_options);
         }
     }
 
@@ -45,20 +45,33 @@ impl Release {
             !section.notes.is_empty()
         });
     }
+}
 
+#[derive(Debug, Clone)]
+pub struct SortOptions {
+    pub section_order: Vec<String>,
+    pub sort_scope: bool,
+}
+
+impl Default for SortOptions {
+    fn default() -> Self {
+        Self {
+            section_order: Default::default(),
+            sort_scope: true,
+        }
+    }
+}
+
+impl Release {
     /// This will sort the section using section_order, and also group notes by scope.
-    pub fn sort_notes<S, I>(&mut self, section_order: I)
-    where
-        S: AsRef<str>,
-        I: IntoIterator<Item = S>,
-    {
+    pub fn sort_notes(&mut self, options: &SortOptions) {
         self.note_sections = {
             let mut sorted = IndexMap::new();
 
             let mut section_cloned = self.note_sections.clone();
 
-            for section in section_order {
-                if let Some((key, section)) = section_cloned.shift_remove_entry(section.as_ref()) {
+            for section in &options.section_order {
+                if let Some((key, section)) = section_cloned.shift_remove_entry(section) {
                     sorted.insert(key, section);
                 }
             }
@@ -67,30 +80,32 @@ impl Release {
             sorted
         };
 
-        for (_, section) in &mut self.note_sections {
-            let mut scoped: IndexMap<String, Vec<ReleaseSectionNote>> = IndexMap::new();
+        if options.sort_scope {
+            for (_, section) in &mut self.note_sections {
+                let mut scoped: IndexMap<String, Vec<ReleaseSectionNote>> = IndexMap::new();
 
-            let len = section.notes.len();
+                let len = section.notes.len();
 
-            let prev = mem::replace(&mut section.notes, Vec::with_capacity(len));
+                let prev = mem::replace(&mut section.notes, Vec::with_capacity(len));
 
-            for note in prev {
-                match &note.scope {
-                    Some(scope) => match scoped.get_mut(scope) {
-                        Some(notes) => {
-                            notes.push(note);
-                        }
-                        None => {
-                            scoped.insert(scope.clone(), vec![note]);
-                        }
-                    },
-                    None => section.notes.push(note),
+                for note in prev {
+                    match &note.scope {
+                        Some(scope) => match scoped.get_mut(scope) {
+                            Some(notes) => {
+                                notes.push(note);
+                            }
+                            None => {
+                                scoped.insert(scope.clone(), vec![note]);
+                            }
+                        },
+                        None => section.notes.push(note),
+                    }
                 }
-            }
 
-            section
-                .notes
-                .extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
+                section
+                    .notes
+                    .extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
+            }
         }
     }
 }

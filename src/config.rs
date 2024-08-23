@@ -3,6 +3,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::{collections::HashSet, fmt::Display};
 
+use changelog::fmt::SortOptions;
 use clap::{arg, Args, Parser, Subcommand, ValueHint};
 
 use changelog::ser::{Options, OptionsRelease};
@@ -25,7 +26,10 @@ impl Default for MapMessageToSection {
 impl MapMessageToSection {
     pub fn to_fmt_options(self) -> changelog::fmt::Options {
         changelog::fmt::Options {
-            section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+            sort_options: SortOptions {
+                section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+                ..Default::default()
+            },
         }
     }
     pub fn into_changelog_ser_options(self) -> Options {
