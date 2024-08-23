@@ -5,11 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+
+## [0.1.0]
+
+
+
+
+
 ## [0.1.7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.7)
-
-### Added
-
-- generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changelog-generator/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
@@ -18,6 +21,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Documentation
 
+- generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changelog-generator/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Security
+
+### Added
+
+- generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changelog-generator/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
 - generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changelog-generator/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
 
 Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.6...0.1.7

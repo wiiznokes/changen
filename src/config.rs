@@ -9,6 +9,7 @@ use clap::{arg, Args, Parser, Subcommand, ValueHint};
 use changelog::ser::{Options, OptionsRelease};
 use clap::ValueEnum;
 use indexmap::IndexMap;
+use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::git_provider::GitProvider;
@@ -210,9 +211,9 @@ pub struct Release {
         num_args(0..=1),
         default_missing_value=None
     )]
-    pub version: Option<String>,
+    pub version: Option<Version>,
     #[arg(long, help = "Previous version number. Used for the diff.")]
-    pub previous_version: Option<String>,
+    pub previous_version: Option<Version>,
     #[arg(
         long,
         help = "We use the Github link to produce the tags diff",
@@ -275,7 +276,7 @@ pub struct Show {
     )]
     pub n: usize,
     #[arg(short, long, help = "Specific version.")]
-    pub version: Option<String>,
+    pub version: Option<Version>,
 }
 /// Create a new changelog file with an accepted syntax
 #[derive(Args)]

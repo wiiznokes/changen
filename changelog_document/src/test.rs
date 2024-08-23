@@ -33,14 +33,14 @@ fn perf() {
 pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
     header: Some("## Changelog\n\nHello, this is a changelog that follow semver!".into()),
     releases: {
-        let mut releases = IndexMap::new();
+        let mut releases = BTreeMap::new();
 
-        let version = String::from("Unreleased");
+        let version = Version::new(0, 1, 0);
         releases.insert(
             version.clone(),
             Release {
                 title: ReleaseTitle {
-                    version,
+                    version: version.to_string(),
                     title: Some("i'm am the title of the night".into()),
                     release_link: None,
                 },
@@ -92,12 +92,12 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
             },
         );
 
-        let version = String::from("0.1.0");
+        let version = Version::new(0, 1, 1);
         releases.insert(
             version.clone(),
             Release {
                 title: ReleaseTitle {
-                    version,
+                    version: version.to_string(),
                     title: None,
                     release_link: Some(
                         "https://github.com/wiiznokes/fan-control/releases/tag/v2024.7.30".into(),
@@ -122,6 +122,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
             },
         ],
     },
+    unreleased: None,
 });
 
 #[test]
@@ -141,6 +142,11 @@ fn release_title() {
     assert_eq!(input, s);
 }
 
+#[test]
+fn last_version() {
+    assert_eq!(CHANGELOG1.last_version().unwrap(), Version::new(0, 1, 1));
+}
+
 fn default_sort_order() -> Vec<String> {
     vec![
         "Security".into(),
@@ -155,7 +161,7 @@ fn default_sort_order() -> Vec<String> {
 
 #[test]
 fn end_to_end() {
-    for e in read_dir("./tests/fmt").unwrap() {
+    for e in read_dir("./tests").unwrap() {
         let e = e.unwrap();
 
         let filename = e.file_name().into_string().unwrap();
@@ -177,7 +183,6 @@ fn end_to_end() {
                 },
             });
 
-
             let res = ser::serialize_changelog(&changelog, &ser::Options::default());
 
             let filename = filename.replace(".init", ".expect");
@@ -192,6 +197,17 @@ fn end_to_end() {
                 .unwrap();
 
             assert_eq!(res, content);
+        }
+
+        if filename.ends_with(".err") {
+            let mut content = String::new();
+
+            File::open(e.path())
+                .unwrap()
+                .read_to_string(&mut content)
+                .unwrap();
+
+            parse_changelog(&content).unwrap_err();
         }
     }
 }

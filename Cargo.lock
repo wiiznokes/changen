@@ -237,6 +237,7 @@ dependencies = [
  "indexmap",
  "pom",
  "pretty_assertions",
+ "semver",
  "serde",
 ]
 

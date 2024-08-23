@@ -363,6 +363,7 @@ mod test {
 
     use super::*;
 
+    #[ignore = "403"]
     #[test]
     fn pr() {
         let res = request_related_pr("wiiznokes/fan-control", "74c8a3c").unwrap();
@@ -380,31 +381,32 @@ mod test {
             "wiiznokes/fan-control",
             &DiffTags {
                 prev: None,
-                new: "v0.1.0".into(),
+                new: Version::new(0, 1, 0),
             },
         )
         .unwrap();
 
         assert_eq!(
             res,
-            "https://github.com/wiiznokes/fan-control/commits/v0.1.0".to_owned()
+            "https://github.com/wiiznokes/fan-control/commits/0.1.0".to_owned()
         );
 
         let res = diff_link(
             "wiiznokes/fan-control",
             &DiffTags {
-                prev: Some("v2024.7".into()),
-                new: "v2024.7.30".into(),
+                prev: Some(Version::new(0, 1, 0)),
+                new: Version::new(0, 1, 1),
             },
         )
         .unwrap();
 
         assert_eq!(
             res,
-            "https://github.com/wiiznokes/fan-control/compare/v2024.7...v2024.7.30".to_owned()
+            "https://github.com/wiiznokes/fan-control/compare/0.1.0...0.1.1".to_owned()
         );
     }
 
+    #[ignore = "403"]
     #[test]
     fn milestone() {
         let res = milestone_prs("iced-rs/iced", "0.13").unwrap();
@@ -412,6 +414,7 @@ mod test {
         dbg!(&res);
     }
 
+    #[ignore = "403"]
     #[test]
     fn lasts() {
         let res = last_prs("iced-rs/iced", 3).unwrap();

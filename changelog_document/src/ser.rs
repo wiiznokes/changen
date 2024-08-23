@@ -32,7 +32,16 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
         should_new_line = true;
     }
 
-    for release in changelog.releases.values() {
+    if let Some(unreleased) = &changelog.unreleased {
+        if should_new_line {
+            s.push('\n');
+        }
+        should_new_line = true;
+
+        serialize_release(&mut s, unreleased, &options.release_option);
+    }
+
+    for release in changelog.releases.values().rev() {
         if should_new_line {
             s.push('\n');
         }

@@ -15,6 +15,7 @@ pom.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 indexmap = "2"
+semver.workspace = true
 
 
 [dev-dependencies]

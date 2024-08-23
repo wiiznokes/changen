@@ -181,9 +181,9 @@ pub fn try_get_repo(repo: Option<String>) -> Option<String> {
 }
 
 impl DiffTags {
-    pub fn new(new: Option<String>, prev: Option<String>) -> anyhow::Result<Self> {
+    pub fn new(new: Option<Version>, prev: Option<Version>) -> anyhow::Result<Self> {
         let new = match new {
-            Some(new) => Version::parse(&new)?,
+            Some(new) => new,
             None => match tags_list()?.pop_back() {
                 Some(v) => v,
                 None => {
@@ -192,9 +192,7 @@ impl DiffTags {
             },
         };
 
-        if let Some(prev) = &prev {
-            let prev = Version::parse(prev)?;
-
+        let prev = if let Some(prev) = prev {
             if prev > new {
                 bail!(
                     "The new version {} is inferior to the previous version {}",
@@ -202,12 +200,12 @@ impl DiffTags {
                     prev.to_string()
                 )
             }
-        }
+            Some(prev)
+        } else {
+            None
+        };
 
-        Ok(DiffTags {
-            prev,
-            new: new.to_string(),
-        })
+        Ok(DiffTags { prev, new })
     }
 }
 

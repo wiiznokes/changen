@@ -1,16 +1,35 @@
+use crate::utils::UNRELEASED;
+
 use super::*;
 use pom::parser::*;
 use utils::*;
 
-pub fn parse_changelog(input: &str) -> anyhow::Result<ChangeLog> {
+#[derive(Debug, Clone)]
+pub struct Options {
+    pub unreleased: String,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            unreleased: String::from(UNRELEASED),
+        }
+    }
+}
+
+pub fn parse_changelog_with_options(input: &str, options: &Options) -> anyhow::Result<ChangeLog> {
     let input = input.chars().collect::<Vec<_>>();
-    let parser = changelog_parser();
+    let parser = changelog_parser(options);
     let changelog = parser.parse(&input)?;
 
     Ok(changelog)
 }
 
-pub(crate) fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
+pub fn parse_changelog(input: &str) -> anyhow::Result<ChangeLog> {
+    parse_changelog_with_options(input, &Options::default())
+}
+
+pub(crate) fn changelog_parser(options: &Options) -> Parser<'_, char, ChangeLog> {
     let header = (!call(release) * any()).repeat(0..).convert(|header| {
         let header = into_string(header);
 
@@ -24,19 +43,42 @@ pub(crate) fn changelog_parser<'a>() -> Parser<'a, char, ChangeLog> {
     let parser = header + release().repeat(0..) + footer_links();
 
     parser.convert(|((header, releases_vec), footer_links)| {
-        let mut releases = IndexMap::new();
+        let mut releases = BTreeMap::new();
 
-        for release in releases_vec.into_iter() {
-            releases.insert(release.title.version.clone(), release);
+        let mut unreleased = None;
+
+        for (pos, release) in releases_vec.into_iter().enumerate() {
+            if release.title.version == options.unreleased {
+                if unreleased.is_some() {
+                    return Err(format!("more than one {} section", options.unreleased));
+                }
+
+                if pos != 0 {
+                    return Err(format!("{} section not at index 0", options.unreleased));
+                }
+
+                unreleased = Some(release);
+                continue;
+            }
+
+            let version = match Version::parse(&release.title.version) {
+                Ok(v) => v,
+                Err(e) => return Err(format!("not valid semver {e}")),
+            };
+
+            if releases.insert(version, release).is_some() {
+                return Err("Duplicate version found".to_string());
+            }
         }
 
         let res = ChangeLog {
             header,
+            unreleased,
             releases,
             footer_links,
         };
 
-        Ok::<ChangeLog, ()>(res)
+        Ok::<ChangeLog, String>(res)
     })
 }
 
