@@ -85,7 +85,7 @@ pub(crate) fn release_section_note<'a>() -> Parser<'a, char, ReleaseSectionNote>
 pub(crate) fn release_section<'a>() -> Parser<'a, char, ReleaseSection> {
     let title = space() * sym('#').repeat(3) * sym(' ') * none_of("\n").repeat(1..) - sym('\n');
 
-    let parser = title - space() + release_section_note().repeat(1..);
+    let parser = title - space() + release_section_note().repeat(0..);
 
     parser.convert(|(title, notes)| {
         let res = ReleaseSection {

@@ -1,8 +1,5 @@
 use anyhow::bail;
-use changelog::{
-    ser::serialize_changelog,
-    ChangeLog, Release, ReleaseTitle,
-};
+use changelog::{ser::serialize_changelog, ChangeLog, Release, ReleaseTitle};
 use indexmap::IndexMap;
 
 use crate::{git_provider::DiffTags, utils::get_last_tag, UNRELEASED};
