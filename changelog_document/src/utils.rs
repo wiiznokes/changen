@@ -32,3 +32,9 @@ impl ChangeLog {
         self.unreleased.as_mut().unwrap()
     }
 }
+
+impl Release {
+    pub fn version(&self) -> &str {
+        &self.title.version
+    }
+}

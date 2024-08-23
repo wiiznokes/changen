@@ -9,6 +9,7 @@ use clap::{arg, Args, Parser, Subcommand, ValueHint};
 use changelog::ser::{Options, OptionsRelease};
 use clap::ValueEnum;
 use indexmap::IndexMap;
+use regex::Regex;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
@@ -275,8 +276,12 @@ pub struct Show {
         conflicts_with = "version"
     )]
     pub n: usize,
-    #[arg(short, long, help = "Specific version.")]
-    pub version: Option<Version>,
+    #[arg(
+        short,
+        long,
+        help = "Show a specific version. Also accept regex. Example: 1.0.0-*"
+    )]
+    pub version: Option<Regex>,
 }
 /// Create a new changelog file with an accepted syntax
 #[derive(Args)]
