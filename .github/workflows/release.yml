@@ -33,6 +33,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
       - run: |
+          cargo run --locked -- remove ${{ github.event.inputs.tag }}
           cargo run --locked -- generate --exclude-unidentified
           cargo run --locked -- release -v ${{ github.event.inputs.tag }} --force
           cargo test --locked gen::gen_doc -- --include-ignored

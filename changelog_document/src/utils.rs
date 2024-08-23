@@ -1,5 +1,6 @@
 use std::{borrow::Cow, collections::btree_map, iter::Rev, sync::LazyLock};
 
+use anyhow::bail;
 use semver::Version;
 
 use crate::{ChangeLog, Release, ReleaseTitle};
@@ -68,21 +69,23 @@ impl<'a> NthRelease<'a> {
 }
 
 impl ChangeLog {
-    pub fn nth_release(&self, n: usize) -> Option<NthRelease<'_>> {
-        if self.unreleased.is_some() {
-            if n == 0 {
-                self.unreleased
-                    .as_ref()
-                    .map(|e| NthRelease::Unreleased(Cow::Borrowed(e)))
-            } else {
-                self.releases_full()
-                    .nth(n - 1)
-                    .map(|e| NthRelease::Released(Cow::Borrowed(e.0), Cow::Borrowed(e.1)))
+    /// -1 being unreleased, 0 the last release, ...
+    pub fn nth_release(&self, n: i32) -> anyhow::Result<NthRelease<'_>> {
+        match n {
+            ..-1 => {
+                bail!("invalid n: {n}")
             }
-        } else {
-            self.releases_full()
-                .nth(n)
+            -1 => self
+                .unreleased
+                .as_ref()
+                .map(|e| NthRelease::Unreleased(Cow::Borrowed(e)))
+                .ok_or(anyhow::format_err!("No unreleased section")),
+
+            0.. => self
+                .releases_full()
+                .nth(n as usize)
                 .map(|e| NthRelease::Released(Cow::Borrowed(e.0), Cow::Borrowed(e.1)))
+                .ok_or(anyhow::format_err!("the {n}th release does not exist")),
         }
     }
 }

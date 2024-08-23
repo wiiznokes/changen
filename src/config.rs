@@ -273,11 +273,11 @@ pub struct Show {
     pub file: Option<PathBuf>,
     #[arg(
         short,
-        help = "0 being unreleased, 1 is the last release, ...",
-        default_value_t = 1,
+        help = "-1 being unreleased, 0 the last release, ...",
+        default_value_t = 0,
         conflicts_with = "version"
     )]
-    pub n: usize,
+    pub n: i32,
     #[arg(
         short,
         long,
@@ -315,11 +315,10 @@ pub struct Remove {
     pub stdout: bool,
     #[arg(
         short,
-        help = "0 being unreleased, 1 is the last release, ...",
-        default_value_t = 1,
+        help = "-1 being unreleased, 0 the last release, ...",
         conflicts_with = "version"
     )]
-    pub n: usize,
+    pub n: i32,
     #[arg(
         short,
         long,

@@ -236,16 +236,13 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                     .releases
                     .retain(|_, v| !regex.is_match(v.version()));
             } else {
-                match changelog.nth_release(n) {
-                    Some(res) => match res.owned() {
-                        changelog::utils::NthRelease::Unreleased(_) => {
-                            changelog.unreleased.take();
-                        }
-                        changelog::utils::NthRelease::Released(key, _) => {
-                            changelog.releases.remove(&key);
-                        }
-                    },
-                    None => bail!("{} release does not exist", n),
+                match changelog.nth_release(n)?.owned() {
+                    changelog::utils::NthRelease::Unreleased(_) => {
+                        changelog.unreleased.take();
+                    }
+                    changelog::utils::NthRelease::Released(key, _) => {
+                        changelog.releases.remove(&key);
+                    }
                 }
             }
 
