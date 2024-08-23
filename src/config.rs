@@ -275,7 +275,8 @@ pub struct Show {
         short,
         help = "-1 being unreleased, 0 the last release, ...",
         default_value_t = 0,
-        conflicts_with = "version"
+        conflicts_with = "version",
+        allow_hyphen_values = true
     )]
     pub n: i32,
     #[arg(
@@ -313,12 +314,22 @@ pub struct Remove {
     pub file: Option<PathBuf>,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
+
+    #[clap(flatten)]
+    pub remove_id: RemoveSelection,
+}
+
+// fixme: move this to an enum https://github.com/clap-rs/clap/issues/2621
+#[derive(Args)]
+#[group(required = true, multiple = false)]
+pub struct RemoveSelection {
     #[arg(
         short,
         help = "-1 being unreleased, 0 the last release, ...",
-        conflicts_with = "version"
+        conflicts_with = "version",
+        allow_hyphen_values = true
     )]
-    pub n: i32,
+    pub n: Option<i32>,
     #[arg(
         short,
         long,

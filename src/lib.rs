@@ -221,8 +221,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             let Remove {
                 file,
                 stdout,
-                n,
-                version,
+                remove_id,
             } = options;
 
             let path = get_changelog_path(file);
@@ -231,12 +230,12 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             debug!("changelog: {:?}", changelog);
 
-            if let Some(regex) = &version {
+            if let Some(regex) = &remove_id.version {
                 changelog
                     .releases
                     .retain(|_, v| !regex.is_match(v.version()));
             } else {
-                match changelog.nth_release(n)?.owned() {
+                match changelog.nth_release(remove_id.n.unwrap())?.owned() {
                     changelog::utils::NthRelease::Unreleased(_) => {
                         changelog.unreleased.take();
                     }
