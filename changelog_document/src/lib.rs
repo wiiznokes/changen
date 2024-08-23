@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 
 pub mod de;
-
+pub mod fmt;
 pub mod ser;
 
 #[cfg(test)]
@@ -20,7 +20,7 @@ pub struct ReleaseSection {
     pub notes: Vec<ReleaseSectionNote>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ReleaseSectionNote {
     pub scope: Option<String>,
     pub message: String,

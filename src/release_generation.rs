@@ -1,6 +1,6 @@
 use anyhow::bail;
 use changelog::{
-    ser::{serialize_changelog, ChangeLogSerOption},
+    ser::serialize_changelog,
     ChangeLog, Release, ReleaseTitle,
 };
 use indexmap::IndexMap;
@@ -107,7 +107,9 @@ pub fn release(
 
     debug!("release: serialize changelog: {:?}", changelog);
 
-    let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
+    changelog.sanitize(changelog::fmt::Options::default());
+
+    let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
     Ok((diff_tags.new, output))
 }

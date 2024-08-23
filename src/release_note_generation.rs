@@ -315,11 +315,11 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
     debug!("{:?}", raw);
     debug!("{:?}", changelog_path);
 
-    if raw.list_files.iter().any(|path| path == changelog_path) {
-        return Response::Yes {
-            reason: "The changelog was modified in this commit.".into(),
-        };
-    }
+    // if raw.list_files.iter().any(|path| path == changelog_path) {
+    //     return Response::Yes {
+    //         reason: "The changelog was modified in this commit.".into(),
+    //     };
+    // }
 
     let names = ["changelog", "log", "chglog", "notes"];
 

@@ -8,7 +8,7 @@ use std::{
 use anyhow::bail;
 use changelog::{
     de::parse_changelog,
-    ser::{serialize_changelog, serialize_release, ChangeLogSerOptionRelease},
+    ser::{serialize_changelog, serialize_release, OptionsRelease},
 };
 use config::{Cli, Commands, MapMessageToSection, New, Show, Validate};
 use git_helpers_function::try_get_repo;
@@ -99,7 +99,11 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 &options,
             )?;
 
-            let output = serialize_changelog(&changelog, &map.into_changelog_ser_options());
+            unreleased.deduplicate();
+
+            changelog.sanitize(map.to_fmt_options());
+
+            let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
             write_output(&output, &path, options.stdout)?;
         }
@@ -128,7 +132,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             let path = get_changelog_path(file);
             let input = read_file(&path)?;
-            let changelog = parse_changelog(&input)?;
+            let mut changelog = parse_changelog(&input)?;
 
             debug!("changelog: {:?}", changelog);
 
@@ -137,9 +141,9 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             }
 
             if format {
-                let ser_options = MapMessageToSection::try_new(map)?.into_changelog_ser_options();
-
-                let output = serialize_changelog(&changelog, &ser_options);
+                let map = MapMessageToSection::try_new(map)?;
+                changelog.sanitize(map.to_fmt_options());
+                let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
                 write_output(&output, &path, stdout)?;
             }
@@ -170,8 +174,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                     serialize_release(
                         &mut output,
                         release,
-                        &ChangeLogSerOptionRelease {
-                            section_order: vec![],
+                        &OptionsRelease {
                             serialize_title: false,
                         },
                     );

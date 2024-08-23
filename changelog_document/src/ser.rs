@@ -3,26 +3,24 @@ use crate::*;
 // todo: use io::Write
 
 #[derive(Debug, Clone, Default)]
-pub struct ChangeLogSerOption {
-    pub release_option: ChangeLogSerOptionRelease,
+pub struct Options {
+    pub release_option: OptionsRelease,
 }
 
 #[derive(Debug, Clone)]
-pub struct ChangeLogSerOptionRelease {
-    pub section_order: Vec<String>,
+pub struct OptionsRelease {
     pub serialize_title: bool,
 }
 
-impl Default for ChangeLogSerOptionRelease {
+impl Default for OptionsRelease {
     fn default() -> Self {
         Self {
-            section_order: Default::default(),
             serialize_title: true,
         }
     }
 }
 
-pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) -> String {
+pub fn serialize_changelog(changelog: &ChangeLog, options: &Options) -> String {
     let mut s = String::new();
 
     let mut should_new_line = false;
@@ -54,7 +52,7 @@ pub fn serialize_changelog(changelog: &ChangeLog, options: &ChangeLogSerOption) 
 }
 
 // todo: handle footer links
-pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogSerOptionRelease) {
+pub fn serialize_release(s: &mut String, release: &Release, options: &OptionsRelease) {
     let mut should_new_line = false;
 
     if options.serialize_title {
@@ -83,54 +81,16 @@ pub fn serialize_release(s: &mut String, release: &Release, options: &ChangeLogS
         should_new_line = true;
     }
 
-    let note_section_sorted = {
-        let mut sorted = Vec::new();
-
-        let mut section_cloned = release.note_sections.clone();
-
-        for section in &options.section_order {
-            if let Some(section) = section_cloned.shift_remove(section) {
-                sorted.push(section);
-            }
-        }
-
-        sorted.extend(section_cloned.into_values());
-        sorted
-    };
-
-    for sections in &note_section_sorted {
-        if !sections.notes.is_empty() {
+    for (_, section) in &release.note_sections {
+        if !section.notes.is_empty() {
             if should_new_line {
                 s.push('\n');
             }
             should_new_line = true;
 
-            s.push_str(&format!("### {}\n\n", sections.title));
+            s.push_str(&format!("### {}\n\n", section.title));
 
-            let notes_sorted = {
-                let mut sorted = Vec::new();
-
-                let mut scoped: IndexMap<String, Vec<ReleaseSectionNote>> = IndexMap::new();
-
-                for note in sections.notes.clone() {
-                    match &note.scope {
-                        Some(scope) => match scoped.get_mut(scope) {
-                            Some(notes) => {
-                                notes.push(note);
-                            }
-                            None => {
-                                scoped.insert(scope.clone(), vec![note]);
-                            }
-                        },
-                        None => sorted.push(note),
-                    }
-                }
-
-                sorted.extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
-                sorted
-            };
-
-            for note in &notes_sorted {
+            for note in &section.notes {
                 serialize_release_section_note(s, note);
             }
         }
@@ -167,7 +127,7 @@ mod test {
 
     #[test]
     fn test() {
-        let output = serialize_changelog(&CHANGELOG1, &ChangeLogSerOption::default());
+        let output = serialize_changelog(&CHANGELOG1, &Options::default());
 
         println!("{}", output);
     }

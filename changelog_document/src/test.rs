@@ -4,7 +4,7 @@ use pretty_assertions::assert_eq;
 
 use crate::*;
 use de::parse_changelog;
-use ser::ChangeLogSerOptionRelease;
+use ser::OptionsRelease;
 
 #[test]
 fn test_file() {
@@ -131,7 +131,7 @@ fn release_title() {
 
     let mut s = String::new();
 
-    ser::serialize_release(&mut s, &res, &ChangeLogSerOptionRelease::default());
+    ser::serialize_release(&mut s, &res, &OptionsRelease::default());
 
     assert_eq!(input, s);
 }
