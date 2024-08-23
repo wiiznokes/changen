@@ -142,6 +142,11 @@ fn release_title() {
     assert_eq!(input, s);
 }
 
+#[test]
+fn last_version() {
+    assert_eq!(CHANGELOG1.last_version().unwrap(), Version::new(0, 1, 1));
+}
+
 fn default_sort_order() -> Vec<String> {
     vec![
         "Security".into(),

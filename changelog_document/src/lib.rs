@@ -54,6 +54,7 @@ pub struct FooterLinks {
 pub struct ChangeLog {
     pub header: Option<String>,
     pub unreleased: Option<Release>,
+    /// Release, sorted by 0.0.0 to 1.0.0
     pub releases: BTreeMap<Version, Release>,
     pub footer_links: FooterLinks,
 }

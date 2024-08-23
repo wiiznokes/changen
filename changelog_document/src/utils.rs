@@ -19,7 +19,7 @@ pub static DEFAULT_UNRELEASED: LazyLock<Release> = LazyLock::new(|| Release {
 
 impl ChangeLog {
     pub fn last_version(&self) -> Option<Version> {
-        let mut keys = self.releases.keys();
+        let mut keys = self.releases.keys().rev();
 
         keys.next().cloned()
     }
