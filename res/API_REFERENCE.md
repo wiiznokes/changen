@@ -85,6 +85,7 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
 * `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
 * `--omit-diff` — Omit the commit history between releases.
+* `--override` — Override the last release if exist, by replacing all the existing release notes.
 * `--stdout` — Print the result on the standard output.
 
 

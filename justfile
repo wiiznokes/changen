@@ -33,11 +33,11 @@ test_perf:
 
 expand:
 
-gen_all f='res/CHANGELOG_DEFAULT.md':
-	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --tag 0.1.7 > CHANGELOG2.md
+gen_notes f='res/CHANGELOG_DEFAULT.md':
+	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --since 0.1.7 > CHANGELOG2.md
 
-gen_release f='CHANGELOG3.md' v='':
-	cargo run -- release -f {{f}} --stdout
+gen_release f='CHANGELOG2.md' v='':
+	cargo run -- release -f {{f}} --force
 
 gen_doc:
 	cargo run --locked --bin gen-doc
