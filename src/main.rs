@@ -17,7 +17,7 @@ mod gen {
 
     #[ignore = ""]
     #[test]
-    fn gen() -> anyhow::Result<()> {
+    fn gen_doc() -> anyhow::Result<()> {
         let doc = clap_markdown::help_markdown::<Cli>();
 
         let mut file = OpenOptions::new()

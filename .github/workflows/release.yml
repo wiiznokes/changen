@@ -28,20 +28,20 @@ jobs:
           gh release delete ${{ github.event.inputs.tag }} -y || true
           git tag -d ${{ github.event.inputs.tag }} || true
           git push origin --delete ${{ github.event.inputs.tag }} || true
-          git tag ${{ github.event.inputs.tag }}
-          git push origin ${{ github.event.inputs.tag }}
           git fetch --tags
           echo Using given tag ${{ github.event.inputs.tag }}
 
       - uses: Swatinem/rust-cache@v2
       - run: |
           cargo run --locked -- generate --exclude-unidentified
-          cargo run --locked -- release
+          cargo run --locked -- release -v ${{ github.event.inputs.tag }}
+          cargo test --locked gen::gen_doc -- --include-ignored
           # cargo run --locked --bin gen-doc
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(changelog): automatic release generation (skip changelog) [skip ci]"
+          tagging_message: ${{ github.event.inputs.tag }}
 
       - run: |
           cargo run --locked -- show > RELEASE_CHANGELOG.md
