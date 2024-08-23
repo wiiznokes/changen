@@ -33,14 +33,14 @@ fn perf() {
 pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
     header: Some("## Changelog\n\nHello, this is a changelog that follow semver!".into()),
     releases: {
-        let mut releases = IndexMap::new();
+        let mut releases = BTreeMap::new();
 
-        let version = String::from("Unreleased");
+        let version = Version::new(0, 1, 0);
         releases.insert(
             version.clone(),
             Release {
                 title: ReleaseTitle {
-                    version,
+                    version: version.to_string(),
                     title: Some("i'm am the title of the night".into()),
                     release_link: None,
                 },
@@ -92,12 +92,12 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
             },
         );
 
-        let version = String::from("0.1.0");
+        let version = Version::new(0, 1, 1);
         releases.insert(
             version.clone(),
             Release {
                 title: ReleaseTitle {
-                    version,
+                    version: version.to_string(),
                     title: None,
                     release_link: Some(
                         "https://github.com/wiiznokes/fan-control/releases/tag/v2024.7.30".into(),
@@ -122,6 +122,7 @@ pub static CHANGELOG1: LazyLock<ChangeLog> = LazyLock::new(|| ChangeLog {
             },
         ],
     },
+    unreleased: None,
 });
 
 #[test]
@@ -176,7 +177,6 @@ fn end_to_end() {
                     sort_scope: true,
                 },
             });
-
 
             let res = ser::serialize_changelog(&changelog, &ser::Options::default());
 

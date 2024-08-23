@@ -39,7 +39,7 @@ pom.workspace = true
 log = "0.4"
 env_logger = "0.11"
 cached = "0.53"
-semver = "1"
+semver.workspace = true
 # derive_more = { version = "1", features = ["display"] }
 
 # todo: bin only https://github.com/rust-lang/cargo/issues/1982
@@ -54,6 +54,7 @@ pom = { version = "3", features = ["trace"] }
 anyhow = "1"
 serde = { version = "1.0.201", features = ["derive"] }
 pretty_assertions = "1"
+semver = "1"
 # thiserror = "1"
 
 [patch.crates-io]

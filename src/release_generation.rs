@@ -1,8 +1,7 @@
 use anyhow::bail;
-use changelog::{ser::serialize_changelog, ChangeLog, Release, ReleaseTitle};
-use indexmap::IndexMap;
+use changelog::{ser::serialize_changelog, utils::DEFAULT_UNRELEASED, ChangeLog};
 
-use crate::{git_provider::DiffTags, utils::get_last_tag, UNRELEASED};
+use crate::git_provider::DiffTags;
 
 pub fn release(
     mut changelog: ChangeLog,
@@ -21,13 +20,13 @@ pub fn release(
 
     let previous_version = previous_version
         .clone()
-        .or_else(|| get_last_tag(&changelog));
+        .or_else(|| changelog.last_version());
 
     let diff_tags = DiffTags::new(version.clone(), previous_version)?;
 
-    if changelog.releases.get(&diff_tags.new).is_some() {
+    if changelog.releases.contains_key(&diff_tags.new) {
         if *force {
-            changelog.releases.shift_remove(&diff_tags.new);
+            changelog.releases.remove(&diff_tags.new);
             eprintln!("The release {} will be overwritten", diff_tags.new)
         } else {
             bail!(
@@ -37,30 +36,15 @@ pub fn release(
         }
     };
 
-    let empty_unreleased = Release {
-        title: ReleaseTitle {
-            version: UNRELEASED.into(),
-            title: None,
-            release_link: None,
-        },
-        header: None,
-        note_sections: IndexMap::new(),
-        footer: None,
-    };
+    let mut prev_unreleased = changelog
+        .unreleased
+        .replace(DEFAULT_UNRELEASED.clone())
+        .unwrap_or(DEFAULT_UNRELEASED.clone());
 
-    let (pos, Some(mut prev_unreleased)) = changelog
-        .releases
-        .insert_full(UNRELEASED.into(), empty_unreleased)
-    else {
-        bail!("No Unreleased section found.")
-    };
-
-    debug_assert!(pos == 0);
-
-    prev_unreleased.title.version = diff_tags.new.clone();
+    prev_unreleased.title.version = diff_tags.new.to_string();
 
     if let Some(repo) = &repo {
-        match provider.release_link(repo, &diff_tags.new) {
+        match provider.release_link(repo, &diff_tags.new.to_string()) {
             Ok(link) => {
                 prev_unreleased.title.release_link = Some(link);
             }
@@ -100,7 +84,7 @@ pub fn release(
 
     changelog
         .releases
-        .shift_insert(1, diff_tags.new.clone(), prev_unreleased);
+        .insert(diff_tags.new.clone(), prev_unreleased);
 
     debug!("release: serialize changelog: {:?}", changelog);
 
@@ -108,5 +92,5 @@ pub fn release(
 
     let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
-    Ok((diff_tags.new, output))
+    Ok((diff_tags.new.to_string(), output))
 }

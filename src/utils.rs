@@ -1,7 +1,4 @@
 use anyhow::bail;
-use changelog::ChangeLog;
-
-use crate::UNRELEASED;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Repo {
@@ -25,6 +22,21 @@ impl TryFrom<&str> for Repo {
         })
     }
 }
+
+// impl From<&str> for Repo {
+//     fn from(value: &str) -> Self {
+//         let slip = value.split('/').collect::<Vec<_>>();
+
+//         if slip.len() != 2 {
+//             panic!("wrong repo format")
+//         }
+
+//         Repo {
+//             owner: slip[0].to_owned(),
+//             name: slip[1].to_owned(),
+//         }
+//     }
+// }
 
 pub struct TextInterpolate {
     buffer: String,
@@ -52,16 +64,6 @@ impl TextInterpolate {
     pub fn text(self) -> String {
         self.buffer
     }
-}
-
-pub fn get_last_tag(changelog: &ChangeLog) -> Option<String> {
-    let mut keys = changelog.releases.keys();
-    if let Some(e) = keys.next() {
-        if e != UNRELEASED {
-            return Some(e.to_owned());
-        }
-    }
-    keys.next().cloned()
 }
 
 #[cfg(test)]

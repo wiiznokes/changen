@@ -1,8 +1,12 @@
+use std::collections::BTreeMap;
+
 use indexmap::IndexMap;
+use semver::Version;
 
 pub mod de;
 pub mod fmt;
 pub mod ser;
+pub mod utils;
 
 #[cfg(test)]
 mod test;
@@ -49,7 +53,8 @@ pub struct FooterLinks {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChangeLog {
     pub header: Option<String>,
-    pub releases: IndexMap<String, Release>,
+    pub unreleased: Option<Release>,
+    pub releases: BTreeMap<Version, Release>,
     pub footer_links: FooterLinks,
 }
 
@@ -61,14 +66,26 @@ impl Default for ChangeLog {
 
 impl ChangeLog {
     pub fn new() -> Self {
-        let mut releases = IndexMap::new();
+        let mut releases = BTreeMap::new();
 
-        let version = String::from("Unreleased");
+        let unreleased = Release {
+            title: ReleaseTitle {
+                version: String::from("Unreleased"),
+                title: None,
+                release_link: None,
+            },
+            header: None,
+            note_sections: IndexMap::new(),
+            footer: None,
+        };
+
+        let version = Version::new(0, 1, 0);
+
         releases.insert(
             version.clone(),
             Release {
                 title: ReleaseTitle {
-                    version,
+                    version: version.to_string(),
                     title: None,
                     release_link: None,
                 },
@@ -80,6 +97,7 @@ impl ChangeLog {
 
         ChangeLog {
             header: None,
+            unreleased: Some(unreleased),
             releases,
             footer_links: FooterLinks { links: Vec::new() },
         }
