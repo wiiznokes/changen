@@ -129,6 +129,8 @@ pub enum Commands {
     Validate(Validate),
     Show(Show),
     New(New),
+    #[command(aliases = ["delete", "rm"])]
+    Remove(Remove),
 }
 
 /// Generate release notes. By default, generate from the last release in the changelog to HEAD.
@@ -271,7 +273,7 @@ pub struct Show {
     pub file: Option<PathBuf>,
     #[arg(
         short,
-        help = "0 being unreleased, 1 is the last release",
+        help = "0 being unreleased, 1 is the last release, ...",
         default_value_t = 1,
         conflicts_with = "version"
     )]
@@ -296,4 +298,32 @@ pub struct New {
     pub path: Option<PathBuf>,
     #[arg(short, long, help = "Override of existing file.")]
     pub force: bool,
+}
+
+/// Show a specific release on stdout
+#[derive(Args)]
+pub struct Remove {
+    #[arg(
+        short,
+        long,
+        help = "Path to the changelog file.",
+        default_value = "CHANGELOG.md",
+        value_hint = ValueHint::FilePath,
+    )]
+    pub file: Option<PathBuf>,
+    #[arg(long, help = "Print the result on the standard output.")]
+    pub stdout: bool,
+    #[arg(
+        short,
+        help = "0 being unreleased, 1 is the last release, ...",
+        default_value_t = 1,
+        conflicts_with = "version"
+    )]
+    pub n: usize,
+    #[arg(
+        short,
+        long,
+        help = "Remove a specific version. Also accept regex. Example: 1.0.0-*"
+    )]
+    pub version: Option<Regex>,
 }
