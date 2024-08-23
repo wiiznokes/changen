@@ -159,7 +159,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             let releases = if let Some(ref regex) = version {
                 let mut res = Vec::new();
 
-                for release in changelog.releases.values().rev() {
+                for release in changelog.releases() {
                     if regex.is_match(release.version()) {
                         res.push(release)
                     }
@@ -169,10 +169,10 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
                 if n == 0 {
                     changelog.unreleased.as_ref().into_iter().collect()
                 } else {
-                    changelog.releases.values().nth(n - 1).into_iter().collect()
+                    changelog.releases().nth(n - 1).into_iter().collect()
                 }
             } else {
-                changelog.releases.values().nth(n).into_iter().collect()
+                changelog.releases().nth(n).into_iter().collect()
             };
 
             if releases.is_empty() {

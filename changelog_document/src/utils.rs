@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{collections::btree_map, iter::Rev, sync::LazyLock};
 
 use semver::Version;
 
@@ -19,9 +19,7 @@ pub static DEFAULT_UNRELEASED: LazyLock<Release> = LazyLock::new(|| Release {
 
 impl ChangeLog {
     pub fn last_version(&self) -> Option<Version> {
-        let mut keys = self.releases.keys().rev();
-
-        keys.next().cloned()
+        self.releases_keys().next().cloned()
     }
 
     pub fn unreleased_or_default(&mut self) -> &mut Release {
@@ -30,6 +28,14 @@ impl ChangeLog {
         };
 
         self.unreleased.as_mut().unwrap()
+    }
+
+    pub fn releases(&self) -> Rev<btree_map::Values<Version, Release>> {
+        self.releases.values().rev()
+    }
+
+    pub fn releases_keys(&self) -> Rev<btree_map::Keys<Version, Release>> {
+        self.releases.keys().rev()
     }
 }
 
