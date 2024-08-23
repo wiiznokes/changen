@@ -39,5 +39,9 @@ gen_notes f='res/CHANGELOG_DEFAULT.md':
 gen_release f='CHANGELOG2.md' v='':
 	cargo run -- release -f {{f}} --force
 
+
+gen_fmt f='CHANGELOG2.md' v='':
+	cargo run -- validate -f {{f}} --fmt --ast
+
 gen_doc:
 	cargo run --locked --bin gen-doc

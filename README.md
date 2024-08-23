@@ -62,8 +62,6 @@ Currently, you can write theses patterns anywhere in the commit message or descr
 - `!changelog`
 - `!log`
 
-Note that any commit modifying your changelog will be ignored
-
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
 The default map can be seen [here](./res/map_commit_type_to_section.json). Note than the order will define in witch order the section will appears in the log file.

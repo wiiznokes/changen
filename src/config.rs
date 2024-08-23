@@ -3,9 +3,10 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::{collections::HashSet, fmt::Display};
 
+use changelog::fmt::SortOptions;
 use clap::{arg, Args, Parser, Subcommand, ValueHint};
 
-use changelog::ser::{ChangeLogSerOption, ChangeLogSerOptionRelease};
+use changelog::ser::{Options, OptionsRelease};
 use clap::ValueEnum;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -23,10 +24,17 @@ impl Default for MapMessageToSection {
 }
 
 impl MapMessageToSection {
-    pub fn into_changelog_ser_options(self) -> ChangeLogSerOption {
-        ChangeLogSerOption {
-            release_option: ChangeLogSerOptionRelease {
+    pub fn to_fmt_options(self) -> changelog::fmt::Options {
+        changelog::fmt::Options {
+            sort_options: SortOptions {
                 section_order: self.0.into_iter().map(|(section, _)| section).collect(),
+                ..Default::default()
+            },
+        }
+    }
+    pub fn into_changelog_ser_options(self) -> Options {
+        Options {
+            release_option: OptionsRelease {
                 ..Default::default()
             },
         }

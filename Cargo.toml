@@ -57,4 +57,4 @@ pretty_assertions = "1"
 # thiserror = "1"
 
 [patch.crates-io]
-# changelog_document = { path = "./changelog_document" }
+changelog_document = { path = "./changelog_document" }

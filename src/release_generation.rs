@@ -1,8 +1,5 @@
 use anyhow::bail;
-use changelog::{
-    ser::{serialize_changelog, ChangeLogSerOption},
-    ChangeLog, Release, ReleaseTitle,
-};
+use changelog::{ser::serialize_changelog, ChangeLog, Release, ReleaseTitle};
 use indexmap::IndexMap;
 
 use crate::{git_provider::DiffTags, utils::get_last_tag, UNRELEASED};
@@ -107,7 +104,9 @@ pub fn release(
 
     debug!("release: serialize changelog: {:?}", changelog);
 
-    let output = serialize_changelog(&changelog, &ChangeLogSerOption::default());
+    changelog.sanitize(&changelog::fmt::Options::default());
+
+    let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
 
     Ok((diff_tags.new, output))
 }

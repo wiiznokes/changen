@@ -1,10 +1,15 @@
-use std::{fs::File, io::Read, sync::LazyLock};
+use std::{
+    fs::{read_dir, File},
+    io::Read,
+    sync::LazyLock,
+};
 
+use fmt::SortOptions;
 use pretty_assertions::assert_eq;
 
 use crate::*;
 use de::parse_changelog;
-use ser::ChangeLogSerOptionRelease;
+use ser::OptionsRelease;
 
 #[test]
 fn test_file() {
@@ -131,7 +136,62 @@ fn release_title() {
 
     let mut s = String::new();
 
-    ser::serialize_release(&mut s, &res, &ChangeLogSerOptionRelease::default());
+    ser::serialize_release(&mut s, &res, &OptionsRelease::default());
 
     assert_eq!(input, s);
+}
+
+fn default_sort_order() -> Vec<String> {
+    vec![
+        "Security".into(),
+        "Added".into(),
+        "Changed".into(),
+        "Removed".into(),
+        "Fixed".into(),
+        "Deprecated".into(),
+        "Documentation".into(),
+    ]
+}
+
+#[test]
+fn end_to_end() {
+    for e in read_dir("./tests/fmt").unwrap() {
+        let e = e.unwrap();
+
+        let filename = e.file_name().into_string().unwrap();
+
+        if filename.ends_with(".init") {
+            let mut content = String::new();
+
+            File::open(e.path())
+                .unwrap()
+                .read_to_string(&mut content)
+                .unwrap();
+
+            let mut changelog = parse_changelog(&content).unwrap();
+
+            changelog.sanitize(&fmt::Options {
+                sort_options: SortOptions {
+                    section_order: default_sort_order(),
+                    sort_scope: true,
+                },
+            });
+
+
+            let res = ser::serialize_changelog(&changelog, &ser::Options::default());
+
+            let filename = filename.replace(".init", ".expect");
+
+            let mut content = String::new();
+
+            let path = e.path().parent().unwrap().join(filename);
+
+            File::open(path)
+                .unwrap()
+                .read_to_string(&mut content)
+                .unwrap();
+
+            assert_eq!(res, content);
+        }
+    }
 }
