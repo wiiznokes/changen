@@ -223,6 +223,7 @@ dependencies = [
  "log",
  "pom",
  "pretty_assertions",
+ "regex",
  "reqwest",
  "semver",
  "serde",

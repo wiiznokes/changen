@@ -44,6 +44,7 @@ semver.workspace = true
 
 # todo: bin only https://github.com/rust-lang/cargo/issues/1982
 clap-markdown = "0.1"
+regex = "1"
 
 [dev-dependencies]
 pretty_assertions.workspace = true

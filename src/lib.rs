@@ -156,36 +156,45 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             debug!("changelog: {:?}", changelog);
 
-            let release = if let Some(ref version) = version {
-                changelog.releases.get(version)
+            let releases = if let Some(ref regex) = version {
+                let mut res = Vec::new();
+
+                for release in changelog.releases.values().rev() {
+                    if regex.is_match(release.version()) {
+                        res.push(release)
+                    }
+                }
+                res
             } else if changelog.unreleased.is_some() {
                 if n == 0 {
-                    changelog.unreleased.as_ref()
+                    changelog.unreleased.as_ref().into_iter().collect()
                 } else {
-                    changelog.releases.values().nth(n - 1)
+                    changelog.releases.values().nth(n - 1).into_iter().collect()
                 }
             } else {
-                changelog.releases.values().nth(n)
+                changelog.releases.values().nth(n).into_iter().collect()
             };
 
-            match release {
-                Some(release) => {
-                    debug!("show release: {:?}", release);
+            if releases.is_empty() {
+                bail!("No release found");
+            }
 
-                    let mut output = String::new();
-                    serialize_release(
-                        &mut output,
-                        release,
-                        &OptionsRelease {
-                            serialize_title: false,
-                        },
-                    );
-                    print!("{}", output);
+            for (pos, release) in releases.iter().enumerate() {
+                debug!("show release: {:?}", release);
+                let mut output = String::new();
+                serialize_release(
+                    &mut output,
+                    release,
+                    &OptionsRelease {
+                        serialize_title: false,
+                    },
+                );
+
+                print!("{}", output);
+                if pos != releases.len() - 1 {
+                    println!();
                 }
-                None => {
-                    bail!("No release found");
-                }
-            };
+            }
         }
 
         Commands::New(options) => {

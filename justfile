@@ -43,5 +43,9 @@ gen_release f='CHANGELOG2.md' v='':
 gen_fmt f='CHANGELOG2.md' v='':
 	cargo run -- validate -f {{f}} --fmt --ast
 
+
+gen_show f='CHANGELOG2.md' v='':
+	cargo run -- show -f {{f}} --version 0.1.*
+
 gen_doc:
 	cargo run --locked --bin gen-doc
