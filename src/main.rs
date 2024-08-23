@@ -9,8 +9,8 @@ fn main() -> anyhow::Result<()> {
     run(cli)
 }
 
+#[cfg(test)]
 mod gen {
-
     use std::{fs::OpenOptions, io::Write};
 
     use changelog_gen::config::Cli;

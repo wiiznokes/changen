@@ -218,6 +218,11 @@ pub struct Release {
     pub repo: Option<String>,
     #[arg(long, help = "Omit the commit history between releases.")]
     pub omit_diff: bool,
+    #[arg(
+        long,
+        help = "Override the last release if exist, by replacing all the existing release notes."
+    )]
+    pub force: bool,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
 }

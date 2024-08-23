@@ -19,6 +19,7 @@ pub fn release(
         repo,
         omit_diff,
         stdout: _,
+        force,
     } = options;
 
     let previous_version = previous_version
@@ -28,10 +29,15 @@ pub fn release(
     let diff_tags = DiffTags::new(version.clone(), previous_version)?;
 
     if changelog.releases.get(&diff_tags.new).is_some() {
-        bail!(
-            "Version {} already exist. Create a new tag or use the --version option.",
-            diff_tags.new
-        );
+        if *force {
+            changelog.releases.shift_remove(&diff_tags.new);
+            eprintln!("The release {} will be overwritten", diff_tags.new)
+        } else {
+            bail!(
+                "Version {} already exist. Create a new tag or use the --version option. You can also use the --force option to override the existing release.",
+                diff_tags.new
+            );
+        }
     };
 
     let empty_unreleased = Release {
