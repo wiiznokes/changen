@@ -115,7 +115,7 @@ impl Display for CommitMessageParsing {
 }
 
 #[derive(Parser)]
-#[command(name = "changelog", about = "Changelog generator", long_about = None)]
+#[command(name = "changelog", version, about = "Changelog generator", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
