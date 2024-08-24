@@ -370,7 +370,7 @@ mod test {
 
         dbg!(&res);
 
-        let res = request_related_pr("wiiznokes/changelog-generator", "84d7fa4").unwrap();
+        let res = request_related_pr("wiiznokes/changen", "84d7fa4").unwrap();
 
         dbg!(&res);
     }

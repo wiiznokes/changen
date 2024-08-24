@@ -210,7 +210,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "changelog-gen"
+name = "changelog_document"
+version = "0.1.6-rc4"
+dependencies = [
+ "anyhow",
+ "indexmap",
+ "pom",
+ "pretty_assertions",
+ "semver",
+ "serde",
+]
+
+[[package]]
+name = "changen"
 version = "0.1.9-rc7"
 dependencies = [
  "anyhow",
@@ -228,18 +240,6 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "changelog_document"
-version = "0.1.6-rc4"
-dependencies = [
- "anyhow",
- "indexmap",
- "pom",
- "pretty_assertions",
- "semver",
- "serde",
 ]
 
 [[package]]

@@ -5,105 +5,105 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [0.1.9-rc7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc7)
+## [0.1.9-rc7](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc7)
 
 ### Changed
 
-- italyc diff link + better header for release in [0919f03](https://github.com/wiiznokes/changelog-generator/commit/0919f03d41d9fa25369066c7f11d2c3219bc47fa) by [@wiiznokes](https://github.com/wiiznokes)
+- italyc diff link + better header for release in [0919f03](https://github.com/wiiznokes/changen/commit/0919f03d41d9fa25369066c7f11d2c3219bc47fa) by [@wiiznokes](https://github.com/wiiznokes)
 
-_Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc6...0.1.9-rc7_
+_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc6...0.1.9-rc7_
 
-## [0.1.9-rc6](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc6)
+## [0.1.9-rc6](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc6)
 
 ### Changed
 
-- use rust doc instead of clap "help" in [#51](https://github.com/wiiznokes/changelog-generator/pull/51) by [@wiiznokes](https://github.com/wiiznokes)
+- use rust doc instead of clap "help" in [#51](https://github.com/wiiznokes/changen/pull/51) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
-- fixes (#52) in [#52](https://github.com/wiiznokes/changelog-generator/pull/52) by [@wiiznokes](https://github.com/wiiznokes)
+- fixes (#52) in [#52](https://github.com/wiiznokes/changen/pull/52) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc5...0.1.9-rc6
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc5...0.1.9-rc6
 
-## [0.1.9-rc5](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc5)
+## [0.1.9-rc5](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc5)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc4...0.1.9-rc5
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc4...0.1.9-rc5
 
-## [0.1.9-rc4](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc4)
+## [0.1.9-rc4](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc4)
 
 ### Added
 
-- add version to cli in [99bc1b4](https://github.com/wiiznokes/changelog-generator/commit/99bc1b487a728c7cfa2ad985e55d4ed243b8a064) by [@wiiznokes](https://github.com/wiiznokes)
-- test repo generic for testing (#47) in [#47](https://github.com/wiiznokes/changelog-generator/pull/47) by [@wiiznokes](https://github.com/wiiznokes)
+- add version to cli in [99bc1b4](https://github.com/wiiznokes/changen/commit/99bc1b487a728c7cfa2ad985e55d4ed243b8a064) by [@wiiznokes](https://github.com/wiiznokes)
+- test repo generic for testing (#47) in [#47](https://github.com/wiiznokes/changen/pull/47) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
-- doc: remove doc in [66a80ca](https://github.com/wiiznokes/changelog-generator/commit/66a80cad176a51f825066a8161aae6f7e553111d) by [@wiiznokes](https://github.com/wiiznokes)
+- doc: remove doc in [66a80ca](https://github.com/wiiznokes/changen/commit/66a80cad176a51f825066a8161aae6f7e553111d) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc3...0.1.9-rc4
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc3...0.1.9-rc4
 
-## [0.1.9-rc3](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc3)
+## [0.1.9-rc3](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc3)
 
 ### Added
 
-- relax dep on semver + temporaly drop gen-doc (#32) in [#32](https://github.com/wiiznokes/changelog-generator/pull/32) by [@wiiznokes](https://github.com/wiiznokes)
-- deduplicate notes, end to end testing, refractor (#41) in [#41](https://github.com/wiiznokes/changelog-generator/pull/41) by [@wiiznokes](https://github.com/wiiznokes)
-- semver (#43) in [#43](https://github.com/wiiznokes/changelog-generator/pull/43) by [@wiiznokes](https://github.com/wiiznokes)
-- add regex (#44) in [#44](https://github.com/wiiznokes/changelog-generator/pull/44) by [@wiiznokes](https://github.com/wiiznokes)
-- remove command in [a506199](https://github.com/wiiznokes/changelog-generator/commit/a5061996e13c1356041c2804210a7fd4c41438e1) by [@wiiznokes](https://github.com/wiiznokes)
+- relax dep on semver + temporaly drop gen-doc (#32) in [#32](https://github.com/wiiznokes/changen/pull/32) by [@wiiznokes](https://github.com/wiiznokes)
+- deduplicate notes, end to end testing, refractor (#41) in [#41](https://github.com/wiiznokes/changen/pull/41) by [@wiiznokes](https://github.com/wiiznokes)
+- semver (#43) in [#43](https://github.com/wiiznokes/changen/pull/43) by [@wiiznokes](https://github.com/wiiznokes)
+- add regex (#44) in [#44](https://github.com/wiiznokes/changen/pull/44) by [@wiiznokes](https://github.com/wiiznokes)
+- remove command in [a506199](https://github.com/wiiznokes/changen/commit/a5061996e13c1356041c2804210a7fd4c41438e1) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
-- fix in [c396e4d](https://github.com/wiiznokes/changelog-generator/commit/c396e4d241c553efeb1b364b0934376f3e9854ac) by [@wiiznokes](https://github.com/wiiznokes)
-- remove args in [c50c937](https://github.com/wiiznokes/changelog-generator/commit/c50c9374dc48e357065b45c3bed03bd0656312cf) by [@wiiznokes](https://github.com/wiiznokes)
+- fix in [c396e4d](https://github.com/wiiznokes/changen/commit/c396e4d241c553efeb1b364b0934376f3e9854ac) by [@wiiznokes](https://github.com/wiiznokes)
+- remove args in [c50c937](https://github.com/wiiznokes/changen/commit/c50c9374dc48e357065b45c3bed03bd0656312cf) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.7...0.1.9-rc3
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.7...0.1.9-rc3
 
-## [0.1.7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.7)
+## [0.1.7](https://github.com/wiiznokes/changen/releases/tag/0.1.7)
 
 ### Fixed
 
-- no space in the release title (#28) in [#28](https://github.com/wiiznokes/changelog-generator/pull/28) by [@wiiznokes](https://github.com/wiiznokes)
-- disable fmt for api ref (#29) in [#29](https://github.com/wiiznokes/changelog-generator/pull/29) by [@wiiznokes](https://github.com/wiiznokes)
+- no space in the release title (#28) in [#28](https://github.com/wiiznokes/changen/pull/28) by [@wiiznokes](https://github.com/wiiznokes)
+- disable fmt for api ref (#29) in [#29](https://github.com/wiiznokes/changen/pull/29) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Documentation
 
-- generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changelog-generator/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
+- generate api ref + update readme (#27) in [#27](https://github.com/wiiznokes/changen/pull/27) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.6...0.1.7
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.6...0.1.7
 
-## [0.1.6](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.6)
+## [0.1.6](https://github.com/wiiznokes/changen/releases/tag/0.1.6)
 
 ### Added
 
-- exclude no pr options in [#19](https://github.com/wiiznokes/changelog-generator/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
-- add internal keyword in [1c80ea7](https://github.com/wiiznokes/changelog-generator/commit/1c80ea700771dddc01a7ae07dcd78d93af9343a1) by [@wiiznokes](https://github.com/wiiznokes)
-- semver + batch upgrade in [#22](https://github.com/wiiznokes/changelog-generator/pull/22) by [@wiiznokes](https://github.com/wiiznokes)
+- exclude no pr options in [#19](https://github.com/wiiznokes/changen/pull/19) by [@wiiznokes](https://github.com/wiiznokes)
+- add internal keyword in [1c80ea7](https://github.com/wiiznokes/changen/commit/1c80ea700771dddc01a7ae07dcd78d93af9343a1) by [@wiiznokes](https://github.com/wiiznokes)
+- semver + batch upgrade in [#22](https://github.com/wiiznokes/changen/pull/22) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Changed
 
-- default_value_t in [da5d510](https://github.com/wiiznokes/changelog-generator/commit/da5d510410df619b8b19116c076ab080876ab7f7) by [@wiiznokes](https://github.com/wiiznokes)
+- default_value_t in [da5d510](https://github.com/wiiznokes/changen/commit/da5d510410df619b8b19116c076ab080876ab7f7) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
-- don't use on push tag in CI in [96350bb](https://github.com/wiiznokes/changelog-generator/commit/96350bb5b8e9a82ce369172269063846ab97f43c) by [@wiiznokes](https://github.com/wiiznokes)
-- fix workflow in [5c40566](https://github.com/wiiznokes/changelog-generator/commit/5c405660ac1d2caf88aba9c48b9a93951781c763) by [@wiiznokes](https://github.com/wiiznokes)
+- don't use on push tag in CI in [96350bb](https://github.com/wiiznokes/changen/commit/96350bb5b8e9a82ce369172269063846ab97f43c) by [@wiiznokes](https://github.com/wiiznokes)
+- fix workflow in [5c40566](https://github.com/wiiznokes/changen/commit/5c405660ac1d2caf88aba9c48b9a93951781c763) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Documentation
 
-- mention git rebase config & fix some typos in [84d7fa4](https://github.com/wiiznokes/changelog-generator/commit/84d7fa44178cd405935698ed46fed938e80da603) by [@wiiznokes](https://github.com/wiiznokes)
+- mention git rebase config & fix some typos in [84d7fa4](https://github.com/wiiznokes/changen/commit/84d7fa44178cd405935698ed46fed938e80da603) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.5...0.1.6
+Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.5...0.1.6
 
-## [0.1.5](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.5)
+## [0.1.5](https://github.com/wiiznokes/changen/releases/tag/v0.1.5)
 
 ### Added
 
 - create new release
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.4...v0.1.5
+Full Changelog: https://github.com/wiiznokes/changen/compare/v0.1.4...v0.1.5
 
-## [0.1.4](https://github.com/wiiznokes/changelog-generator/releases/tag/v0.1.4)
+## [0.1.4](https://github.com/wiiznokes/changen/releases/tag/v0.1.4)
 
 ### Added
 
@@ -117,7 +117,7 @@ Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.4.
 
 - extra new line on full changelog link
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.2...v0.1.4
+Full Changelog: https://github.com/wiiznokes/changen/compare/v0.1.2...v0.1.4
 
 ## [0.1.2]
 
@@ -131,7 +131,7 @@ Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.2.
 
 ### Fixed
 
-- stdout as argument in [#13](https://github.com/wiiznokes/changelog-generator/pull/13) by [@wiiznokes](https://github.com/wiiznokes)
-- release not in order (#14) in [#14](https://github.com/wiiznokes/changelog-generator/pull/14) by [@wiiznokes](https://github.com/wiiznokes)
+- stdout as argument in [#13](https://github.com/wiiznokes/changen/pull/13) by [@wiiznokes](https://github.com/wiiznokes)
+- release not in order (#14) in [#14](https://github.com/wiiznokes/changen/pull/14) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/v0.1.1...v0.1.2
+Full Changelog: https://github.com/wiiznokes/changen/compare/v0.1.1...v0.1.2

@@ -8,25 +8,25 @@
 
 ## See in action
 
-This project use `changelog-gen` to maintain its changelog, using github action
+This project use `changen` to maintain its changelog, using github action
 
 - [The changelog file](./CHANGELOG.md) - see what the syntax have to offer
-- [Its commits history](https://github.com/wiiznokes/changelog-generator/commits/master/CHANGELOG.md)
+- [Its commits history](https://github.com/wiiznokes/changen/commits/master/CHANGELOG.md)
 - [The release Github workflow](./.github/workflows/create_release_notes_pr.yml) - It will create a PR
 
 ## Getting started
 
 1. **Create the changelog**
 
-   If you don't have a changelog file yet, you can use `changelog-gen new`.
+   If you don't have a changelog file yet, you can use `changen new`.
 
 2. **Validate your changelog syntax**
 
-   If you already have a changelog file, you can see if its syntax get accepted by running `changelog-gen validate`.
+   If you already have a changelog file, you can see if its syntax get accepted by running `changen validate`.
 
 3. **Generate release notes**
 
-   When you know your changelog is valid, you can use `changelog-gen generate` to generate a release-note about the last commit.
+   When you know your changelog is valid, you can use `changen generate` to generate a release-note about the last commit.
 
    It can generate release notes
 
@@ -38,7 +38,7 @@ This project use `changelog-gen` to maintain its changelog, using github action
 
 4. **Make a new release**
 
-   To make a new release, use `changelog-gen release --version 1.0.0`.
+   To make a new release, use `changen release --version 1.0.0`.
 
 > [!WARNING]  
 > _All_ tags of the repo and versions in the changelog _must_ follow the [semver](https://semver.org/) format, and should match each other.
@@ -65,11 +65,11 @@ Currently, you can write theses patterns anywhere in the commit message:
 #### Map commit type to section(ex: `### Fixed`) in the changelog
 
 The default map can be seen [here](./res/map_commit_type_to_section.json). Note than the order will define in witch order the section will appears in the log file.
-Use with `changelog-gen generate --map path/to/map.json`
+Use with `changen generate --map path/to/map.json`
 
 #### Changelog custom path
 
-`changelog-gen generate --file path/to/CHANGELOG.md`
+`changen generate --file path/to/CHANGELOG.md`
 
 ## Acknowledgement
 

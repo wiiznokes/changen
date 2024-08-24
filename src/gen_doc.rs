@@ -1,6 +1,6 @@
 use std::{fs::OpenOptions, io::Write};
 
-use changelog_gen::config::Cli;
+use changen::config::Cli;
 
 fn main() -> anyhow::Result<()> {
     let doc = clap_markdown::help_markdown::<Cli>();

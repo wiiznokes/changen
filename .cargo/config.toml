@@ -1,4 +1,4 @@
 [env]
-RUST_LOG = "warn,changelog_gen=info"
+RUST_LOG = "warn,changen=info"
 # RUST_BACKTRACE = "full"
-GITHUB_REPOSITORY = "wiiznokes/changelog-generator"
+GITHUB_REPOSITORY = "wiiznokes/changen"
