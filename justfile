@@ -33,6 +33,10 @@ test_perf:
 
 expand:
 
+gen_notes2 f='CHANGELOG2.md':
+	cargo run -- generate -f {{f}} --exclude-unidentified
+
+
 gen_notes f='res/CHANGELOG_DEFAULT.md' since='0.1.7':
 	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --since {{since}} > CHANGELOG2.md
 
@@ -42,7 +46,7 @@ gen_release f='CHANGELOG2.md' v='1.0.0':
 gen_fmt f='CHANGELOG2.md':
 	cargo run -- validate -f {{f}} --fmt --ast
 
-gen_show f='CHANGELOG2.md' v='':
+gen_show f='CHANGELOG.md' v='':
 	cargo run -- show -f {{f}} --version {{v}} > RELEASE_CHANGELOG.md
 
 gen_remove f='CHANGELOG2.md' v='1.0.0':

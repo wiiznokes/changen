@@ -55,7 +55,7 @@ fix(project_a): Fix a nasty bug <=> commit-type(scope): commit-message
 
 #### Ignore commit
 
-Currently, you can write theses patterns anywhere in the commit message or description:
+Currently, you can write theses patterns anywhere in the commit message:
 
 - `(skip changelog)`
 - `(ignore changelog)`
