@@ -83,6 +83,24 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
   Default value: `github`
 
+  Possible values: `github`, `none`
+
+* `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions
+* `--omit-diff` — Omit the commit history between releases
+* `--force` — Override the release with the same version if it exist, by replacing all the existing release notes
+* `--header <HEADER>` — Add this text as a header of the release. If a header already exist, it will be inserted before the existing one
+* `--merge-dev-versions <MERGE_DEV_VERSIONS>` — Merge older dev version into this new release
+
+  Default value: `auto`
+
+  Possible values:
+  - `auto`:
+    Yes if the version is stable, no otherwise
+  - `no`
+  - `yes`
+
+* `--stdout` — Print the result on the standard output
+
 
 
 ## `changelog validate`
