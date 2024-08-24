@@ -1,35 +1,39 @@
-use crate::{
-    config::{Cli, Generate},
-    run_generic,
-};
+use crate::generate::generate;
+use pretty_assertions::assert_eq;
 
-use super::FsTest;
+use super::*;
 
 #[test]
 fn test_repo() {
-    let cli = Cli {
-        command: crate::config::Commands::Generate(Generate {
-            file: todo!(),
-            map: todo!(),
-            parsing: todo!(),
-            exclude_unidentified: todo!(),
-            exclude_not_pr: todo!(),
-            provider: todo!(),
-            repo: todo!(),
-            omit_pr_link: todo!(),
-            omit_thanks: todo!(),
-            stdout: todo!(),
-            specific: todo!(),
-            milestone: todo!(),
-            since: todo!(),
-            until: todo!(),
-        }),
-    };
+    env_logger::init();
+
+    let mut options = DEFAULT_GENERATE.clone();
 
     let r = FsTest {
-        commits: vec![],
-        tags: vec![],
+        commits: vec![
+            raw_commit("fix: 1", "000"),
+            raw_commit("fix: 2", "001"),
+            raw_commit("fix: 3", "002"),
+            raw_commit("doc: 1", "003"),
+            raw_commit("doc: 2", "004"),
+            raw_commit("doc: 3", "005"),
+        ],
+        tags: vec![
+            tag("0.1.0", "002"),
+            tag("0.1.1", "004"),
+            tag("0.2.1", "005"),
+        ],
     };
 
-    run_generic(&r, cli).unwrap();
+    options.until = Some("004".into());
+
+    let changelog = read_changelog("src/integration_test/test1/test1.init").unwrap();
+
+    let output = generate(&r, changelog, &options).unwrap();
+
+    let expected = read_file("src/integration_test/test1/test1.expect").unwrap();
+
+    // println!("{}", output);
+
+    assert_eq!(output, expected);
 }

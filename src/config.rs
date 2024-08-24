@@ -114,14 +114,14 @@ impl Display for CommitMessageParsing {
     }
 }
 
-#[derive(Parser)]
+#[derive(Debug, Clone, Parser)]
 #[command(name = "changelog", version, about = "Changelog generator", long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum Commands {
     #[command(alias = "gen")]
     Generate(Generate),
@@ -134,7 +134,7 @@ pub enum Commands {
 }
 
 /// Generate release notes. By default, generate from the last release in the changelog to HEAD.
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct Generate {
     #[arg(
         short,
@@ -197,7 +197,7 @@ pub struct Generate {
 }
 
 /// Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format.
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct Release {
     #[arg(
         short,
@@ -240,7 +240,7 @@ pub struct Release {
 }
 
 /// Validate a changelog syntax
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct Validate {
     #[arg(
         short,
@@ -261,7 +261,7 @@ pub struct Validate {
 }
 
 /// Show a specific release on stdout
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct Show {
     #[arg(
         short,
@@ -287,7 +287,7 @@ pub struct Show {
     pub version: Option<Regex>,
 }
 /// Create a new changelog file with an accepted syntax
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct New {
     #[arg(
         short,
@@ -302,7 +302,7 @@ pub struct New {
 }
 
 /// Remove a release
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 pub struct Remove {
     #[arg(
         short,
@@ -320,7 +320,7 @@ pub struct Remove {
 }
 
 // fixme: move this to an enum https://github.com/clap-rs/clap/issues/2621
-#[derive(Args)]
+#[derive(Debug, Clone, Args)]
 #[group(required = true, multiple = false)]
 pub struct RemoveSelection {
     #[arg(
