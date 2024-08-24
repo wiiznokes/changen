@@ -180,7 +180,7 @@ pub struct Generate {
     /// We use the Github api to map commit sha to PRs.
     #[arg(long, default_value_t)]
     pub provider: GitProvider,
-    /// Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
+    /// Needed for fetching PRs. Example: 'wiiznokes/changen'. Already defined for you in Github Actions.
     #[arg(long)]
     pub repo: Option<String>,
     /// Omit the PR link from the output.
@@ -237,7 +237,7 @@ pub struct Release {
     /// We use the Github link to produce the tags diff.
     #[arg(long, default_value_t)]
     pub provider: GitProvider,
-    /// Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
+    /// Needed for the tags diff PRs. Example: 'wiiznokes/changen'. Already defined for you in Github Actions.
     #[arg(long)]
     pub repo: Option<String>,
     /// Omit the commit history between releases.

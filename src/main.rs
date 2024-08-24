@@ -1,4 +1,4 @@
-use changelog_gen::{config::Cli, run};
+use changen::{config::Cli, run};
 use clap::Parser;
 
 fn main() -> anyhow::Result<()> {
@@ -13,7 +13,7 @@ fn main() -> anyhow::Result<()> {
 mod gen {
     use std::{fs::OpenOptions, io::Write};
 
-    use changelog_gen::config::Cli;
+    use changen::config::Cli;
 
     #[ignore = ""]
     #[test]

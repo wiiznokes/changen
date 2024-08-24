@@ -30,7 +30,7 @@ pub fn try_get_repo(repo: Option<String>) -> Option<String> {
     };
 
     if repo.is_none() {
-        eprintln!("couldn't get the repo name. Example: \"wiiznokes/changelog-generator\".");
+        eprintln!("couldn't get the repo name. Example: \"wiiznokes/changen\".");
     }
 
     repo

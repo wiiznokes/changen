@@ -41,11 +41,11 @@ jobs:
 
       - uses: taiki-e/install-action@v2
         with:
-          tool: changelog-gen
+          tool: changen
 
       - run: |
-          changelog-gen generate --exclude-unidentified
-          changelog-gen release
+          changen generate --exclude-unidentified
+          changen release
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

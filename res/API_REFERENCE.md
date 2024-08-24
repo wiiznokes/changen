@@ -5,7 +5,7 @@ This document contains the help content for the `changelog` command-line program
 **Command Overview:**
 
 * [`changelog`↴](#changelog)
-* [`changelog generate`↴](#changelog-generate)
+* [`changelog generate`↴](#changenerate)
 * [`changelog release`↴](#changelog-release)
 * [`changelog validate`↴](#changelog-validate)
 * [`changelog show`↴](#changelog-show)
@@ -55,7 +55,7 @@ Generate release notes. By default, generate from the last release in the change
 
   Possible values: `github`, `none`
 
-* `--repo <REPO>` — Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions
+* `--repo <REPO>` — Needed for fetching PRs. Example: 'wiiznokes/changen'. Already defined for you in Github Actions
 * `--omit-pr-link` — Omit the PR link from the output
 * `--omit-thanks` — Omit contributors' acknowledgements/mention
 * `--stdout` — Print the result on the standard output
@@ -85,7 +85,7 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
   Possible values: `github`, `none`
 
-* `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions
+* `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changen'. Already defined for you in Github Actions
 * `--omit-diff` — Omit the commit history between releases
 * `--force` — Override the release with the same version if it exist, by replacing all the existing release notes
 * `--header <HEADER>` — Add this text as a header of the release. If a header already exist, it will be inserted before the existing one
