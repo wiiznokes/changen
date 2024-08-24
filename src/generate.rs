@@ -6,33 +6,52 @@ use crate::{
 };
 use anyhow::{bail, Result};
 use changelog::{
-    ser::serialize_release_section_note, ChangeLog, Release, ReleaseSection, ReleaseSectionNote,
+    ser::{serialize_changelog, serialize_release_section_note},
+    ChangeLog, Release, ReleaseSection, ReleaseSectionNote,
 };
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
-pub fn gen_release_notes<R: Repository>(
+pub fn generate<R: Repository>(
+    r: &R,
+    mut changelog: ChangeLog,
+    options: &Generate,
+) -> Result<String> {
+    let map = MapMessageToSection::try_new(options.map.as_ref())?;
+
+    let changelog_cloned = changelog.clone();
+
+    let unreleased = changelog.unreleased_or_default();
+
+    gen_release_notes::<R>(r, &changelog_cloned, unreleased, &map, options)?;
+
+    changelog.sanitize(&map.to_fmt_options());
+
+    let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
+
+    Ok(output)
+}
+
+fn gen_release_notes<R: Repository>(
     r: &R,
     changelog: &ChangeLog,
     unreleased: &mut Release,
-    changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
 ) -> Result<()> {
     if let Some(specific) = &options.specific {
-        return handle_specific::<R>(r, unreleased, changelog_path, map, options, specific);
+        return handle_specific::<R>(r, unreleased, map, options, specific);
     }
 
     if let Some(milestone) = &options.milestone {
-        return handle_milestone(unreleased, changelog_path, map, options, milestone);
+        return handle_milestone(unreleased, map, options, milestone);
     }
 
-    handle_period::<R>(r, changelog, unreleased, changelog_path, map, options)
+    handle_period::<R>(r, changelog, unreleased, map, options)
 }
 
 fn handle_milestone(
     unreleased: &mut Release,
-    changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
     milestone: &str,
@@ -49,7 +68,7 @@ fn handle_milestone(
             author: pr.author.clone().unwrap_or_default(),
         };
 
-        match get_release_note(&raw_commit, Some(&pr), &changelog_path, map, options) {
+        match get_release_note(&raw_commit, Some(&pr), map, options) {
             Ok((section_title, release_note)) => {
                 insert_release_note(unreleased, section_title, release_note);
             }
@@ -63,7 +82,6 @@ fn handle_milestone(
 fn handle_specific<R: Repository>(
     r: &R,
     unreleased: &mut Release,
-    changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
     specific: &str,
@@ -81,13 +99,7 @@ fn handle_specific<R: Repository>(
         None => None,
     };
 
-    match get_release_note(
-        &raw_commit,
-        related_pr.as_ref(),
-        &changelog_path,
-        map,
-        options,
-    ) {
+    match get_release_note(&raw_commit, related_pr.as_ref(), map, options) {
         Ok((section_title, release_note)) => {
             let mut added = String::new();
             serialize_release_section_note(&mut added, &release_note);
@@ -106,7 +118,6 @@ fn handle_period<R: Repository>(
     r: &R,
     changelog: &ChangeLog,
     unreleased: &mut Release,
-    changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
 ) -> Result<()> {
@@ -152,13 +163,7 @@ fn handle_period<R: Repository>(
             },
         };
 
-        match get_release_note(
-            &raw_commit,
-            related_pr.as_ref(),
-            &changelog_path,
-            map,
-            options,
-        ) {
+        match get_release_note(&raw_commit, related_pr.as_ref(), map, options) {
             Ok((section_title, release_note)) => {
                 insert_release_note(unreleased, section_title, release_note);
             }
@@ -172,11 +177,10 @@ fn handle_period<R: Repository>(
 fn get_release_note(
     raw_commit: &RawCommit,
     related_pr: Option<&RelatedPr>,
-    changelog_path: &str,
     map: &MapMessageToSection,
     options: &Generate,
 ) -> Result<(String, ReleaseSectionNote)> {
-    if let Response::Yes { reason } = commit_should_be_ignored(raw_commit, changelog_path) {
+    if let Response::Yes { reason } = commit_should_be_ignored(raw_commit) {
         bail!("Ignoring commit. {reason}");
     }
 
@@ -310,15 +314,8 @@ impl Response {
     }
 }
 
-fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
+fn commit_should_be_ignored(raw: &RawCommit) -> Response {
     debug!("{:?}", raw);
-    debug!("{:?}", changelog_path);
-
-    // if raw.list_files.iter().any(|path| path == changelog_path) {
-    //     return Response::Yes {
-    //         reason: "The changelog was modified in this commit.".into(),
-    //     };
-    // }
 
     let names = ["changelog", "log", "chglog", "notes"];
 
@@ -347,7 +344,7 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
 
 #[cfg(test)]
 mod test {
-    use crate::{release_note_generation::commit_should_be_ignored, repository::RawCommit};
+    use crate::{generate::commit_should_be_ignored, repository::RawCommit};
 
     #[test]
     fn ignore_commit() {
@@ -359,10 +356,10 @@ mod test {
             author: "".into(),
         };
 
-        assert!(commit_should_be_ignored(&raw, "").bool());
+        assert!(commit_should_be_ignored(&raw).bool());
 
         raw.title = "fix: something log".into();
 
-        assert!(!commit_should_be_ignored(&raw, "").bool());
+        assert!(!commit_should_be_ignored(&raw).bool());
     }
 }

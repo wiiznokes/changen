@@ -12,7 +12,7 @@ use changelog::{
     ser::{serialize_changelog, serialize_release, OptionsRelease},
 };
 use config::{Cli, Commands, MapMessageToSection, New, Remove, Show, Validate};
-use release_note_generation::gen_release_notes;
+use generate::generate;
 use repository::{Fs, Repository};
 use utils::try_get_repo;
 
@@ -21,9 +21,9 @@ extern crate log;
 
 mod commit_parser;
 pub mod config;
+mod generate;
 mod git_provider;
-mod release_generation;
-mod release_note_generation;
+mod release;
 mod repository;
 mod utils;
 
@@ -87,32 +87,10 @@ fn run_generic<R: Repository>(r: &R, cli: Cli) -> anyhow::Result<()> {
         Commands::Generate(mut options) => {
             let path = get_changelog_path(options.file.clone());
             let input = read_file(&path)?;
-            let mut changelog = parse_changelog(&input)?;
-
+            let changelog = parse_changelog(&input)?;
             options.repo = try_get_repo(options.repo);
 
-            debug!("path: {}", path.display());
-            debug!("input: {}", input);
-            debug!("changelog: {:?}", changelog);
-
-            let map = MapMessageToSection::try_new(options.map.as_ref())?;
-
-            let changelog_cloned = changelog.clone();
-
-            let unreleased = changelog.unreleased_or_default();
-
-            gen_release_notes::<R>(
-                r,
-                &changelog_cloned,
-                unreleased,
-                path.to_string_lossy().to_string(),
-                &map,
-                &options,
-            )?;
-
-            changelog.sanitize(&map.to_fmt_options());
-
-            let output = serialize_changelog(&changelog, &changelog::ser::Options::default());
+            let output = generate(r, changelog, &options)?;
 
             write_output(&output, &path, options.stdout)?;
         }
@@ -123,7 +101,7 @@ fn run_generic<R: Repository>(r: &R, cli: Cli) -> anyhow::Result<()> {
             let changelog = parse_changelog(&input)?;
             options.repo = try_get_repo(options.repo);
 
-            let (version, output) = release_generation::release(r, changelog, &options)?;
+            let (version, output) = release::release(r, changelog, &options)?;
 
             write_output(&output, &path, options.stdout)?;
 
