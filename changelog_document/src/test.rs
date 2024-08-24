@@ -1,6 +1,7 @@
 use std::{
     fs::{read_dir, File},
     io::Read,
+    path::{Path, PathBuf},
     sync::LazyLock,
 };
 
@@ -160,54 +161,73 @@ fn default_sort_order() -> Vec<String> {
 }
 
 #[test]
+fn end_to_end_file() {
+    let path = "./tests/scope.init";
+
+    end_to_end_init(&PathBuf::from(path));
+}
+
+#[test]
 fn end_to_end() {
     for e in read_dir("./tests").unwrap() {
-        let e = e.unwrap();
-
-        let filename = e.file_name().into_string().unwrap();
+        let path = e.unwrap().path();
+        let filename = path.file_name().unwrap().to_str().unwrap();
 
         if filename.ends_with(".init") {
-            let mut content = String::new();
-
-            File::open(e.path())
-                .unwrap()
-                .read_to_string(&mut content)
-                .unwrap();
-
-            let mut changelog = parse_changelog(&content).unwrap();
-
-            changelog.sanitize(&fmt::Options {
-                sort_options: SortOptions {
-                    section_order: default_sort_order(),
-                    sort_scope: true,
-                },
-            });
-
-            let res = ser::serialize_changelog(&changelog, &ser::Options::default());
-
-            let filename = filename.replace(".init", ".expect");
-
-            let mut content = String::new();
-
-            let path = e.path().parent().unwrap().join(filename);
-
-            File::open(path)
-                .unwrap()
-                .read_to_string(&mut content)
-                .unwrap();
-
-            assert_eq!(res, content);
+            end_to_end_init(&path);
         }
 
         if filename.ends_with(".err") {
-            let mut content = String::new();
-
-            File::open(e.path())
-                .unwrap()
-                .read_to_string(&mut content)
-                .unwrap();
-
-            parse_changelog(&content).unwrap_err();
+            end_to_end_err(&path);
         }
     }
+}
+
+fn end_to_end_init(path: &Path) {
+    let filename = path.file_name().unwrap().to_str().unwrap();
+
+    println!("testing {} ...", filename);
+
+    let mut content = String::new();
+
+    File::open(path)
+        .unwrap()
+        .read_to_string(&mut content)
+        .unwrap();
+
+    let mut changelog = parse_changelog(&content).unwrap();
+
+    changelog.sanitize(&fmt::Options {
+        sort_options: SortOptions {
+            section_order: default_sort_order(),
+            sort_scope: !filename.contains("nosort"),
+        },
+    });
+
+    let res = ser::serialize_changelog(&changelog, &ser::Options::default());
+
+    let filename = filename.replace(".init", ".expect");
+
+    let mut expected = String::new();
+
+    let path = path.parent().unwrap().join(&filename);
+
+    File::open(path)
+        .unwrap()
+        .read_to_string(&mut expected)
+        .unwrap();
+
+    println!("{}", res);
+    assert_eq!(res, expected);
+}
+
+fn end_to_end_err(path: &Path) {
+    let mut content = String::new();
+
+    File::open(path)
+        .unwrap()
+        .read_to_string(&mut content)
+        .unwrap();
+
+    parse_changelog(&content).unwrap_err();
 }

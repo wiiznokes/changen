@@ -11,6 +11,12 @@ pub struct Options {
 
 impl ChangeLog {
     pub fn sanitize(&mut self, options: &Options) {
+        if let Some(unreleased) = &mut self.unreleased {
+            unreleased.deduplicate();
+            unreleased.remove_empty();
+            unreleased.sort_notes(&options.sort_options);
+        }
+
         for release in self.releases.values_mut() {
             release.deduplicate();
             release.remove_empty();
@@ -90,6 +96,8 @@ impl Release {
 
                 let prev = mem::replace(&mut section.notes, Vec::with_capacity(len));
 
+                let mut note_without_scope = Vec::new();
+
                 for note in prev {
                     match &note.scope {
                         Some(scope) => match scoped.get_mut(scope) {
@@ -100,13 +108,18 @@ impl Release {
                                 scoped.insert(scope.clone(), vec![note]);
                             }
                         },
-                        None => section.notes.push(note),
+                        None => note_without_scope.push(note),
                     }
                 }
 
-                section
-                    .notes
-                    .extend(scoped.into_values().flat_map(|notes| notes.into_iter()));
+                scoped.sort_by(|_k1, v1, _k2, v2| v2.len().cmp(&v1.len()));
+
+                section.notes.extend(
+                    scoped
+                        .into_values()
+                        .flat_map(|notes| notes.into_iter())
+                        .chain(note_without_scope),
+                )
             }
         }
     }

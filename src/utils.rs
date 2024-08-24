@@ -23,20 +23,18 @@ impl TryFrom<&str> for Repo {
     }
 }
 
-// impl From<&str> for Repo {
-//     fn from(value: &str) -> Self {
-//         let slip = value.split('/').collect::<Vec<_>>();
+pub fn try_get_repo(repo: Option<String>) -> Option<String> {
+    let repo = match repo {
+        Some(repo) => Some(repo),
+        None => std::env::var("GITHUB_REPOSITORY").ok(),
+    };
 
-//         if slip.len() != 2 {
-//             panic!("wrong repo format")
-//         }
+    if repo.is_none() {
+        eprintln!("couldn't get the repo name. Example: \"wiiznokes/changelog-generator\".");
+    }
 
-//         Repo {
-//             owner: slip[0].to_owned(),
-//             name: slip[1].to_owned(),
-//         }
-//     }
-// }
+    repo
+}
 
 pub struct TextInterpolate {
     buffer: String,

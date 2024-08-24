@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use anyhow::bail;
 use semver::Version;
 
-use crate::git_helpers_function::RawCommit;
+use crate::repository::RawCommit;
 
 mod github;
 
@@ -36,6 +36,7 @@ pub struct RelatedPr {
     pub is_pr: bool,
 }
 
+/// Represent two or one tag to produce a diff link.
 #[derive(Debug, Clone)]
 pub struct DiffTags {
     pub prev: Option<Version>,
