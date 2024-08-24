@@ -155,161 +155,156 @@ pub enum Commands {
 /// Generate release notes. By default, generate from the last release in the changelog to HEAD.
 #[derive(Debug, Clone, Args)]
 pub struct Generate {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
         short_alias = 'o',
         alias = "output",
     )]
     pub file: Option<PathBuf>,
-    #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
+    /// Path to the commit type to changelog section map.
+    #[arg(long, value_hint = ValueHint::FilePath)]
     pub map: Option<PathBuf>,
-    #[arg(long, help = "Parsing of the commit message.", default_value_t)]
+    /// Parsing of the commit message.
+    #[arg(long, default_value_t)]
     pub parsing: CommitMessageParsing,
-    #[arg(long, help = "Don't include unidentified commits.")]
+    /// Don't include unidentified commits.
+    #[arg(long)]
     pub exclude_unidentified: bool,
-    #[arg(
-        long,
-        help = "Don't include commits which are not attached to a pull request."
-    )]
+    /// Don't include commits which are not attached to a pull request.
+    #[arg(long)]
     pub exclude_not_pr: bool,
-    #[arg(
-        long,
-        help = "We use the Github api to map commit sha to PRs.",
-        default_value_t
-    )]
+    /// We use the Github api to map commit sha to PRs.
+    #[arg(long, default_value_t)]
     pub provider: GitProvider,
-    #[arg(
-        long,
-        help = "Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
-    )]
+    /// Needed for fetching PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
+    #[arg(long)]
     pub repo: Option<String>,
-    #[arg(long, help = "Omit the PR link from the output.")]
+    /// Omit the PR link from the output.
+    #[arg(long)]
     pub omit_pr_link: bool,
-    #[arg(long, help = "Omit contributors' acknowledgements/mention.")]
+    /// Omit contributors' acknowledgements/mention.
+    #[arg(long)]
     pub omit_thanks: bool,
-    #[arg(long, help = "Print the result on the standard output.")]
+    /// Print the result on the standard output.
+    #[arg(long)]
     pub stdout: bool,
+    /// Generate only this commit, or tag.
     #[arg(
         long,
-        help = "Generate only this commit, or tag.",
         conflicts_with_all = ["milestone", "since", "until"],
     )]
     pub specific: Option<String>,
+    /// Include all commits of this milestone.
     #[arg(
         long,
-        help = "Include all commits of this milestone",
         conflicts_with_all = ["since", "until"],
     )]
     pub milestone: Option<String>,
-    #[arg(long, help = "Include all commits in \"since..until\".")]
+    /// Include all commits in \"since..until\".
+    #[arg(long)]
     pub since: Option<String>,
-    #[arg(
-        long,
-        help = "Include all commits in \"since..until\".",
-        requires = "since"
-    )]
+    /// Include all commits in \"since..until\".
+    #[arg(long, requires = "since")]
     pub until: Option<String>,
 }
 
 /// Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format.
 #[derive(Debug, Clone, Args)]
 pub struct Release {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
     )]
     pub file: Option<PathBuf>,
+    /// Version number for the release. If omitted, use the last tag present in the repo.
     #[arg(
         short,
         long,
-        help = "Version number for the release. If omitted, use the last tag present in the repo.",
         num_args(0..=1),
         default_missing_value=None
     )]
     pub version: Option<Version>,
-    #[arg(long, help = "Previous version number. Used for the diff.")]
+    /// Previous version number. Used for the diff.
+    #[arg(long)]
     pub previous_version: Option<Version>,
-    #[arg(
-        long,
-        help = "We use the Github link to produce the tags diff",
-        default_value_t
-    )]
+    /// We use the Github link to produce the tags diff.
+    #[arg(long, default_value_t)]
     pub provider: GitProvider,
-    #[arg(
-        long,
-        help = "Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions."
-    )]
+    /// Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
+    #[arg(long)]
     pub repo: Option<String>,
-    #[arg(long, help = "Omit the commit history between releases.")]
+    /// Omit the commit history between releases.
+    #[arg(long)]
     pub omit_diff: bool,
-    #[arg(
-        long,
-        help = "Override the release with the same version if it exist, by replacing all the existing release notes."
-    )]
+    /// Override the release with the same version if it exist, by replacing all the existing release notes.
+    #[arg(long)]
     pub force: bool,
-    #[arg(
-        long,
-        help = "Add this text as a header of the release. If a header already exist, it will be inserted before the existing one."
-    )]
+    /// Add this text as a header of the release. If a header already exist, it will be inserted before the existing one.
+    #[arg(long)]
     pub header: Option<String>,
     /// Merge older dev version into this new release
     #[arg(long, default_value_t)]
     pub merge_dev_versions: MergeDevVersions,
-    #[arg(long, help = "Print the result on the standard output.")]
+    /// Print the result on the standard output.
+    #[arg(long)]
     pub stdout: bool,
 }
 
 /// Validate a changelog syntax
 #[derive(Debug, Clone, Args)]
 pub struct Validate {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
     )]
     pub file: Option<PathBuf>,
-    #[arg(long, alias = "fmt", help = "Format the changelog.")]
+    /// Format the changelog.
+    #[arg(long, alias = "fmt")]
     pub format: bool,
-    #[arg(long, help = "Path to the commit type to changelog section map.", value_hint = ValueHint::FilePath)]
+    /// Path to the commit type to changelog section map.
+    #[arg(long, value_hint = ValueHint::FilePath)]
     pub map: Option<PathBuf>,
-    #[arg(long, help = "Show the Abstract Syntax Tree.")]
+    /// Show the Abstract Syntax Tree.
+    #[arg(long)]
     pub ast: bool,
-    #[arg(long, help = "Print the result on the standard output.")]
+    /// Print the result on the standard output.
+    #[arg(long)]
     pub stdout: bool,
 }
 
 /// Show a releases on stdout. By default, show the last release.
 #[derive(Debug, Clone, Args)]
 pub struct Show {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
     )]
     pub file: Option<PathBuf>,
+    /// -1 being unreleased, 0 the last release, ...
     #[arg(
         short,
-        help = "-1 being unreleased, 0 the last release, ...",
         default_value_t = 0,
         conflicts_with = "version",
         allow_hyphen_values = true
     )]
     pub n: i32,
+    /// Show a specific version. Also accept regex. Example: 1.0.0-*
     #[arg(
         short,
         long,
-        help = "Show a specific version. Also accept regex. Example: 1.0.0-*",
         num_args(0..=1),
         default_missing_value=None
     )]
@@ -318,30 +313,32 @@ pub struct Show {
 /// Create a new changelog file with an accepted syntax
 #[derive(Debug, Clone, Args)]
 pub struct New {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
     )]
     pub path: Option<PathBuf>,
-    #[arg(short, long, help = "Override of existing file.")]
+    /// Override of existing file.
+    #[arg(short, long)]
     pub force: bool,
 }
 
 /// Remove a release
 #[derive(Debug, Clone, Args)]
 pub struct Remove {
+    /// Path to the changelog file.
     #[arg(
         short,
         long,
-        help = "Path to the changelog file.",
         default_value = "CHANGELOG.md",
         value_hint = ValueHint::FilePath,
     )]
     pub file: Option<PathBuf>,
-    #[arg(long, help = "Print the result on the standard output.")]
+    /// Print the result on the standard output.
+    #[arg(long)]
     pub stdout: bool,
 
     #[clap(flatten)]
@@ -352,17 +349,10 @@ pub struct Remove {
 #[derive(Debug, Clone, Args)]
 #[group(required = true, multiple = false)]
 pub struct RemoveSelection {
-    #[arg(
-        short,
-        help = "-1 being unreleased, 0 the last release, ...",
-        conflicts_with = "version",
-        allow_hyphen_values = true
-    )]
+    /// -1 being unreleased, 0 the last release, ...
+    #[arg(short, conflicts_with = "version", allow_hyphen_values = true)]
     pub n: Option<i32>,
-    #[arg(
-        short,
-        long,
-        help = "Remove a specific version. Also accept regex. Example: 1.0.0-*"
-    )]
+    /// Remove a specific version. Also accept regex. Example: 1.0.0-*
+    #[arg(short, long)]
     pub version: Option<Regex>,
 }
