@@ -5,6 +5,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc6](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc6)
+
+### Changed
+
+- use rust doc instead of clap "help" in [#51](https://github.com/wiiznokes/changelog-generator/pull/51) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Fixed
+
+- fixes (#52) in [#52](https://github.com/wiiznokes/changelog-generator/pull/52) by [@wiiznokes](https://github.com/wiiznokes)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc5...0.1.9-rc6
+
 ## [0.1.9-rc5](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc5)
 
 Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc4...0.1.9-rc5
