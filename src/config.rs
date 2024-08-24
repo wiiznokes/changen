@@ -235,6 +235,11 @@ pub struct Release {
         help = "Override the last release if exist, by replacing all the existing release notes."
     )]
     pub force: bool,
+    #[arg(
+        long,
+        help = "Add this text as a header of the release. If a header already exist, it will be inserted before the existing one."
+    )]
+    pub header: Option<String>,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
 }

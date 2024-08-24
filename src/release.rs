@@ -14,6 +14,7 @@ pub fn release<R: Repository>(
         previous_version,
         provider,
         repo,
+        header,
         omit_diff,
         stdout: _,
         force,
@@ -43,6 +44,15 @@ pub fn release<R: Repository>(
         .unwrap_or(DEFAULT_UNRELEASED.clone());
 
     prev_unreleased.title.version = diff_tags.new.to_string();
+
+    if let Some(header) = header {
+        match &prev_unreleased.header {
+            Some(prev_header) => {
+                prev_unreleased.header = Some(format!("{}\n{}", header, prev_header))
+            }
+            None => prev_unreleased.header = Some(header.clone()),
+        }
+    }
 
     if let Some(repo) = &repo {
         match provider.release_link(repo, &diff_tags.new.to_string()) {
