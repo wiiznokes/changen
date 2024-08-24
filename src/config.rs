@@ -114,6 +114,25 @@ impl Display for CommitMessageParsing {
     }
 }
 
+#[derive(ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MergeDevVersions {
+    /// Yes if the version is stable, no otherwise
+    #[default]
+    Auto,
+    No,
+    Yes,
+}
+
+impl Display for MergeDevVersions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MergeDevVersions::Auto => write!(f, "auto"),
+            MergeDevVersions::No => write!(f, "no"),
+            MergeDevVersions::Yes => write!(f, "yes"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Parser)]
 #[command(name = "changelog", version, about = "Changelog generator", long_about = None)]
 pub struct Cli {
@@ -232,9 +251,17 @@ pub struct Release {
     pub omit_diff: bool,
     #[arg(
         long,
-        help = "Override the last release if exist, by replacing all the existing release notes."
+        help = "Override the release with the same version if it exist, by replacing all the existing release notes."
     )]
     pub force: bool,
+    #[arg(
+        long,
+        help = "Add this text as a header of the release. If a header already exist, it will be inserted before the existing one."
+    )]
+    pub header: Option<String>,
+    /// Merge older dev version into this new release
+    #[arg(long, default_value_t)]
+    pub merge_dev_versions: MergeDevVersions,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
 }
@@ -260,7 +287,7 @@ pub struct Validate {
     pub stdout: bool,
 }
 
-/// Show a specific release on stdout
+/// Show a releases on stdout. By default, show the last release.
 #[derive(Debug, Clone, Args)]
 pub struct Show {
     #[arg(
@@ -282,7 +309,9 @@ pub struct Show {
     #[arg(
         short,
         long,
-        help = "Show a specific version. Also accept regex. Example: 1.0.0-*"
+        help = "Show a specific version. Also accept regex. Example: 1.0.0-*",
+        num_args(0..=1),
+        default_missing_value=None
     )]
     pub version: Option<Regex>,
 }

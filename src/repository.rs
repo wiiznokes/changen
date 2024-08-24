@@ -197,22 +197,23 @@ impl Repository for Fs {
     }
 }
 
-impl DiffTags {
-    pub fn new<R: Repository>(
-        r: &R,
-        new: Option<Version>,
-        prev: Option<Version>,
-    ) -> anyhow::Result<Self> {
-        let new = match new {
-            Some(new) => new,
-            None => match r.tags_list()?.pop_back() {
-                Some(v) => v,
-                None => {
-                    bail!("No version provided. Can't fall back to last tag because there is none.")
-                }
-            },
-        };
+pub fn try_detect_new_version<R: Repository>(
+    r: &R,
+    new: Option<Version>,
+) -> anyhow::Result<Version> {
+    match new {
+        Some(new) => Ok(new),
+        None => match r.tags_list()?.pop_back() {
+            Some(v) => Ok(v),
+            None => {
+                bail!("No version provided. Can't fall back to last tag because there is none.")
+            }
+        },
+    }
+}
 
+impl DiffTags {
+    pub fn new(new: Version, prev: Option<Version>) -> anyhow::Result<Self> {
         let prev = if let Some(prev) = prev {
             if prev > new {
                 bail!(

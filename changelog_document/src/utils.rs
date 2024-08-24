@@ -3,7 +3,7 @@ use std::{borrow::Cow, collections::btree_map, iter::Rev, sync::LazyLock};
 use anyhow::bail;
 use semver::Version;
 
-use crate::{ChangeLog, Release, ReleaseTitle};
+use crate::{ChangeLog, Release, ReleaseSection, ReleaseTitle};
 
 pub const UNRELEASED: &str = "Unreleased";
 
@@ -93,5 +93,21 @@ impl ChangeLog {
 impl Release {
     pub fn version(&self) -> &str {
         &self.title.version
+    }
+
+    pub fn insert_release_notes<I>(&mut self, notes: I)
+    where
+        I: IntoIterator<Item = ReleaseSection>,
+    {
+        for section in notes {
+            match self.note_sections.get_mut(&section.title) {
+                Some(e) => {
+                    e.notes.extend(section.notes);
+                }
+                None => {
+                    self.note_sections.insert(section.title.clone(), section);
+                }
+            }
+        }
     }
 }
