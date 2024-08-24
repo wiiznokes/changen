@@ -126,9 +126,9 @@ pub enum MergeDevVersions {
 impl Display for MergeDevVersions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MergeDevVersions::Auto => write!(f, "smart"),
-            MergeDevVersions::No => write!(f, "smart"),
-            MergeDevVersions::Yes => write!(f, "smart"),
+            MergeDevVersions::Auto => write!(f, "auto"),
+            MergeDevVersions::No => write!(f, "no"),
+            MergeDevVersions::Yes => write!(f, "yes"),
         }
     }
 }
@@ -260,7 +260,7 @@ pub struct Release {
     )]
     pub header: Option<String>,
     /// Merge older dev version into this new release
-    #[arg(long)]
+    #[arg(long, default_value_t)]
     pub merge_dev_versions: MergeDevVersions,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
@@ -309,7 +309,9 @@ pub struct Show {
     #[arg(
         short,
         long,
-        help = "Show a specific version. Also accept regex. Example: 1.0.0-*"
+        help = "Show a specific version. Also accept regex. Example: 1.0.0-*",
+        num_args(0..=1),
+        default_missing_value=None
     )]
     pub version: Option<Regex>,
 }
