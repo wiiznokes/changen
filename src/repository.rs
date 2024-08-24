@@ -15,17 +15,17 @@ pub struct RawCommit {
 }
 
 impl RawCommit {
-    pub fn last_from_fs<R: Repository>() -> Self {
-        let sha = R::last_commit_sha();
-        Self::from_sha::<R>(&sha)
+    pub fn last_from_fs<R: Repository>(r: &R) -> Self {
+        let sha = r.last_commit_sha();
+        Self::from_sha(r, &sha)
     }
 
-    pub fn from_sha<R: Repository>(sha: &str) -> Self {
+    pub fn from_sha<R: Repository>(r: &R, sha: &str) -> Self {
         Self {
-            author: R::commit_author(sha),
-            title: R::commit_title(sha),
-            body: R::commit_body(sha),
-            list_files: R::commit_files(sha),
+            author: r.commit_author(sha),
+            title: r.commit_title(sha),
+            body: r.commit_body(sha),
+            list_files: r.commit_files(sha),
             sha: sha.into(),
         }
     }
@@ -44,27 +44,28 @@ pub struct Period {
 }
 
 pub trait Repository {
-    fn last_commit_sha() -> String;
+    fn last_commit_sha(&self) -> String;
 
-    fn commit_author(sha: &str) -> String;
+    fn commit_author(&self, sha: &str) -> String;
 
-    fn commit_title(sha: &str) -> String;
+    fn commit_title(&self, sha: &str) -> String;
 
-    fn commit_body(sha: &str) -> String;
+    fn commit_body(&self, sha: &str) -> String;
 
-    fn commit_files(sha: &str) -> Vec<String>;
+    fn commit_files(&self, sha: &str) -> Vec<String>;
 
-    fn commits_between_tags(tags: &Period) -> Vec<String>;
+    fn commits_between_tags(&self, tags: &Period) -> Vec<String>;
 
     /// Most recent at the end
-    fn tags_list() -> anyhow::Result<VecDeque<Version>>;
+    fn tags_list(&self) -> anyhow::Result<VecDeque<Version>>;
 }
 
 /// Represent the real implementation of the Repository trait
+#[derive(Default)]
 pub struct Fs;
 
 impl Repository for Fs {
-    fn last_commit_sha() -> String {
+    fn last_commit_sha(&self) -> String {
         let output = Command::new("git")
             .args(["rev-parse", "HEAD"])
             .output()
@@ -77,7 +78,7 @@ impl Repository for Fs {
         String::from_utf8(output.stdout).unwrap().trim().into()
     }
 
-    fn commit_author(sha: &str) -> String {
+    fn commit_author(&self, sha: &str) -> String {
         let output = Command::new("git")
             .args(["show", "-s", "--pretty=%an", sha])
             .output()
@@ -93,7 +94,7 @@ impl Repository for Fs {
             .into()
     }
 
-    fn commit_title(sha: &str) -> String {
+    fn commit_title(&self, sha: &str) -> String {
         let output = Command::new("git")
             .args(["show", "-s", "--pretty=%s", sha])
             .output()
@@ -106,7 +107,7 @@ impl Repository for Fs {
         String::from_utf8(output.stdout).unwrap().trim().into()
     }
 
-    fn commit_body(sha: &str) -> String {
+    fn commit_body(&self, sha: &str) -> String {
         let output = Command::new("git")
             .args(["show", "-s", "--pretty=%b", sha])
             .output()
@@ -118,7 +119,7 @@ impl Repository for Fs {
         String::from_utf8(output.stdout).unwrap().trim().into()
     }
 
-    fn commit_files(sha: &str) -> Vec<String> {
+    fn commit_files(&self, sha: &str) -> Vec<String> {
         let output = Command::new("git")
             .args(["diff-tree", "--no-commit-id", "--name-only", "-r", sha])
             .output()
@@ -136,7 +137,7 @@ impl Repository for Fs {
             .collect()
     }
 
-    fn commits_between_tags(tags: &Period) -> Vec<String> {
+    fn commits_between_tags(&self, tags: &Period) -> Vec<String> {
         let until = tags.until.as_deref().unwrap_or("HEAD");
 
         let period = match &tags.since {
@@ -165,7 +166,7 @@ impl Repository for Fs {
             .collect()
     }
 
-    fn tags_list() -> anyhow::Result<VecDeque<Version>> {
+    fn tags_list(&self) -> anyhow::Result<VecDeque<Version>> {
         let output = Command::new("git")
             .arg("tag")
             .output()
@@ -197,10 +198,14 @@ impl Repository for Fs {
 }
 
 impl DiffTags {
-    pub fn new<R: Repository>(new: Option<Version>, prev: Option<Version>) -> anyhow::Result<Self> {
+    pub fn new<R: Repository>(
+        r: &R,
+        new: Option<Version>,
+        prev: Option<Version>,
+    ) -> anyhow::Result<Self> {
         let new = match new {
             Some(new) => new,
-            None => match R::tags_list()?.pop_back() {
+            None => match r.tags_list()?.pop_back() {
                 Some(v) => v,
                 None => {
                     bail!("No version provided. Can't fall back to last tag because there is none.")
@@ -226,56 +231,23 @@ impl DiffTags {
 }
 
 #[cfg(test)]
-pub(crate) use test::FsTest;
-
-#[cfg(test)]
 mod test {
     use super::*;
-
-    pub struct FsTest;
-
-    impl Repository for FsTest {
-        fn last_commit_sha() -> String {
-            todo!()
-        }
-
-        fn commit_author(sha: &str) -> String {
-            todo!()
-        }
-
-        fn commit_title(sha: &str) -> String {
-            todo!()
-        }
-
-        fn commit_body(sha: &str) -> String {
-            todo!()
-        }
-
-        fn commit_files(sha: &str) -> Vec<String> {
-            todo!()
-        }
-
-        fn commits_between_tags(tags: &Period) -> Vec<String> {
-            todo!()
-        }
-
-        fn tags_list() -> anyhow::Result<VecDeque<Version>> {
-            todo!()
-        }
-    }
 
     #[test]
     #[ignore = "github problem with fetching tags ?"]
     fn test() {
-        let raw = RawCommit::last_from_fs::<Fs>();
+        let r = Fs;
+
+        let raw = RawCommit::last_from_fs(&r);
 
         dbg!(&raw);
 
-        let res = Fs::tags_list();
+        let res = r.tags_list();
 
         dbg!(&res);
 
-        let res = Fs::commits_between_tags(&Period {
+        let res = r.commits_between_tags(&Period {
             since: Some("0.1.5".into()),
             until: None,
         });

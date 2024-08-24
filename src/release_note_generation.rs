@@ -12,6 +12,7 @@ use changelog::{
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
 pub fn gen_release_notes<R: Repository>(
+    r: &R,
     changelog: &ChangeLog,
     unreleased: &mut Release,
     changelog_path: String,
@@ -19,14 +20,14 @@ pub fn gen_release_notes<R: Repository>(
     options: &Generate,
 ) -> Result<()> {
     if let Some(specific) = &options.specific {
-        return handle_specific::<R>(unreleased, changelog_path, map, options, specific);
+        return handle_specific::<R>(r, unreleased, changelog_path, map, options, specific);
     }
 
     if let Some(milestone) = &options.milestone {
         return handle_milestone(unreleased, changelog_path, map, options, milestone);
     }
 
-    handle_period::<R>(changelog, unreleased, changelog_path, map, options)
+    handle_period::<R>(r, changelog, unreleased, changelog_path, map, options)
 }
 
 fn handle_milestone(
@@ -60,13 +61,14 @@ fn handle_milestone(
 }
 
 fn handle_specific<R: Repository>(
+    r: &R,
     unreleased: &mut Release,
     changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
     specific: &str,
 ) -> Result<()> {
-    let raw_commit = RawCommit::from_sha::<R>(specific);
+    let raw_commit = RawCommit::from_sha(r, specific);
 
     let related_pr = match &options.repo {
         Some(repo) => match options.provider.related_pr(repo, &raw_commit.sha) {
@@ -101,6 +103,7 @@ fn handle_specific<R: Repository>(
 }
 
 fn handle_period<R: Repository>(
+    r: &R,
     changelog: &ChangeLog,
     unreleased: &mut Release,
     changelog_path: String,
@@ -119,7 +122,7 @@ fn handle_period<R: Repository>(
 
     info!("generate period: {:?}", period);
 
-    let commits = R::commits_between_tags(&period);
+    let commits = r.commits_between_tags(&period);
 
     let mut last_prs = match &options.repo {
         Some(repo) => match options.provider.last_prs(repo, commits.len()) {
@@ -133,7 +136,7 @@ fn handle_period<R: Repository>(
     };
 
     for sha in commits {
-        let raw_commit = RawCommit::from_sha::<R>(&sha);
+        let raw_commit = RawCommit::from_sha::<R>(r, &sha);
 
         let related_pr = match last_prs {
             Some(ref mut last_prs) => last_prs.remove(&sha),

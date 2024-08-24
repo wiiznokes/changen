@@ -28,7 +28,10 @@ mod repository;
 mod utils;
 
 #[cfg(test)]
-mod test;
+mod test_res;
+
+#[cfg(test)]
+mod integration_test;
 
 fn get_changelog_path(path: Option<PathBuf>) -> PathBuf {
     path.unwrap_or(PathBuf::from("CHANGELOG.md"))
@@ -71,10 +74,12 @@ fn write_output(output: &str, path: &Path, stdout: bool) -> anyhow::Result<()> {
 
 #[inline]
 pub fn run(cli: Cli) -> anyhow::Result<()> {
-    run_generic::<Fs>(cli)
+    let r = Fs;
+
+    run_generic(&r, cli)
 }
 
-fn run_generic<R: Repository>(cli: Cli) -> anyhow::Result<()> {
+fn run_generic<R: Repository>(r: &R, cli: Cli) -> anyhow::Result<()> {
     debug!("is terminal: {}", io::stdin().is_terminal());
     debug!("is terminal stdout: {}", io::stdout().is_terminal());
 
@@ -97,6 +102,7 @@ fn run_generic<R: Repository>(cli: Cli) -> anyhow::Result<()> {
             let unreleased = changelog.unreleased_or_default();
 
             gen_release_notes::<R>(
+                r,
                 &changelog_cloned,
                 unreleased,
                 path.to_string_lossy().to_string(),
@@ -117,7 +123,7 @@ fn run_generic<R: Repository>(cli: Cli) -> anyhow::Result<()> {
             let changelog = parse_changelog(&input)?;
             options.repo = try_get_repo(options.repo);
 
-            let (version, output) = release_generation::release::<R>(changelog, &options)?;
+            let (version, output) = release_generation::release(r, changelog, &options)?;
 
             write_output(&output, &path, options.stdout)?;
 

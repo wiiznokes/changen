@@ -4,6 +4,7 @@ use changelog::{ser::serialize_changelog, utils::DEFAULT_UNRELEASED, ChangeLog};
 use crate::{git_provider::DiffTags, repository::Repository};
 
 pub fn release<R: Repository>(
+    r: &R,
     mut changelog: ChangeLog,
     options: &crate::config::Release,
 ) -> anyhow::Result<(String, String)> {
@@ -22,7 +23,7 @@ pub fn release<R: Repository>(
         .clone()
         .or_else(|| changelog.last_version());
 
-    let diff_tags = DiffTags::new::<R>(version.clone(), previous_version)?;
+    let diff_tags = DiffTags::new(r, version.clone(), previous_version)?;
 
     if changelog.releases.contains_key(&diff_tags.new) {
         if *force {
