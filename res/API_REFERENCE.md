@@ -1,22 +1,22 @@
-# Command-Line Help for `changelog`
+# Command-Line Help for `changen`
 
-This document contains the help content for the `changelog` command-line program.
+This document contains the help content for the `changen` command-line program.
 
 **Command Overview:**
 
-* [`changelog`↴](#changelog)
-* [`changelog generate`↴](#changelog-generate)
-* [`changelog release`↴](#changelog-release)
-* [`changelog validate`↴](#changelog-validate)
-* [`changelog show`↴](#changelog-show)
-* [`changelog new`↴](#changelog-new)
-* [`changelog remove`↴](#changelog-remove)
+* [`changen`↴](#changen)
+* [`changen generate`↴](#changen-generate)
+* [`changen release`↴](#changen-release)
+* [`changen validate`↴](#changen-validate)
+* [`changen show`↴](#changen-show)
+* [`changen new`↴](#changen-new)
+* [`changen remove`↴](#changen-remove)
 
-## `changelog`
+## `changen`
 
 Changelog generator
 
-**Usage:** `changelog <COMMAND>`
+**Usage:** `changen <COMMAND>`
 
 ###### **Subcommands:**
 
@@ -29,11 +29,11 @@ Changelog generator
 
 
 
-## `changelog generate`
+## `changen generate`
 
 Generate release notes. By default, generate from the last release in the changelog to HEAD
 
-**Usage:** `changelog generate [OPTIONS]`
+**Usage:** `changen generate [OPTIONS]`
 
 ###### **Options:**
 
@@ -66,11 +66,11 @@ Generate release notes. By default, generate from the last release in the change
 
 
 
-## `changelog release`
+## `changen release`
 
 Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
 
-**Usage:** `changelog release [OPTIONS]`
+**Usage:** `changen release [OPTIONS]`
 
 ###### **Options:**
 
@@ -103,11 +103,11 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
 
 
-## `changelog validate`
+## `changen validate`
 
 Validate a changelog syntax
 
-**Usage:** `changelog validate [OPTIONS]`
+**Usage:** `changen validate [OPTIONS]`
 
 ###### **Options:**
 
@@ -121,11 +121,11 @@ Validate a changelog syntax
 
 
 
-## `changelog show`
+## `changen show`
 
 Show a releases on stdout. By default, show the last release
 
-**Usage:** `changelog show [OPTIONS]`
+**Usage:** `changen show [OPTIONS]`
 
 ###### **Options:**
 
@@ -139,11 +139,11 @@ Show a releases on stdout. By default, show the last release
 
 
 
-## `changelog new`
+## `changen new`
 
 Create a new changelog file with an accepted syntax
 
-**Usage:** `changelog new [OPTIONS]`
+**Usage:** `changen new [OPTIONS]`
 
 ###### **Options:**
 
@@ -154,11 +154,11 @@ Create a new changelog file with an accepted syntax
 
 
 
-## `changelog remove`
+## `changen remove`
 
 Remove a release
 
-**Usage:** `changelog remove [OPTIONS] <-n <N>|--version <VERSION>>`
+**Usage:** `changen remove [OPTIONS] <-n <N>|--version <VERSION>>`
 
 ###### **Options:**
 

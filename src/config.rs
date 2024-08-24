@@ -134,7 +134,7 @@ impl Display for MergeDevVersions {
 }
 
 #[derive(Debug, Clone, Parser)]
-#[command(name = "changelog", version, about = "Changelog generator", long_about = None)]
+#[command(version, about = "Changelog generator")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
