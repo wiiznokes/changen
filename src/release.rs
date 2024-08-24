@@ -105,7 +105,7 @@ pub fn release<R: Repository>(
         };
 
         if let Some(link) = link {
-            let line = format!("Full Changelog: {link}");
+            let line = format!("_Full Changelog: {link}_");
 
             match &mut prev_unreleased.footer {
                 Some(footer) => {
