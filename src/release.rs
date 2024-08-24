@@ -49,7 +49,7 @@ pub fn release<R: Repository>(
     if let Some(header) = header {
         match &prev_unreleased.header {
             Some(prev_header) => {
-                prev_unreleased.header = Some(format!("{}\n{}", header, prev_header))
+                prev_unreleased.header = Some(format!("{}\n\n{}", header, prev_header))
             }
             None => prev_unreleased.header = Some(header.clone()),
         }

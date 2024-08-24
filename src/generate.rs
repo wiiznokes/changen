@@ -319,7 +319,7 @@ fn commit_should_be_ignored(raw: &RawCommit) -> Response {
 
     let names = ["changelog", "log", "chglog", "notes"];
 
-    let match_pat = |pat: &str| raw.title.contains(pat) || raw.body.contains(pat);
+    let match_pat = |pat: &str| raw.title.contains(pat);
 
     for n in names {
         let patterns = [
