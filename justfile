@@ -33,21 +33,20 @@ test_perf:
 
 expand:
 
-gen_notes f='res/CHANGELOG_DEFAULT.md':
-	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --since 0.1.7 > CHANGELOG2.md
+gen_notes f='res/CHANGELOG_DEFAULT.md' since='0.1.7':
+	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --since {{since}} > CHANGELOG2.md
 
 gen_release f='CHANGELOG2.md' v='1.0.0':
-	cargo run -- release -f {{f}} --force -v {{v}}
+	cargo run -- release -f {{f}} --force -v {{v}} --header "$(sed 's/{VERSION}/{{v}}/g' ./res/HEADER_FOR_RELEASE.md)"
 
-gen_fmt f='CHANGELOG2.md' v='':
+gen_fmt f='CHANGELOG2.md':
 	cargo run -- validate -f {{f}} --fmt --ast
 
+gen_show f='CHANGELOG2.md' v='0.1.9-*':
+	cargo run -- show -f {{f}} --version {{v}}
 
-gen_show f='CHANGELOG2.md' v='':
-	cargo run -- show -f {{f}} --version 0.1.*
-
-gen_remove f='CHANGELOG2.md' v='':
-	cargo run -- remove -f {{f}} -v 1.0.0
+gen_remove f='CHANGELOG2.md' v='1.0.0':
+	cargo run -- remove -f {{f}} -v {{v}}
 
 gen_doc:
 	cargo run --locked --bin gen-doc

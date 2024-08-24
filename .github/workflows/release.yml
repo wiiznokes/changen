@@ -34,6 +34,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: |
           cargo run --locked -- remove -n -1 || true
+          # needed for the --since to work correctly in case things are wrong
           cargo run --locked -- remove -v ${{ github.event.inputs.tag }} || true
           cargo run --locked -- generate --exclude-unidentified
           cargo run --locked -- release -v ${{ github.event.inputs.tag }} --force
@@ -46,7 +47,8 @@ jobs:
           tagging_message: ${{ github.event.inputs.tag }}
 
       - run: |
-          cargo run --locked -- show > RELEASE_CHANGELOG.md
+          echo "$(sed 's/{VERSION}/${{ github.event.inputs.tag }}/g' ./res/HEADER_FOR_RELEASE.md)" > RELEASE_CHANGELOG.md
+          cargo run --locked -- show -v ${{ github.event.inputs.tag }}-* >> RELEASE_CHANGELOG.md
 
           # https://cli.github.com/manual/gh_release_create
           gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \

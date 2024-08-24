@@ -265,7 +265,7 @@ pub struct Validate {
     pub stdout: bool,
 }
 
-/// Show a specific release on stdout
+/// Show a releases on stdout. By default, show the last release.
 #[derive(Debug, Clone, Args)]
 pub struct Show {
     #[arg(
