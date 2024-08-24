@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc5](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc5)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc4...0.1.9-rc5
+
 ## [0.1.9-rc4](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc4)
 
 ### Added

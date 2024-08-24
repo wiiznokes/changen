@@ -23,7 +23,7 @@ Changelog generator
 * `generate` — Generate release notes. By default, generate from the last release in the changelog to HEAD
 * `release` — Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
 * `validate` — Validate a changelog syntax
-* `show` — Show a specific release on stdout
+* `show` — Show a releases on stdout. By default, show the last release
 * `new` — Create a new changelog file with an accepted syntax
 * `remove` — Remove a release
 
@@ -87,7 +87,18 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
 * `--repo <REPO>` — Needed for the tags diff PRs. Example: 'wiiznokes/changelog-generator'. Already defined for you in Github Actions.
 * `--omit-diff` — Omit the commit history between releases.
-* `--force` — Override the last release if exist, by replacing all the existing release notes.
+* `--force` — Override the release with the same version if it exist, by replacing all the existing release notes.
+* `--header <HEADER>` — Add this text as a header of the release. If a header already exist, it will be inserted before the existing one.
+* `--merge-dev-versions <MERGE_DEV_VERSIONS>` — Merge older dev version into this new release
+
+  Default value: `auto`
+
+  Possible values:
+  - `auto`:
+    Yes if the version is stable, no otherwise
+  - `no`
+  - `yes`
+
 * `--stdout` — Print the result on the standard output.
 
 
@@ -112,7 +123,7 @@ Validate a changelog syntax
 
 ## `changelog show`
 
-Show a specific release on stdout
+Show a releases on stdout. By default, show the last release
 
 **Usage:** `changelog show [OPTIONS]`
 
