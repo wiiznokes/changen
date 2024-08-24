@@ -223,7 +223,7 @@ dependencies = [
 
 [[package]]
 name = "changen"
-version = "0.1.9-rc7"
+version = "0.1.9-rc8"
 dependencies = [
  "anyhow",
  "cached",
