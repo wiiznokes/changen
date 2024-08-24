@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc7](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc7)
+
+### Changed
+
+- italyc diff link + better header for release in [0919f03](https://github.com/wiiznokes/changelog-generator/commit/0919f03d41d9fa25369066c7f11d2c3219bc47fa) by [@wiiznokes](https://github.com/wiiznokes)
+
+_Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc6...0.1.9-rc7_
+
 ## [0.1.9-rc6](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc6)
 
 ### Changed
