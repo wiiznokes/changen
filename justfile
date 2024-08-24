@@ -37,8 +37,7 @@ gen_notes f='res/CHANGELOG_DEFAULT.md':
 	cargo run -- generate -f {{f}} --stdout --exclude-unidentified --since 0.1.7 > CHANGELOG2.md
 
 gen_release f='CHANGELOG2.md' v='1.0.0':
-	cargo run -- release -f {{f}} --force -v {{v}} --header "Install this new version with [cargo-binstall](https://github.com/cargo-bins/cargo-binstall)\n\`cargo-binstall install changelog-gen@{{v}}\`"
-
+	cargo run -- release -f {{f}} --force -v {{v}}
 
 gen_fmt f='CHANGELOG2.md' v='':
 	cargo run -- validate -f {{f}} --fmt --ast
