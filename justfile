@@ -42,8 +42,8 @@ gen_release f='CHANGELOG2.md' v='1.0.0':
 gen_fmt f='CHANGELOG2.md':
 	cargo run -- validate -f {{f}} --fmt --ast
 
-gen_show f='CHANGELOG2.md' v='0.1.9-*':
-	cargo run -- show -f {{f}} --version {{v}}
+gen_show f='CHANGELOG.md' v='0.1.9-*':
+	cargo run -- show -f {{f}} --version {{v}} > RELEASE_CHANGELOG.md
 
 gen_remove f='CHANGELOG2.md' v='1.0.0':
 	cargo run -- remove -f {{f}} -v {{v}}
