@@ -5,7 +5,7 @@ This document contains the help content for the `changelog` command-line program
 **Command Overview:**
 
 * [`changelog`↴](#changelog)
-* [`changelog generate`↴](#changenerate)
+* [`changelog generate`↴](#changelog-generate)
 * [`changelog release`↴](#changelog-release)
 * [`changelog validate`↴](#changelog-validate)
 * [`changelog show`↴](#changelog-show)

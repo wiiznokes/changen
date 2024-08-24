@@ -5,6 +5,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc8](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc8)
+
+### Added
+
+- cache for update to release action in [cd19d02](https://github.com/wiiznokes/changen/commit/cd19d0265821341a1f18c9052e0041ebced127d1) by [@wiiznokes](https://github.com/wiiznokes)
+- rename to changen (#53) in [#53](https://github.com/wiiznokes/changen/pull/53) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Fixed
+
+- fix header command in [711bb1e](https://github.com/wiiznokes/changen/commit/711bb1ed516b4afc0f0085393203d371193b6d00) by [@wiiznokes](https://github.com/wiiznokes)
+
+_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc7...0.1.9-rc8_
+
 ## [0.1.9-rc7](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc7)
 
 ### Changed
