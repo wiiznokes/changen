@@ -1,7 +1,7 @@
 use anyhow::bail;
 use changelog::{ser::serialize_changelog, utils::DEFAULT_UNRELEASED, ChangeLog};
 
-use crate::{git_provider::DiffTags, repository::Repository};
+use crate::{config::MergeDevVersions, git_provider::DiffTags, repository::Repository};
 
 pub fn release<R: Repository>(
     r: &R,
@@ -15,6 +15,7 @@ pub fn release<R: Repository>(
         provider,
         repo,
         header,
+        merge_dev_versions,
         omit_diff,
         stdout: _,
         force,
@@ -91,6 +92,27 @@ pub fn release<R: Repository>(
                 }
             }
         }
+    }
+
+    match merge_dev_versions {
+        MergeDevVersions::Yes | MergeDevVersions::Auto if diff_tags.new.pre.is_empty() => {
+            let new_version = &diff_tags.new;
+
+            let dev_releases = changelog
+                .releases
+                .extract_if(|k, _| {
+                    k.major == new_version.major
+                        && k.minor == new_version.minor
+                        && k.patch == new_version.patch
+                })
+                .collect::<Vec<_>>();
+
+            for (_, dev_release) in dev_releases {
+                prev_unreleased
+                    .insert_release_notes(dev_release.note_sections.into_iter().map(|(_, sec)| sec))
+            }
+        }
+        _ => {}
     }
 
     changelog

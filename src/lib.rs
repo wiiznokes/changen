@@ -1,3 +1,5 @@
+#![feature(btree_extract_if)]
+
 use core::str;
 use std::{
     borrow::Cow,

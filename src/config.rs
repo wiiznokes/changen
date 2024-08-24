@@ -114,6 +114,25 @@ impl Display for CommitMessageParsing {
     }
 }
 
+#[derive(ValueEnum, Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MergeDevVersions {
+    /// Yes if the version is stable, no otherwise
+    #[default]
+    Auto,
+    No,
+    Yes,
+}
+
+impl Display for MergeDevVersions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MergeDevVersions::Auto => write!(f, "smart"),
+            MergeDevVersions::No => write!(f, "smart"),
+            MergeDevVersions::Yes => write!(f, "smart"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Parser)]
 #[command(name = "changelog", version, about = "Changelog generator", long_about = None)]
 pub struct Cli {
@@ -232,7 +251,7 @@ pub struct Release {
     pub omit_diff: bool,
     #[arg(
         long,
-        help = "Override the last release if exist, by replacing all the existing release notes."
+        help = "Override the release with the same version if it exist, by replacing all the existing release notes."
     )]
     pub force: bool,
     #[arg(
@@ -240,6 +259,9 @@ pub struct Release {
         help = "Add this text as a header of the release. If a header already exist, it will be inserted before the existing one."
     )]
     pub header: Option<String>,
+    /// Merge older dev version into this new release
+    #[arg(long)]
+    pub merge_dev_versions: MergeDevVersions,
     #[arg(long, help = "Print the result on the standard output.")]
     pub stdout: bool,
 }

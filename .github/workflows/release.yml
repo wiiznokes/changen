@@ -48,7 +48,7 @@ jobs:
 
       - run: |
           echo "$(sed 's/{VERSION}/${{ github.event.inputs.tag }}/g' ./res/HEADER_FOR_RELEASE.md)" > RELEASE_CHANGELOG.md
-          cargo run --locked -- show -v ${{ github.event.inputs.tag }}-* >> RELEASE_CHANGELOG.md
+          cargo run --locked -- show >> RELEASE_CHANGELOG.md
 
           # https://cli.github.com/manual/gh_release_create
           gh release create ${{ github.event.inputs.tag }} --title ${{ github.event.inputs.tag }} \
