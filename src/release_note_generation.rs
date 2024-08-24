@@ -1,8 +1,8 @@
 use crate::{
     commit_parser::{parse_commit, FormattedCommit},
     config::Generate,
-    git_helpers_function::{commits_between_tags, RawCommit},
     git_provider::RelatedPr,
+    repository::{Period, RawCommit, Repository},
 };
 use anyhow::{bail, Result};
 use changelog::{
@@ -11,7 +11,7 @@ use changelog::{
 
 use crate::config::{CommitMessageParsing, MapMessageToSection};
 
-pub fn gen_release_notes(
+pub fn gen_release_notes<R: Repository>(
     changelog: &ChangeLog,
     unreleased: &mut Release,
     changelog_path: String,
@@ -19,20 +19,14 @@ pub fn gen_release_notes(
     options: &Generate,
 ) -> Result<()> {
     if let Some(specific) = &options.specific {
-        return handle_specific(unreleased, changelog_path, map, options, specific);
+        return handle_specific::<R>(unreleased, changelog_path, map, options, specific);
     }
 
     if let Some(milestone) = &options.milestone {
         return handle_milestone(unreleased, changelog_path, map, options, milestone);
     }
 
-    handle_period(changelog, unreleased, changelog_path, map, options)
-}
-
-#[derive(Debug, Clone)]
-pub struct Period {
-    pub since: Option<String>,
-    pub until: Option<String>,
+    handle_period::<R>(changelog, unreleased, changelog_path, map, options)
 }
 
 fn handle_milestone(
@@ -65,14 +59,14 @@ fn handle_milestone(
     Ok(())
 }
 
-fn handle_specific(
+fn handle_specific<R: Repository>(
     unreleased: &mut Release,
     changelog_path: String,
     map: &MapMessageToSection,
     options: &Generate,
     specific: &str,
 ) -> Result<()> {
-    let raw_commit = RawCommit::from_sha(specific);
+    let raw_commit = RawCommit::from_sha::<R>(specific);
 
     let related_pr = match &options.repo {
         Some(repo) => match options.provider.related_pr(repo, &raw_commit.sha) {
@@ -106,7 +100,7 @@ fn handle_specific(
     Ok(())
 }
 
-fn handle_period(
+fn handle_period<R: Repository>(
     changelog: &ChangeLog,
     unreleased: &mut Release,
     changelog_path: String,
@@ -125,7 +119,7 @@ fn handle_period(
 
     info!("generate period: {:?}", period);
 
-    let commits = commits_between_tags(&period);
+    let commits = R::commits_between_tags(&period);
 
     let mut last_prs = match &options.repo {
         Some(repo) => match options.provider.last_prs(repo, commits.len()) {
@@ -139,7 +133,7 @@ fn handle_period(
     };
 
     for sha in commits {
-        let raw_commit = RawCommit::from_sha(&sha);
+        let raw_commit = RawCommit::from_sha::<R>(&sha);
 
         let related_pr = match last_prs {
             Some(ref mut last_prs) => last_prs.remove(&sha),
@@ -350,9 +344,7 @@ fn commit_should_be_ignored(raw: &RawCommit, changelog_path: &str) -> Response {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        git_helpers_function::RawCommit, release_note_generation::commit_should_be_ignored,
-    };
+    use crate::{release_note_generation::commit_should_be_ignored, repository::RawCommit};
 
     #[test]
     fn ignore_commit() {

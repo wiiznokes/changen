@@ -12,18 +12,19 @@ use changelog::{
     ser::{serialize_changelog, serialize_release, OptionsRelease},
 };
 use config::{Cli, Commands, MapMessageToSection, New, Remove, Show, Validate};
-use git_helpers_function::try_get_repo;
 use release_note_generation::gen_release_notes;
+use repository::{Fs, Repository};
+use utils::try_get_repo;
 
 #[macro_use]
 extern crate log;
 
 mod commit_parser;
 pub mod config;
-mod git_helpers_function;
 mod git_provider;
 mod release_generation;
 mod release_note_generation;
+mod repository;
 mod utils;
 
 #[cfg(test)]
@@ -68,7 +69,12 @@ fn write_output(output: &str, path: &Path, stdout: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[inline]
 pub fn run(cli: Cli) -> anyhow::Result<()> {
+    run_generic::<Fs>(cli)
+}
+
+fn run_generic<R: Repository>(cli: Cli) -> anyhow::Result<()> {
     debug!("is terminal: {}", io::stdin().is_terminal());
     debug!("is terminal stdout: {}", io::stdout().is_terminal());
 
@@ -90,7 +96,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
 
             let unreleased = changelog.unreleased_or_default();
 
-            gen_release_notes(
+            gen_release_notes::<R>(
                 &changelog_cloned,
                 unreleased,
                 path.to_string_lossy().to_string(),
@@ -111,7 +117,7 @@ pub fn run(cli: Cli) -> anyhow::Result<()> {
             let changelog = parse_changelog(&input)?;
             options.repo = try_get_repo(options.repo);
 
-            let (version, output) = release_generation::release(changelog, &options)?;
+            let (version, output) = release_generation::release::<R>(changelog, &options)?;
 
             write_output(&output, &path, options.stdout)?;
 
