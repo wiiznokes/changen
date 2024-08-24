@@ -25,7 +25,7 @@ Changelog generator
 * `validate` — Validate a changelog syntax
 * `show` — Show a specific release on stdout
 * `new` — Create a new changelog file with an accepted syntax
-* `remove` — Show a specific release on stdout
+* `remove` — Remove a release
 
 
 
@@ -145,7 +145,7 @@ Create a new changelog file with an accepted syntax
 
 ## `changelog remove`
 
-Show a specific release on stdout
+Remove a release
 
 **Usage:** `changelog remove [OPTIONS] <-n <N>|--version <VERSION>>`
 

@@ -5,6 +5,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.9-rc4](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc4)
+
+### Added
+
+- add version to cli in [99bc1b4](https://github.com/wiiznokes/changelog-generator/commit/99bc1b487a728c7cfa2ad985e55d4ed243b8a064) by [@wiiznokes](https://github.com/wiiznokes)
+- test repo generic for testing (#47) in [#47](https://github.com/wiiznokes/changelog-generator/pull/47) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Fixed
+
+- doc: remove doc in [66a80ca](https://github.com/wiiznokes/changelog-generator/commit/66a80cad176a51f825066a8161aae6f7e553111d) by [@wiiznokes](https://github.com/wiiznokes)
+
+Full Changelog: https://github.com/wiiznokes/changelog-generator/compare/0.1.9-rc3...0.1.9-rc4
+
 ## [0.1.9-rc3](https://github.com/wiiznokes/changelog-generator/releases/tag/0.1.9-rc3)
 
 ### Added
