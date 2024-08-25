@@ -5,11 +5,11 @@ This document contains the help content for the `changen` command-line program.
 **Command Overview:**
 
 * [`changen`↴](#changen)
+* [`changen new`↴](#changen-new)
+* [`changen validate`↴](#changen-validate)
 * [`changen generate`↴](#changen-generate)
 * [`changen release`↴](#changen-release)
-* [`changen validate`↴](#changen-validate)
 * [`changen show`↴](#changen-show)
-* [`changen new`↴](#changen-new)
 * [`changen remove`↴](#changen-remove)
 
 ## `changen`
@@ -20,12 +20,45 @@ Changelog generator
 
 ###### **Subcommands:**
 
+* `new` — Create a new changelog file with an accepted syntax
+* `validate` — Validate a changelog syntax
 * `generate` — Generate release notes. By default, generate from the last release in the changelog to HEAD
 * `release` — Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
-* `validate` — Validate a changelog syntax
 * `show` — Show a releases on stdout. By default, show the last release
-* `new` — Create a new changelog file with an accepted syntax
 * `remove` — Remove a release
+
+
+
+## `changen new`
+
+Create a new changelog file with an accepted syntax
+
+**Usage:** `changen new [OPTIONS]`
+
+###### **Options:**
+
+* `-p`, `--path <PATH>` — Path to the changelog file
+
+  Default value: `CHANGELOG.md`
+* `-f`, `--force` — Override of existing file
+
+
+
+## `changen validate`
+
+Validate a changelog syntax
+
+**Usage:** `changen validate [OPTIONS]`
+
+###### **Options:**
+
+* `-f`, `--file <FILE>` — Path to the changelog file
+
+  Default value: `CHANGELOG.md`
+* `--format` — Format the changelog
+* `--map <MAP>` — Path to the commit type to changelog section map
+* `--ast` — Show the Abstract Syntax Tree
+* `--stdout` — Print the result on the standard output
 
 
 
@@ -103,24 +136,6 @@ Generate a new release. By default, use the last tag present in the repo, sorted
 
 
 
-## `changen validate`
-
-Validate a changelog syntax
-
-**Usage:** `changen validate [OPTIONS]`
-
-###### **Options:**
-
-* `-f`, `--file <FILE>` — Path to the changelog file
-
-  Default value: `CHANGELOG.md`
-* `--format` — Format the changelog
-* `--map <MAP>` — Path to the commit type to changelog section map
-* `--ast` — Show the Abstract Syntax Tree
-* `--stdout` — Print the result on the standard output
-
-
-
 ## `changen show`
 
 Show a releases on stdout. By default, show the last release
@@ -136,21 +151,6 @@ Show a releases on stdout. By default, show the last release
 
   Default value: `0`
 * `-v`, `--version <VERSION>` — Show a specific version. Also accept regex. Example: 1.0.0-*
-
-
-
-## `changen new`
-
-Create a new changelog file with an accepted syntax
-
-**Usage:** `changen new [OPTIONS]`
-
-###### **Options:**
-
-* `-p`, `--path <PATH>` — Path to the changelog file
-
-  Default value: `CHANGELOG.md`
-* `-f`, `--force` — Override of existing file
 
 
 

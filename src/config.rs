@@ -142,12 +142,12 @@ pub struct Cli {
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum Commands {
+    New(New),
+    Validate(Validate),
     #[command(alias = "gen")]
     Generate(Generate),
     Release(Release),
-    Validate(Validate),
     Show(Show),
-    New(New),
     #[command(aliases = ["delete", "rm"])]
     Remove(Remove),
 }
