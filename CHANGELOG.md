@@ -5,57 +5,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [0.1.9-rc8](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc8)
-
-### Added
-
-- cache for update to release action in [cd19d02](https://github.com/wiiznokes/changen/commit/cd19d0265821341a1f18c9052e0041ebced127d1) by [@wiiznokes](https://github.com/wiiznokes)
-- rename to changen (#53) in [#53](https://github.com/wiiznokes/changen/pull/53) by [@wiiznokes](https://github.com/wiiznokes)
-
-### Fixed
-
-- fix header command in [711bb1e](https://github.com/wiiznokes/changen/commit/711bb1ed516b4afc0f0085393203d371193b6d00) by [@wiiznokes](https://github.com/wiiznokes)
-
-_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc7...0.1.9-rc8_
-
-## [0.1.9-rc7](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc7)
-
-### Changed
-
-- italyc diff link + better header for release in [0919f03](https://github.com/wiiznokes/changen/commit/0919f03d41d9fa25369066c7f11d2c3219bc47fa) by [@wiiznokes](https://github.com/wiiznokes)
-
-_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc6...0.1.9-rc7_
-
-## [0.1.9-rc6](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc6)
-
-### Changed
-
-- use rust doc instead of clap "help" in [#51](https://github.com/wiiznokes/changen/pull/51) by [@wiiznokes](https://github.com/wiiznokes)
-
-### Fixed
-
-- fixes (#52) in [#52](https://github.com/wiiznokes/changen/pull/52) by [@wiiznokes](https://github.com/wiiznokes)
-
-Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc5...0.1.9-rc6
-
-## [0.1.9-rc5](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc5)
-
-Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc4...0.1.9-rc5
-
-## [0.1.9-rc4](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc4)
-
-### Added
-
-- add version to cli in [99bc1b4](https://github.com/wiiznokes/changen/commit/99bc1b487a728c7cfa2ad985e55d4ed243b8a064) by [@wiiznokes](https://github.com/wiiznokes)
-- test repo generic for testing (#47) in [#47](https://github.com/wiiznokes/changen/pull/47) by [@wiiznokes](https://github.com/wiiznokes)
-
-### Fixed
-
-- doc: remove doc in [66a80ca](https://github.com/wiiznokes/changen/commit/66a80cad176a51f825066a8161aae6f7e553111d) by [@wiiznokes](https://github.com/wiiznokes)
-
-Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc3...0.1.9-rc4
-
-## [0.1.9-rc3](https://github.com/wiiznokes/changen/releases/tag/0.1.9-rc3)
+## [0.1.9](https://github.com/wiiznokes/changen/releases/tag/0.1.9)
 
 ### Added
 
@@ -63,14 +13,26 @@ Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9-rc3...0.1.9-r
 - deduplicate notes, end to end testing, refractor (#41) in [#41](https://github.com/wiiznokes/changen/pull/41) by [@wiiznokes](https://github.com/wiiznokes)
 - semver (#43) in [#43](https://github.com/wiiznokes/changen/pull/43) by [@wiiznokes](https://github.com/wiiznokes)
 - add regex (#44) in [#44](https://github.com/wiiznokes/changen/pull/44) by [@wiiznokes](https://github.com/wiiznokes)
-- remove command in [a506199](https://github.com/wiiznokes/changen/commit/a5061996e13c1356041c2804210a7fd4c41438e1) by [@wiiznokes](https://github.com/wiiznokes)
+- regex, remove command, fixes, ... in [#46](https://github.com/wiiznokes/changen/pull/46) by [@wiiznokes](https://github.com/wiiznokes)
+- add version to cli in [99bc1b4](https://github.com/wiiznokes/changen/commit/99bc1b487a728c7cfa2ad985e55d4ed243b8a064) by [@wiiznokes](https://github.com/wiiznokes)
+- test repo generic for testing (#47) in [#47](https://github.com/wiiznokes/changen/pull/47) by [@wiiznokes](https://github.com/wiiznokes)
+- header option + merge dev release option (#50) in [#50](https://github.com/wiiznokes/changen/pull/50) by [@wiiznokes](https://github.com/wiiznokes)
+- cache for update to release action in [cd19d02](https://github.com/wiiznokes/changen/commit/cd19d0265821341a1f18c9052e0041ebced127d1) by [@wiiznokes](https://github.com/wiiznokes)
+- rename to changen (#53) in [#53](https://github.com/wiiznokes/changen/pull/53) by [@wiiznokes](https://github.com/wiiznokes)
+
+### Changed
+
+- use rust doc instead of clap "help" in [#51](https://github.com/wiiznokes/changen/pull/51) by [@wiiznokes](https://github.com/wiiznokes)
+- italyc diff link + better header for release in [0919f03](https://github.com/wiiznokes/changen/commit/0919f03d41d9fa25369066c7f11d2c3219bc47fa) by [@wiiznokes](https://github.com/wiiznokes)
 
 ### Fixed
 
-- fix in [c396e4d](https://github.com/wiiznokes/changen/commit/c396e4d241c553efeb1b364b0934376f3e9854ac) by [@wiiznokes](https://github.com/wiiznokes)
-- remove args in [c50c937](https://github.com/wiiznokes/changen/commit/c50c9374dc48e357065b45c3bed03bd0656312cf) by [@wiiznokes](https://github.com/wiiznokes)
+- doc: remove doc in [66a80ca](https://github.com/wiiznokes/changen/commit/66a80cad176a51f825066a8161aae6f7e553111d) by [@wiiznokes](https://github.com/wiiznokes)
+- doc: api reference was using a wrong name in [c097925](https://github.com/wiiznokes/changen/commit/c097925545404a61e7d42d121cb226f10d14c597) by [@wiiznokes](https://github.com/wiiznokes)
+- fixes (#52) in [#52](https://github.com/wiiznokes/changen/pull/52) by [@wiiznokes](https://github.com/wiiznokes)
+- fix header command in [711bb1e](https://github.com/wiiznokes/changen/commit/711bb1ed516b4afc0f0085393203d371193b6d00) by [@wiiznokes](https://github.com/wiiznokes)
 
-Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.7...0.1.9-rc3
+_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.7...0.1.9_
 
 ## [0.1.7](https://github.com/wiiznokes/changen/releases/tag/0.1.7)
 
