@@ -1,7 +1,6 @@
-use std::{collections::VecDeque, fs::File, io::Read, path::Path, sync::LazyLock};
+use std::{collections::VecDeque, fs::File, io::Read, path::Path, str::FromStr, sync::LazyLock};
 
-use changelog::{de::parse_changelog, ChangeLog};
-use semver::Version;
+use changelog::{de::parse_changelog, ChangeLog, Version};
 
 use crate::{
     config::{CommitMessageParsing, Generate},
@@ -97,7 +96,7 @@ impl Repository for FsTest {
         Ok(self
             .tags
             .iter()
-            .filter_map(|e| Version::parse(&e.name).ok())
+            .filter_map(|e| Version::from_str(&e.name).ok())
             .collect())
     }
 }

@@ -1,12 +1,14 @@
 use std::collections::BTreeMap;
 
 use indexmap::IndexMap;
-use semver::Version;
 
 pub mod de;
 pub mod fmt;
 pub mod ser;
 pub mod utils;
+mod version;
+pub use semver;
+pub use version::Version;
 
 #[cfg(test)]
 mod test;

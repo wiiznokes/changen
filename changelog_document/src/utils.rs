@@ -1,9 +1,8 @@
 use std::{borrow::Cow, collections::btree_map, iter::Rev, sync::LazyLock};
 
 use anyhow::bail;
-use semver::Version;
 
-use crate::{ChangeLog, Release, ReleaseSection, ReleaseTitle};
+use crate::{ChangeLog, Release, ReleaseSection, ReleaseTitle, Version};
 
 pub const UNRELEASED: &str = "Unreleased";
 

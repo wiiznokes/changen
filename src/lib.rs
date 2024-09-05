@@ -1,4 +1,6 @@
 #![feature(btree_extract_if)]
+#![feature(if_let_guard)]
+#![feature(let_chains)]
 
 use core::str;
 use std::{

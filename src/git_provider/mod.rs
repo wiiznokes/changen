@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Display};
 
 use anyhow::bail;
-use semver::Version;
+use changelog::Version;
 
 use crate::repository::RawCommit;
 

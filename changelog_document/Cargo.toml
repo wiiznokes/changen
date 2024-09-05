@@ -1,6 +1,6 @@
 [package]
 name = "changelog_document"
-version = "0.1.6"
+version = "0.1.7"
 categories = ["parsing"]
 keywords = ["changelog", "parser", "serializer", "pom-based", "release-note"]
 description = "Feature-rich changelog format. Include a parser and serializer."

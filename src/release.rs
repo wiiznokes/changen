@@ -67,13 +67,17 @@ pub fn release<R: Repository>(
     }
 
     match merge_dev_versions {
-        MergeDevVersions::Yes | MergeDevVersions::Auto if new_version.pre.is_empty() => {
+        MergeDevVersions::Yes | MergeDevVersions::Auto
+            if let Some(new_version_semver) = new_version.version_opt()
+                && new_version_semver.pre.is_empty() =>
+        {
             let dev_releases = changelog
                 .releases
                 .extract_if(|k, _| {
-                    k.major == new_version.major
-                        && k.minor == new_version.minor
-                        && k.patch == new_version.patch
+                    k.version_opt().map(|k| k.major == new_version_semver.major
+                                    && k.minor == new_version_semver.minor
+                                    && k.patch == new_version_semver.patch)
+                        .unwrap_or(false)
                 })
                 .collect::<Vec<_>>();
 

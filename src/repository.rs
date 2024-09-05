@@ -1,7 +1,7 @@
-use std::{collections::VecDeque, process::Command};
+use std::{collections::VecDeque, process::Command, str::FromStr};
 
 use anyhow::bail;
-use semver::Version;
+use changelog::Version;
 
 use crate::git_provider::DiffTags;
 
@@ -179,7 +179,7 @@ impl Repository for Fs {
         let mut tags = Vec::new();
 
         for tag in String::from_utf8(output.stdout)?.trim().lines() {
-            match Version::parse(tag) {
+            match Version::from_str(tag) {
                 Ok(v) => tags.push(v),
                 Err(e) => {
                     eprintln!("incorrect semver tag {tag}: {e}");

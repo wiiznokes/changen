@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::utils::UNRELEASED;
 
 use super::*;
@@ -61,7 +63,7 @@ pub(crate) fn changelog_parser(options: &Options) -> Parser<'_, char, ChangeLog>
                 continue;
             }
 
-            let version = match Version::parse(&release.title.version) {
+            let version = match Version::from_str(&release.title.version) {
                 Ok(v) => v,
                 Err(e) => return Err(format!("not valid semver {e}")),
             };

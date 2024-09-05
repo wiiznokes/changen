@@ -7,10 +7,10 @@ use changelog::fmt::SortOptions;
 use clap::{arg, Args, Parser, Subcommand, ValueHint};
 
 use changelog::ser::{Options, OptionsRelease};
+use changelog::Version;
 use clap::ValueEnum;
 use indexmap::IndexMap;
 use regex::Regex;
-use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::git_provider::GitProvider;
