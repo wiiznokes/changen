@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.10](https://github.com/wiiznokes/changen/releases/tag/0.1.10)
+
+### Added
+
+- Opt semver versionning in [#54](https://github.com/wiiznokes/changen/pull/54) by [@wiiznokes](https://github.com/wiiznokes)
+
+_Full Changelog: https://github.com/wiiznokes/changen/compare/0.1.9...0.1.10_
+
 ## [0.1.9](https://github.com/wiiznokes/changen/releases/tag/0.1.9)
 
 ### Added

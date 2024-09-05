@@ -23,7 +23,7 @@ Changelog generator
 * `new` — Create a new changelog file with an accepted syntax
 * `validate` — Validate a changelog syntax
 * `generate` — Generate release notes. By default, generate from the last release in the changelog to HEAD
-* `release` — Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
+* `release` — Generate a new release. By default, use the last tag present in the repo
 * `show` — Show a releases on stdout. By default, show the last release
 * `remove` — Remove a release
 
@@ -101,7 +101,7 @@ Generate release notes. By default, generate from the last release in the change
 
 ## `changen release`
 
-Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format
+Generate a new release. By default, use the last tag present in the repo
 
 **Usage:** `changen release [OPTIONS]`
 
