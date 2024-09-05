@@ -7,10 +7,10 @@ use changelog::fmt::SortOptions;
 use clap::{arg, Args, Parser, Subcommand, ValueHint};
 
 use changelog::ser::{Options, OptionsRelease};
+use changelog::Version;
 use clap::ValueEnum;
 use indexmap::IndexMap;
 use regex::Regex;
-use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::git_provider::GitProvider;
@@ -212,7 +212,7 @@ pub struct Generate {
     pub until: Option<String>,
 }
 
-/// Generate a new release. By default, use the last tag present in the repo, sorted using the [semver](https://semver.org/) format.
+/// Generate a new release. By default, use the last tag present in the repo.
 #[derive(Debug, Clone, Args)]
 pub struct Release {
     /// Path to the changelog file.

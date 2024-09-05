@@ -40,9 +40,6 @@ This project use `changen` to maintain its changelog, using github action
 
    To make a new release, use `changen release --version 1.0.0`.
 
-> [!WARNING]  
-> _All_ tags of the repo and versions in the changelog _must_ follow the [semver](https://semver.org/) format, and should match each other.
-
 **The full API reference can be found [here](./res/API_REFERENCE.md)** (automatically generated).
 
 ## Commit syntax
