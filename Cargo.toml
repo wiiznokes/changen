@@ -11,7 +11,7 @@ repository = "https://github.com/wiiznokes/changen.git"
 
 [package]
 name = "changen"
-version = "0.1.9"
+version = "0.1.10"
 keywords = ["changelog", "release", "tool", "release-note"]
 description = "Helper program to manage a changelog"
 categories = ["development-tools"]
