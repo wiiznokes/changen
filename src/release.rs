@@ -74,9 +74,12 @@ pub fn release<R: Repository>(
             let dev_releases = changelog
                 .releases
                 .extract_if(|k, _| {
-                    k.version_opt().map(|k| k.major == new_version_semver.major
-                                    && k.minor == new_version_semver.minor
-                                    && k.patch == new_version_semver.patch)
+                    k.version_opt()
+                        .map(|k| {
+                            k.major == new_version_semver.major
+                                && k.minor == new_version_semver.minor
+                                && k.patch == new_version_semver.patch
+                        })
                         .unwrap_or(false)
                 })
                 .collect::<Vec<_>>();
